@@ -10,15 +10,22 @@ import { MemoryPage } from '@/pages/MemoryPage';
 import { FleetCommandPage } from '@/pages/FleetCommandPage';
 import { SkillTreePage } from '@/pages/SkillTreePage';
 import { AgentDetailsPage } from '@/pages/AgentDetailsPage';
+import { AuthPage, MockUser } from '@/pages/AuthPage';
+import { ProfilePage } from '@/pages/ProfilePage';
 import { AgentCreationWizard } from '@/components/AgentCreationWizard';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { mockAgents, mockAgentStats, globalCredits, fleetStatus } from '@/data/agentsData';
 import { Agent } from '@/components/AgentRail';
 
-type ViewMode = 'main' | 'details';
+type ViewMode = 'main' | 'details' | 'profile';
 
 const Index = () => {
+  // Auth state
+  const [user, setUser] = useState<MockUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // App state
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
   const [viewMode, setViewMode] = useState<ViewMode>('main');
   const [agents, setAgents] = useState<Agent[]>(mockAgents);
@@ -34,6 +41,22 @@ const Index = () => {
   const selectedAgentStats = selectedAgentId ? mockAgentStats[selectedAgentId] : undefined;
   const activeAgentsCount = agents.filter(a => a.status !== 'idle' && a.status !== 'stunned').length;
 
+  // Check for existing session on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('fleet-commander-user');
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        parsedUser.createdAt = new Date(parsedUser.createdAt);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch {
+        localStorage.removeItem('fleet-commander-user');
+      }
+    }
+  }, []);
+
+  // Timer effect
   useEffect(() => {
     if (!isPaused && agentState === 'executing') {
       const timer = setInterval(() => {
@@ -42,6 +65,36 @@ const Index = () => {
       return () => clearInterval(timer);
     }
   }, [isPaused, agentState]);
+
+  const handleLogin = (newUser: MockUser) => {
+    setUser(newUser);
+    setIsAuthenticated(true);
+    localStorage.setItem('fleet-commander-user', JSON.stringify(newUser));
+    toast({
+      title: "Welcome, Commander",
+      description: `Logged in as ${newUser.name}`,
+    });
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    setViewMode('main');
+    localStorage.removeItem('fleet-commander-user');
+    toast({
+      title: "Signed Out",
+      description: "You have been logged out successfully.",
+    });
+  };
+
+  const handleUpdateUser = (updatedUser: MockUser) => {
+    setUser(updatedUser);
+    localStorage.setItem('fleet-commander-user', JSON.stringify(updatedUser));
+    toast({
+      title: "Profile Updated",
+      description: "Your profile has been updated.",
+    });
+  };
 
   const handleStop = () => {
     setAgentState('idle');
@@ -91,6 +144,10 @@ const Index = () => {
     setViewMode('details');
   };
 
+  const handleViewProfile = () => {
+    setViewMode('profile');
+  };
+
   const handleBackFromDetails = () => {
     setViewMode('main');
   };
@@ -136,7 +193,24 @@ const Index = () => {
     setViewMode('main');
   };
 
+  // Show auth page if not authenticated
+  if (!isAuthenticated) {
+    return <AuthPage onLogin={handleLogin} />;
+  }
+
   const renderPage = () => {
+    // Handle profile view
+    if (viewMode === 'profile' && user) {
+      return (
+        <ProfilePage 
+          user={user}
+          onBack={handleBackFromDetails}
+          onLogout={handleLogout}
+          onUpdateUser={handleUpdateUser}
+        />
+      );
+    }
+
     // Handle detail views
     if (viewMode === 'details' && selectedAgent && selectedAgentStats) {
       return (
@@ -201,6 +275,9 @@ const Index = () => {
           fleetStatus={fleetStatus}
           activeAgents={activeAgentsCount}
           totalAgents={agents.length}
+          user={user || undefined}
+          onViewProfile={handleViewProfile}
+          onLogout={handleLogout}
         />
       </div>
 
