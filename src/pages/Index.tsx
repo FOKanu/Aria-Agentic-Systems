@@ -7,17 +7,20 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
 import { VisionPage } from '@/pages/VisionPage';
 import { MemoryPage } from '@/pages/MemoryPage';
-import { SettingsPage } from '@/pages/SettingsPage';
 import { FleetCommandPage } from '@/pages/FleetCommandPage';
 import { SkillTreePage } from '@/pages/SkillTreePage';
+import { AgentDetailsPage } from '@/pages/AgentDetailsPage';
 import { AgentCreationWizard } from '@/components/AgentCreationWizard';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
-import { mockAgents, globalCredits, fleetStatus } from '@/data/agentsData';
+import { mockAgents, mockAgentStats, globalCredits, fleetStatus } from '@/data/agentsData';
 import { Agent } from '@/components/AgentRail';
+
+type ViewMode = 'main' | 'details';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [viewMode, setViewMode] = useState<ViewMode>('main');
   const [agents, setAgents] = useState<Agent[]>(mockAgents);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(mockAgents[0]?.id || null);
   const [agentState, setAgentState] = useState<AgentState>('executing');
@@ -28,6 +31,7 @@ const Index = () => {
   const { toast } = useToast();
 
   const selectedAgent = agents.find(a => a.id === selectedAgentId);
+  const selectedAgentStats = selectedAgentId ? mockAgentStats[selectedAgentId] : undefined;
   const activeAgentsCount = agents.filter(a => a.status !== 'idle' && a.status !== 'stunned').length;
 
   useEffect(() => {
@@ -76,10 +80,34 @@ const Index = () => {
 
   const handleOpenFleetCommand = () => {
     setActiveTab('fleet');
+    setViewMode('main');
   };
 
   const handleCreateAgent = () => {
     setShowCreationWizard(true);
+  };
+
+  const handleViewDetails = () => {
+    setViewMode('details');
+  };
+
+  const handleBackFromDetails = () => {
+    setViewMode('main');
+  };
+
+  const handleNewMission = () => {
+    setActiveTab('tasks');
+    toast({
+      title: "New Mission",
+      description: "Navigate to Missions to create a new task.",
+    });
+  };
+
+  const handleExportLogs = () => {
+    toast({
+      title: "Logs Exported",
+      description: "Agent logs have been exported to your downloads.",
+    });
   };
 
   const handleAgentCreated = (newAgentData: { name: string; avatar: string; class: 'assistant' | 'coder' | 'researcher'; stats: { accuracy: number; speed: number; creativity: number } }) => {
@@ -94,14 +122,33 @@ const Index = () => {
     setAgents(prev => [...prev, newAgent]);
     setSelectedAgentId(newAgent.id);
     setActiveTab('dashboard');
+    setViewMode('main');
   };
 
   const handleSelectAgentFromFleet = (agentId: string) => {
     setSelectedAgentId(agentId);
     setActiveTab('dashboard');
+    setViewMode('main');
+  };
+
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab);
+    setViewMode('main');
   };
 
   const renderPage = () => {
+    // Handle detail views
+    if (viewMode === 'details' && selectedAgent && selectedAgentStats) {
+      return (
+        <AgentDetailsPage 
+          agent={selectedAgent} 
+          stats={selectedAgentStats}
+          onBack={handleBackFromDetails}
+        />
+      );
+    }
+
+    // Main tab views
     switch (activeTab) {
       case 'dashboard':
         return (
@@ -110,8 +157,13 @@ const Index = () => {
             isPaused={isPaused}
             onPause={handlePause}
             onResume={handleResume}
+            onStop={handleStop}
             onApprove={handleApprove}
             selectedAgent={selectedAgent}
+            agentStats={selectedAgentStats}
+            onViewDetails={handleViewDetails}
+            onNewMission={handleNewMission}
+            onExportLogs={handleExportLogs}
           />
         );
       case 'tasks':
@@ -169,12 +221,12 @@ const Index = () => {
       
       {/* Bottom Nav - Mobile */}
       <div className="lg:hidden">
-        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
 
       {/* Desktop Tab Bar */}
       <div className="hidden lg:block">
-        <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isDesktop />
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} isDesktop />
       </div>
 
       {/* Agent Creation Wizard */}
