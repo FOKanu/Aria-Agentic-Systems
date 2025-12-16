@@ -1,7 +1,7 @@
-import { LayoutDashboard, ListTodo, Eye, Brain, Settings } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Eye, Brain, Settings, Rocket } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type TabId = 'dashboard' | 'tasks' | 'vision' | 'memory' | 'settings';
+export type TabId = 'dashboard' | 'tasks' | 'vision' | 'memory' | 'settings' | 'fleet';
 
 interface BottomNavProps {
   activeTab: TabId;
@@ -10,6 +10,7 @@ interface BottomNavProps {
 }
 
 const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
+  { id: 'fleet', label: 'Fleet', icon: Rocket },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'tasks', label: 'Missions', icon: ListTodo },
   { id: 'vision', label: 'Vision', icon: Eye },
