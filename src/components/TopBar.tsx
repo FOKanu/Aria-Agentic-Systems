@@ -1,14 +1,27 @@
 import { Coins, Shield, Activity, Wifi } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UserMenu } from '@/components/UserMenu';
+import { MockUser } from '@/pages/AuthPage';
 
 interface TopBarProps {
   credits: number;
   fleetStatus: 'online' | 'partial' | 'offline';
   activeAgents: number;
   totalAgents: number;
+  user?: MockUser;
+  onViewProfile?: () => void;
+  onLogout?: () => void;
 }
 
-export function TopBar({ credits, fleetStatus, activeAgents, totalAgents }: TopBarProps) {
+export function TopBar({ 
+  credits, 
+  fleetStatus, 
+  activeAgents, 
+  totalAgents,
+  user,
+  onViewProfile,
+  onLogout,
+}: TopBarProps) {
   const fleetStatusConfig = {
     online: { color: 'text-success', bg: 'bg-success/20', label: 'All Systems Go' },
     partial: { color: 'text-warning', bg: 'bg-warning/20', label: 'Partial Activity' },
@@ -34,7 +47,7 @@ export function TopBar({ credits, fleetStatus, activeAgents, totalAgents }: TopB
         </div>
       </div>
 
-      {/* Right Section - Credits */}
+      {/* Right Section - Credits & User */}
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-gold/20 to-warning/10 border border-gold/30">
           <Coins className="w-4 h-4 text-gold" />
@@ -42,10 +55,18 @@ export function TopBar({ credits, fleetStatus, activeAgents, totalAgents }: TopB
           <span className="text-xs text-gold/70">credits</span>
         </div>
 
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30">
-          <Shield className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-primary">Fleet Commander</span>
-        </div>
+        {user && onViewProfile && onLogout ? (
+          <UserMenu 
+            user={user} 
+            onViewProfile={onViewProfile} 
+            onLogout={onLogout} 
+          />
+        ) : (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30">
+            <Shield className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">Fleet Commander</span>
+          </div>
+        )}
       </div>
     </div>
   );
