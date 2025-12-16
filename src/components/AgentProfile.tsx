@@ -1,8 +1,6 @@
 import { Agent } from '@/components/AgentRail';
 import { AgentStats } from '@/data/agentsData';
-import { XPBar } from '@/components/XPBar';
-import { RadialStat } from '@/components/RadialStat';
-import { Zap, Heart, Target, Gauge, Sparkles, Cpu } from 'lucide-react';
+import { CheckCircle, Clock, TrendingUp, Activity, Cpu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AgentProfileProps {
@@ -10,28 +8,26 @@ interface AgentProfileProps {
   stats: AgentStats;
 }
 
-const classLabels: Record<Agent['class'], string> = {
-  assistant: 'Digital Assistant',
-  coder: 'Code Architect',
-  researcher: 'Data Scientist',
+const typeLabels: Record<Agent['type'], string> = {
+  assistant: 'Assistant',
+  developer: 'Developer',
+  researcher: 'Researcher',
 };
 
 export function AgentProfile({ agent, stats }: AgentProfileProps) {
   return (
-    <div className="glass-card p-4 rounded-xl space-y-4 animate-slide-up">
-      {/* Header with Avatar and Level */}
+    <div className="glass-card p-4 rounded-lg space-y-4 animate-slide-up">
+      {/* Header with Avatar */}
       <div className="flex items-center gap-4">
-        {/* Animated Avatar */}
         <div className={cn(
-          "relative w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center",
-          "border-2 border-primary/50 animate-float",
-          agent.status === 'executing' && "glow-primary"
+          "relative w-16 h-16 rounded-lg bg-secondary flex items-center justify-center",
+          "border border-border"
         )}>
-          <span className="text-4xl">{agent.avatar}</span>
+          <span className="text-3xl">{agent.avatar}</span>
           
-          {/* Status ring */}
+          {/* Status indicator */}
           <div className={cn(
-            "absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center",
+            "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center",
             "bg-card border-2",
             agent.status === 'executing' ? "border-success" : 
             agent.status === 'thinking' ? "border-primary" :
@@ -39,9 +35,9 @@ export function AgentProfile({ agent, stats }: AgentProfileProps) {
             agent.status === 'error' ? "border-destructive" : "border-muted"
           )}>
             <Cpu className={cn(
-              "w-3 h-3",
-              agent.status === 'executing' && "text-success animate-pulse",
-              agent.status === 'thinking' && "text-primary animate-pulse",
+              "w-2.5 h-2.5",
+              agent.status === 'executing' && "text-success",
+              agent.status === 'thinking' && "text-primary",
               agent.status === 'waiting' && "text-warning",
               agent.status === 'error' && "text-destructive",
               agent.status === 'idle' && "text-muted-foreground"
@@ -49,16 +45,11 @@ export function AgentProfile({ agent, stats }: AgentProfileProps) {
           </div>
         </div>
 
-        {/* Name and Level */}
+        {/* Name and Type */}
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-display font-bold">{agent.name}</h2>
-            <span className="px-2 py-0.5 rounded-full bg-gold/20 text-gold text-xs font-bold font-mono border border-gold/30">
-              LVL {agent.level}
-            </span>
-          </div>
-          <p className="text-sm text-muted-foreground font-display">
-            {classLabels[agent.class]}
+          <h2 className="text-lg font-semibold">{agent.name}</h2>
+          <p className="text-sm text-muted-foreground">
+            {typeLabels[agent.type]}
           </p>
           
           {/* Status text */}
@@ -70,67 +61,47 @@ export function AgentProfile({ agent, stats }: AgentProfileProps) {
             agent.status === 'error' && "text-destructive",
             agent.status === 'idle' && "text-muted-foreground"
           )}>
-            {agent.status === 'executing' ? '⚡ Executing Mission' :
-             agent.status === 'thinking' ? '🧠 Processing...' :
-             agent.status === 'waiting' ? '⏸ Awaiting Input' :
-             agent.status === 'error' ? '⚠ Error State' :
-             agent.status === 'stunned' ? '💫 Stunned' : '😴 Idle'}
+            {agent.status === 'executing' ? 'Active' :
+             agent.status === 'thinking' ? 'Processing...' :
+             agent.status === 'waiting' ? 'Awaiting Input' :
+             agent.status === 'error' ? 'Error' :
+             agent.status === 'stunned' ? 'Offline' : 'Idle'}
           </p>
         </div>
       </div>
 
-      {/* XP and Health Bars */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-gold" />
-          <div className="flex-1">
-            <XPBar 
-              current={stats.xp} 
-              max={stats.xpToNextLevel} 
-              label="Neural Density (XP)"
-              variant="gold"
-            />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-3 rounded-lg bg-secondary/50">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <CheckCircle className="w-3.5 h-3.5" />
+            <span className="text-xs">Tasks</span>
           </div>
+          <p className="text-lg font-semibold">{stats.tasksCompleted}</p>
         </div>
         
-        <div className="flex items-center gap-2">
-          <Heart className="w-4 h-4 text-destructive" />
-          <div className="flex-1">
-            <XPBar 
-              current={stats.health} 
-              max={stats.maxHealth} 
-              label="System Integrity"
-              variant="health"
-            />
+        <div className="p-3 rounded-lg bg-secondary/50">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span className="text-xs">Success</span>
           </div>
+          <p className="text-lg font-semibold text-success">{stats.successRate}%</p>
         </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="pt-2">
-        <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-          <Sparkles className="w-3 h-3" />
-          Core Stats
-        </h3>
-        <div className="flex justify-around">
-          <RadialStat 
-            value={stats.accuracy} 
-            label="Accuracy" 
-            color="success"
-            size="sm"
-          />
-          <RadialStat 
-            value={stats.speed} 
-            label="Speed" 
-            color="holo"
-            size="sm"
-          />
-          <RadialStat 
-            value={stats.creativity} 
-            label="Creativity" 
-            color="accent"
-            size="sm"
-          />
+        
+        <div className="p-3 rounded-lg bg-secondary/50">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <Clock className="w-3.5 h-3.5" />
+            <span className="text-xs">Avg Time</span>
+          </div>
+          <p className="text-lg font-semibold">{stats.avgResponseTime}s</p>
+        </div>
+        
+        <div className="p-3 rounded-lg bg-secondary/50">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <Activity className="w-3.5 h-3.5" />
+            <span className="text-xs">Active</span>
+          </div>
+          <p className="text-lg font-semibold">{stats.activeHours}h</p>
         </div>
       </div>
     </div>

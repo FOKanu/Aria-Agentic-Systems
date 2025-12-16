@@ -66,16 +66,16 @@ export function AuthPage({ onLogin }: AuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 corner-glow">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/50 flex items-center justify-center mx-auto mb-4 glow-primary">
-            <Zap className="w-8 h-8 text-primary" />
+          <div className="w-14 h-14 rounded-lg bg-primary/10 border border-border flex items-center justify-center mx-auto mb-4">
+            <Zap className="w-7 h-7 text-primary" />
           </div>
-          <h1 className="text-2xl font-display font-bold">Fleet Commander</h1>
+          <h1 className="text-2xl font-semibold">Agent Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {mode === 'login' ? 'Welcome back, Commander' : 'Join the Fleet'}
+            {mode === 'login' ? 'Sign in to your account' : 'Create your account'}
           </p>
         </div>
 
