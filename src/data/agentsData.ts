@@ -6,101 +6,76 @@ export const mockAgents: Agent[] = [
     name: 'Atlas',
     avatar: '🤖',
     status: 'executing',
-    level: 5,
-    class: 'assistant',
+    type: 'assistant',
   },
   {
     id: 'agent-2',
     name: 'Nova',
     avatar: '💻',
     status: 'thinking',
-    level: 8,
-    class: 'coder',
+    type: 'developer',
   },
   {
     id: 'agent-3',
     name: 'Sage',
     avatar: '🔬',
     status: 'idle',
-    level: 3,
-    class: 'researcher',
+    type: 'researcher',
   },
   {
     id: 'agent-4',
     name: 'Echo',
     avatar: '🎯',
     status: 'waiting',
-    level: 6,
-    class: 'assistant',
+    type: 'assistant',
   },
   {
     id: 'agent-5',
     name: 'Pixel',
     avatar: '🎨',
     status: 'idle',
-    level: 4,
-    class: 'coder',
+    type: 'developer',
   },
 ];
 
 export interface AgentStats {
-  xp: number;
-  xpToNextLevel: number;
-  health: number;
-  maxHealth: number;
-  accuracy: number;
-  speed: number;
-  creativity: number;
+  tasksCompleted: number;
+  successRate: number;
+  avgResponseTime: number;
+  activeHours: number;
 }
 
 export const mockAgentStats: Record<string, AgentStats> = {
   'agent-1': {
-    xp: 2400,
-    xpToNextLevel: 3000,
-    health: 85,
-    maxHealth: 100,
-    accuracy: 92,
-    speed: 75,
-    creativity: 60,
+    tasksCompleted: 156,
+    successRate: 92,
+    avgResponseTime: 2.4,
+    activeHours: 48,
   },
   'agent-2': {
-    xp: 7200,
-    xpToNextLevel: 8000,
-    health: 100,
-    maxHealth: 100,
-    accuracy: 88,
-    speed: 95,
-    creativity: 78,
+    tasksCompleted: 234,
+    successRate: 88,
+    avgResponseTime: 3.1,
+    activeHours: 72,
   },
   'agent-3': {
-    xp: 1800,
-    xpToNextLevel: 2500,
-    health: 70,
-    maxHealth: 100,
-    accuracy: 96,
-    speed: 45,
-    creativity: 90,
+    tasksCompleted: 89,
+    successRate: 96,
+    avgResponseTime: 4.2,
+    activeHours: 24,
   },
   'agent-4': {
-    xp: 4500,
-    xpToNextLevel: 5000,
-    health: 55,
-    maxHealth: 100,
-    accuracy: 80,
-    speed: 88,
-    creativity: 65,
+    tasksCompleted: 178,
+    successRate: 80,
+    avgResponseTime: 1.8,
+    activeHours: 56,
   },
   'agent-5': {
-    xp: 3200,
-    xpToNextLevel: 4000,
-    health: 95,
-    maxHealth: 100,
-    accuracy: 85,
-    speed: 70,
-    creativity: 95,
+    tasksCompleted: 112,
+    successRate: 85,
+    avgResponseTime: 2.9,
+    activeHours: 36,
   },
 };
-
-export const globalCredits = 15750;
 
 export const fleetStatus: 'online' | 'partial' | 'offline' = 'online';

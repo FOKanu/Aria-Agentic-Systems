@@ -2,83 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    /* Cozy Cyberpunk Theme */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 96%;
+    /* Professional Dark Theme */
+    --background: 220 16% 10%;
+    --foreground: 220 13% 91%;
 
-    --card: 222 40% 14%;
-    --card-foreground: 210 40% 96%;
+    --card: 220 16% 13%;
+    --card-foreground: 220 13% 91%;
 
-    --popover: 222 40% 14%;
-    --popover-foreground: 210 40% 96%;
+    --popover: 220 16% 13%;
+    --popover-foreground: 220 13% 91%;
 
-    /* Electric Purple - Primary */
-    --primary: 270 95% 65%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Professional Blue */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary */
-    --secondary: 222 35% 18%;
-    --secondary-foreground: 210 40% 90%;
+    --secondary: 220 14% 18%;
+    --secondary-foreground: 220 13% 85%;
 
     /* Muted */
-    --muted: 222 30% 16%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 220 14% 16%;
+    --muted-foreground: 220 9% 55%;
 
-    /* Cyber Pink - Accent */
-    --accent: 330 90% 65%;
-    --accent-foreground: 210 40% 98%;
-
-    /* Holographic Blue */
-    --holo: 195 100% 60%;
-    --holo-foreground: 222 47% 11%;
+    /* Accent */
+    --accent: 220 14% 22%;
+    --accent-foreground: 220 13% 91%;
 
     /* Status Colors */
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 155 80% 50%;
-    --success-foreground: 222 47% 11%;
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 45 100% 55%;
-    --warning-foreground: 222 47% 11%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 0%;
 
-    /* XP/Gold */
-    --gold: 45 100% 60%;
-    --gold-foreground: 222 47% 11%;
+    --border: 220 13% 20%;
+    --input: 220 13% 18%;
+    --ring: 217 91% 60%;
 
-    --border: 222 30% 22%;
-    --input: 222 30% 20%;
-    --ring: 270 95% 65%;
+    --radius: 0.5rem;
 
-    --radius: 0.75rem;
+    --font-sans: 'Inter', system-ui, sans-serif;
 
-    --font-mono: 'JetBrains Mono', monospace;
-    --font-display: 'Quicksand', sans-serif;
-    --font-sans: 'Quicksand', sans-serif;
-
-    /* Sidebar/Rail */
-    --sidebar-background: 222 45% 8%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 270 95% 65%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 222 35% 18%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 222 30% 18%;
-    --sidebar-ring: 270 95% 65%;
-
-    /* Glow effects */
-    --glow-primary: 270 95% 65%;
-    --glow-accent: 330 90% 65%;
-    --glow-holo: 195 100% 60%;
+    /* Sidebar */
+    --sidebar-background: 220 16% 8%;
+    --sidebar-foreground: 220 13% 91%;
+    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 18%;
+    --sidebar-accent-foreground: 220 13% 91%;
+    --sidebar-border: 220 13% 16%;
+    --sidebar-ring: 217 91% 60%;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 96%;
+    --background: 220 16% 10%;
+    --foreground: 220 13% 91%;
   }
 }
 
@@ -90,28 +75,23 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
-
-  .font-mono {
-    font-family: var(--font-mono);
-  }
 }
 
 @layer components {
   .status-indicator {
-    @apply w-2 h-2 rounded-full animate-pulse;
+    @apply w-2 h-2 rounded-full;
   }
 
   .status-idle {
     @apply bg-muted-foreground;
-    animation: none;
   }
 
   .status-thinking {
-    @apply bg-primary;
+    @apply bg-primary animate-pulse;
   }
 
   .status-executing {
-    @apply bg-success;
+    @apply bg-success animate-pulse;
   }
 
   .status-waiting {
@@ -122,85 +102,9 @@
     @apply bg-destructive;
   }
 
-  /* Glassmorphism cards */
+  /* Card styling */
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-border/30 rounded-xl;
-    background: linear-gradient(
-      135deg,
-      hsl(var(--card) / 0.7) 0%,
-      hsl(var(--card) / 0.4) 100%
-    );
-  }
-
-  /* Glow effects */
-  .glow-primary {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.4),
-                0 0 60px hsl(var(--primary) / 0.2);
-  }
-
-  .glow-accent {
-    box-shadow: 0 0 30px hsl(var(--accent) / 0.4),
-                0 0 60px hsl(var(--accent) / 0.2);
-  }
-
-  .glow-holo {
-    box-shadow: 0 0 30px hsl(var(--holo) / 0.4),
-                0 0 60px hsl(var(--holo) / 0.2);
-  }
-
-  .glow-success {
-    box-shadow: 0 0 20px hsl(var(--success) / 0.5);
-  }
-
-  .glow-destructive {
-    box-shadow: 0 0 20px hsl(var(--destructive) / 0.5);
-  }
-
-  .glow-gold {
-    box-shadow: 0 0 20px hsl(var(--gold) / 0.5);
-  }
-
-  /* Agent avatar selected state */
-  .agent-avatar-selected {
-    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.6),
-                0 0 40px hsl(var(--primary) / 0.3);
-  }
-
-  /* Corner gradient glow */
-  .corner-glow {
-    position: relative;
-  }
-  
-  .corner-glow::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  
-  .corner-glow::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, hsl(var(--accent) / 0.1) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Neon text */
-  .neon-text {
-    text-shadow: 0 0 10px currentColor,
-                 0 0 20px currentColor,
-                 0 0 40px currentColor;
+    @apply bg-card border border-border rounded-lg;
   }
 }
 
@@ -222,33 +126,5 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: hsl(var(--muted));
     border-radius: 3px;
-  }
-
-  /* Confetti animation */
-  @keyframes confetti-fall {
-    0% {
-      opacity: 1;
-      transform: translateY(0) rotate(0deg) scale(1);
-    }
-    100% {
-      opacity: 0;
-      transform: translateY(-50px) rotate(720deg) scale(0);
-    }
-  }
-
-  /* Float up animation for rewards */
-  @keyframes float-up {
-    0% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    100% {
-      opacity: 0;
-      transform: translateY(-30px);
-    }
-  }
-
-  .animate-float-up {
-    animation: float-up 1s ease-out forwards;
   }
 }
