@@ -181,20 +181,34 @@ export function AuthPage({ onLogin }: AuthPageProps) {
             </Button>
           </form>
 
-          {mode === 'login' && (
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              <button className="text-primary hover:underline">
-                Forgot password?
-              </button>
-            </p>
-          )}
-        </div>
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-card px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
 
-        {/* Demo Account Info */}
-        <div className="mt-6 p-4 rounded-xl bg-secondary/30 border border-border">
-          <p className="text-xs text-muted-foreground text-center">
-            <span className="text-primary font-medium">Demo Mode:</span> Enter any email and password to continue
-          </p>
+          <Button 
+            type="button" 
+            variant="outline"
+            className="w-full gap-2" 
+            onClick={() => {
+              const mockUser: MockUser = {
+                id: 'demo-user-001',
+                email: 'commander@fleet.ai',
+                name: 'Demo Commander',
+                avatar: '🚀',
+                role: 'operator',
+                createdAt: new Date(),
+              };
+              onLogin(mockUser);
+            }}
+          >
+            <Zap className="w-4 h-4" />
+            Quick Demo Login
+          </Button>
         </div>
       </div>
     </div>
