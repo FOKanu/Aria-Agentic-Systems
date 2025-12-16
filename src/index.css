@@ -2,62 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 220 20% 8%;
-    --foreground: 210 20% 92%;
+    /* Cozy Cyberpunk Theme */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 96%;
 
-    --card: 220 18% 12%;
-    --card-foreground: 210 20% 92%;
+    --card: 222 40% 14%;
+    --card-foreground: 210 40% 96%;
 
-    --popover: 220 18% 12%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 222 40% 14%;
+    --popover-foreground: 210 40% 96%;
 
-    --primary: 190 90% 50%;
-    --primary-foreground: 220 20% 8%;
+    /* Electric Purple - Primary */
+    --primary: 270 95% 65%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 15% 18%;
-    --secondary-foreground: 210 20% 80%;
+    /* Secondary */
+    --secondary: 222 35% 18%;
+    --secondary-foreground: 210 40% 90%;
 
-    --muted: 220 15% 16%;
-    --muted-foreground: 215 15% 55%;
+    /* Muted */
+    --muted: 222 30% 16%;
+    --muted-foreground: 215 20% 55%;
 
-    --accent: 190 80% 45%;
-    --accent-foreground: 220 20% 8%;
+    /* Cyber Pink - Accent */
+    --accent: 330 90% 65%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 72% 51%;
+    /* Holographic Blue */
+    --holo: 195 100% 60%;
+    --holo-foreground: 222 47% 11%;
+
+    /* Status Colors */
+    --destructive: 0 85% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --success: 142 70% 45%;
-    --success-foreground: 220 20% 8%;
+    --success: 155 80% 50%;
+    --success-foreground: 222 47% 11%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 20% 8%;
+    --warning: 45 100% 55%;
+    --warning-foreground: 222 47% 11%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 190 90% 50%;
+    /* XP/Gold */
+    --gold: 45 100% 60%;
+    --gold-foreground: 222 47% 11%;
 
-    --radius: 0.5rem;
+    --border: 222 30% 22%;
+    --input: 222 30% 20%;
+    --ring: 270 95% 65%;
+
+    --radius: 0.75rem;
 
     --font-mono: 'JetBrains Mono', monospace;
-    --font-sans: 'Inter', sans-serif;
+    --font-display: 'Quicksand', sans-serif;
+    --font-sans: 'Quicksand', sans-serif;
 
-    --sidebar-background: 220 18% 10%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 190 90% 50%;
-    --sidebar-primary-foreground: 220 20% 8%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 220 15% 20%;
-    --sidebar-ring: 190 90% 50%;
+    /* Sidebar/Rail */
+    --sidebar-background: 222 45% 8%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 270 95% 65%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 222 35% 18%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 222 30% 18%;
+    --sidebar-ring: 270 95% 65%;
+
+    /* Glow effects */
+    --glow-primary: 270 95% 65%;
+    --glow-accent: 330 90% 65%;
+    --glow-holo: 195 100% 60%;
   }
 
   .dark {
-    --background: 220 20% 8%;
-    --foreground: 210 20% 92%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 96%;
   }
 }
 
@@ -101,16 +122,85 @@
     @apply bg-destructive;
   }
 
+  /* Glassmorphism cards */
   .glass-card {
-    @apply bg-card/80 backdrop-blur-sm border border-border/50;
+    @apply bg-card/60 backdrop-blur-xl border border-border/30 rounded-xl;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.7) 0%,
+      hsl(var(--card) / 0.4) 100%
+    );
   }
 
+  /* Glow effects */
   .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.4),
+                0 0 60px hsl(var(--primary) / 0.2);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 30px hsl(var(--accent) / 0.4),
+                0 0 60px hsl(var(--accent) / 0.2);
+  }
+
+  .glow-holo {
+    box-shadow: 0 0 30px hsl(var(--holo) / 0.4),
+                0 0 60px hsl(var(--holo) / 0.2);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px hsl(var(--success) / 0.5);
   }
 
   .glow-destructive {
-    box-shadow: 0 0 20px hsl(var(--destructive) / 0.4);
+    box-shadow: 0 0 20px hsl(var(--destructive) / 0.5);
+  }
+
+  .glow-gold {
+    box-shadow: 0 0 20px hsl(var(--gold) / 0.5);
+  }
+
+  /* Agent avatar selected state */
+  .agent-avatar-selected {
+    @apply ring-2 ring-primary ring-offset-2 ring-offset-background;
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.6),
+                0 0 40px hsl(var(--primary) / 0.3);
+  }
+
+  /* Corner gradient glow */
+  .corner-glow {
+    position: relative;
+  }
+  
+  .corner-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  .corner-glow::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, hsl(var(--accent) / 0.1) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Neon text */
+  .neon-text {
+    text-shadow: 0 0 10px currentColor,
+                 0 0 20px currentColor,
+                 0 0 40px currentColor;
   }
 }
 
