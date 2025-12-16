@@ -8,6 +8,7 @@ import { TasksPage } from '@/pages/TasksPage';
 import { VisionPage } from '@/pages/VisionPage';
 import { MemoryPage } from '@/pages/MemoryPage';
 import { SettingsPage } from '@/pages/SettingsPage';
+import { FleetCommandPage } from '@/pages/FleetCommandPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { mockAgents, globalCredits, fleetStatus } from '@/data/agentsData';
@@ -69,10 +70,7 @@ const Index = () => {
   };
 
   const handleOpenFleetCommand = () => {
-    toast({
-      title: "Fleet Command",
-      description: "Fleet Command view coming in Phase 4!",
-    });
+    setActiveTab('fleet');
   };
 
   const handleCreateAgent = () => {
@@ -80,6 +78,11 @@ const Index = () => {
       title: "The Hangar",
       description: "Agent creation wizard coming in Phase 6!",
     });
+  };
+
+  const handleSelectAgentFromFleet = (agentId: string) => {
+    setSelectedAgentId(agentId);
+    setActiveTab('dashboard');
   };
 
   const renderPage = () => {
@@ -108,6 +111,8 @@ const Index = () => {
             onAutonomyChange={setAutonomyLevel}
           />
         );
+      case 'fleet':
+        return <FleetCommandPage onSelectAgent={handleSelectAgentFromFleet} />;
       default:
         return null;
     }
