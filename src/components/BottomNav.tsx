@@ -15,7 +15,7 @@ const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'tasks', label: 'Missions', icon: ListTodo },
   { id: 'vision', label: 'Vision', icon: Eye },
   { id: 'memory', label: 'Memory', icon: Brain },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'settings', label: 'Skills', icon: Settings },
 ];
 
 export function BottomNav({ activeTab, onTabChange, isDesktop }: BottomNavProps) {

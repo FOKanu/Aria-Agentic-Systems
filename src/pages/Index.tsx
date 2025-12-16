@@ -9,21 +9,26 @@ import { VisionPage } from '@/pages/VisionPage';
 import { MemoryPage } from '@/pages/MemoryPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { FleetCommandPage } from '@/pages/FleetCommandPage';
+import { SkillTreePage } from '@/pages/SkillTreePage';
+import { AgentCreationWizard } from '@/components/AgentCreationWizard';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { mockAgents, globalCredits, fleetStatus } from '@/data/agentsData';
+import { Agent } from '@/components/AgentRail';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [agents, setAgents] = useState<Agent[]>(mockAgents);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(mockAgents[0]?.id || null);
   const [agentState, setAgentState] = useState<AgentState>('executing');
   const [autonomyLevel, setAutonomyLevel] = useState<AutonomyLevel>('assisted');
   const [isPaused, setIsPaused] = useState(false);
   const [taskTime, setTaskTime] = useState(720);
+  const [showCreationWizard, setShowCreationWizard] = useState(false);
   const { toast } = useToast();
 
-  const selectedAgent = mockAgents.find(a => a.id === selectedAgentId);
-  const activeAgentsCount = mockAgents.filter(a => a.status !== 'idle' && a.status !== 'stunned').length;
+  const selectedAgent = agents.find(a => a.id === selectedAgentId);
+  const activeAgentsCount = agents.filter(a => a.status !== 'idle' && a.status !== 'stunned').length;
 
   useEffect(() => {
     if (!isPaused && agentState === 'executing') {
@@ -74,10 +79,21 @@ const Index = () => {
   };
 
   const handleCreateAgent = () => {
-    toast({
-      title: "The Hangar",
-      description: "Agent creation wizard coming in Phase 6!",
-    });
+    setShowCreationWizard(true);
+  };
+
+  const handleAgentCreated = (newAgentData: { name: string; avatar: string; class: 'assistant' | 'coder' | 'researcher'; stats: { accuracy: number; speed: number; creativity: number } }) => {
+    const newAgent: Agent = {
+      id: `agent-${Date.now()}`,
+      name: newAgentData.name,
+      avatar: newAgentData.avatar,
+      class: newAgentData.class,
+      status: 'idle',
+      level: 1,
+    };
+    setAgents(prev => [...prev, newAgent]);
+    setSelectedAgentId(newAgent.id);
+    setActiveTab('dashboard');
   };
 
   const handleSelectAgentFromFleet = (agentId: string) => {
@@ -105,12 +121,7 @@ const Index = () => {
       case 'memory':
         return <MemoryPage />;
       case 'settings':
-        return (
-          <SettingsPage
-            autonomyLevel={autonomyLevel}
-            onAutonomyChange={setAutonomyLevel}
-          />
-        );
+        return <SkillTreePage />;
       case 'fleet':
         return <FleetCommandPage onSelectAgent={handleSelectAgentFromFleet} />;
       default:
@@ -123,7 +134,7 @@ const Index = () => {
       {/* Left Agent Rail - Desktop */}
       <div className="hidden lg:block">
         <AgentRail
-          agents={mockAgents}
+          agents={agents}
           selectedAgentId={selectedAgentId}
           onSelectAgent={setSelectedAgentId}
           onOpenFleetCommand={handleOpenFleetCommand}
@@ -137,7 +148,7 @@ const Index = () => {
           credits={globalCredits}
           fleetStatus={fleetStatus}
           activeAgents={activeAgentsCount}
-          totalAgents={mockAgents.length}
+          totalAgents={agents.length}
         />
       </div>
 
@@ -165,6 +176,13 @@ const Index = () => {
       <div className="hidden lg:block">
         <BottomNav activeTab={activeTab} onTabChange={setActiveTab} isDesktop />
       </div>
+
+      {/* Agent Creation Wizard */}
+      <AgentCreationWizard
+        open={showCreationWizard}
+        onClose={() => setShowCreationWizard(false)}
+        onComplete={handleAgentCreated}
+      />
     </div>
   );
 };
