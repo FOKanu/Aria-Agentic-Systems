@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark, GripVertical } from 'lucide-react';
+import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark, GripVertical, Monitor, Activity, GitBranch, Wrench, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -64,9 +64,18 @@ const navItems = [
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
+// Monitoring items - dedicated section for monitoring features
+const monitoringItems = [
+  { id: 'monitoring', label: 'Monitoring Hub', icon: Monitor },
+  { id: 'monitoring-vision', label: 'Vision', icon: Eye },
+  { id: 'monitoring-activity', label: 'Activity Stream', icon: Activity },
+  { id: 'monitoring-trace', label: 'Execution Trace', icon: GitBranch },
+  { id: 'monitoring-tools', label: 'Tool Monitor', icon: Wrench },
+  { id: 'monitoring-alerts', label: 'Alerts & Controls', icon: AlertTriangle },
+];
+
 // Agent capabilities/task types
 const capabilityItems = [
-  { id: 'vision', label: 'Vision Mode', icon: Eye },
   { id: 'calendar', label: 'Calendar', icon: Calendar },
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
   { id: 'email', label: 'Email', icon: Mail },
@@ -184,6 +193,21 @@ export function AgentRail({
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">Navigation</DropdownMenuLabel>
             {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <DropdownMenuItem
+                  key={item.id}
+                  onClick={() => onNavigate?.(item.id)}
+                  className="flex items-center gap-3 cursor-pointer"
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Monitoring</DropdownMenuLabel>
+            {monitoringItems.map((item) => {
               const Icon = item.icon;
               return (
                 <DropdownMenuItem

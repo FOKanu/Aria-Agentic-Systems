@@ -8,7 +8,7 @@ import { OnboardingDialog } from '@/components/OnboardingDialog';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
-import { MonitoringPage } from '@/pages/MonitoringPage';
+import { MonitoringPage, MonitoringTab } from '@/pages/MonitoringPage';
 import { MemoryPage } from '@/pages/MemoryPage';
 import { AgentsPage } from '@/pages/AgentsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -31,6 +31,7 @@ const Index = () => {
 
   // App state
   const [activeTab, setActiveTab] = useState<TabId>('home');
+  const [monitoringTab, setMonitoringTab] = useState<MonitoringTab>('vision');
   const [viewMode, setViewMode] = useState<ViewMode>('main');
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
   const [visibleAgentIds, setVisibleAgentIds] = useState<string[]>(initialAgents.map(a => a.id));
@@ -262,8 +263,25 @@ const Index = () => {
     setViewMode('main');
   };
 
-  const handleTabChange = (tab: TabId) => {
-    setActiveTab(tab);
+  const handleTabChange = (tab: TabId | string) => {
+    // Handle monitoring sub-tabs
+    if (tab.startsWith('monitoring-')) {
+      const subTab = tab.replace('monitoring-', '') as MonitoringTab;
+      setActiveTab('monitoring');
+      setMonitoringTab(subTab);
+      setViewMode('main');
+      return;
+    }
+    
+    // Handle vision separately (legacy from Agent Capabilities)
+    if (tab === 'vision') {
+      setActiveTab('monitoring');
+      setMonitoringTab('vision');
+      setViewMode('main');
+      return;
+    }
+    
+    setActiveTab(tab as TabId);
     setViewMode('main');
   };
 
@@ -343,7 +361,7 @@ const Index = () => {
       case 'tasks':
         return <TasksPage />;
       case 'monitoring':
-        return <MonitoringPage />;
+        return <MonitoringPage initialTab={monitoringTab} />;
       case 'memory':
         return <MemoryPage />;
       case 'settings':

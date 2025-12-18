@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, Activity, GitBranch, Wrench, AlertTriangle, Monitor } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,7 +8,11 @@ import { ExecutionTracePage } from './monitoring/ExecutionTracePage';
 import { ToolMonitorPage } from './monitoring/ToolMonitorPage';
 import { AlertsControlsPage } from './monitoring/AlertsControlsPage';
 
-type MonitoringTab = 'vision' | 'activity' | 'trace' | 'tools' | 'alerts';
+export type MonitoringTab = 'vision' | 'activity' | 'trace' | 'tools' | 'alerts';
+
+interface MonitoringPageProps {
+  initialTab?: MonitoringTab;
+}
 
 const monitoringTabs: { id: MonitoringTab; label: string; icon: React.ElementType; description: string }[] = [
   { id: 'vision', label: 'Vision', icon: Eye, description: 'Live screen surveillance' },
@@ -18,8 +22,12 @@ const monitoringTabs: { id: MonitoringTab; label: string; icon: React.ElementTyp
   { id: 'alerts', label: 'Alerts', icon: AlertTriangle, description: 'Alerts & controls' },
 ];
 
-export function MonitoringPage() {
-  const [activeTab, setActiveTab] = useState<MonitoringTab>('vision');
+export function MonitoringPage({ initialTab = 'vision' }: MonitoringPageProps) {
+  const [activeTab, setActiveTab] = useState<MonitoringTab>(initialTab);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   return (
     <div className="space-y-4 animate-slide-up">
