@@ -26,6 +26,7 @@ const tabLabels: Record<TabId, string> = {
   memory: 'Memory',
   agents: 'Fleet Command',
   settings: 'Settings',
+  analytics: 'Analytics',
 };
 
 export function AppBreadcrumb({
