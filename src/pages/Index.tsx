@@ -155,6 +155,11 @@ const Index = () => {
     setViewMode('details');
   };
 
+  const handleSelectAgentAndViewDetails = (agentId: string) => {
+    setSelectedAgentId(agentId);
+    setViewMode('details');
+  };
+
   const handleViewProfile = () => {
     setViewMode('profile');
   };
@@ -270,7 +275,7 @@ const Index = () => {
           <AgentRail
             agents={agents}
             selectedAgentId={selectedAgentId}
-            onSelectAgent={setSelectedAgentId}
+            onSelectAgent={handleSelectAgentAndViewDetails}
             onOpenFleetCommand={handleOpenFleetCommand}
             onCreateAgent={handleCreateAgent}
             onNavigate={(tab) => handleTabChange(tab as TabId)}
@@ -296,7 +301,7 @@ const Index = () => {
         <AgentRail
           agents={agents}
           selectedAgentId={selectedAgentId}
-          onSelectAgent={setSelectedAgentId}
+          onSelectAgent={handleSelectAgentAndViewDetails}
           onOpenFleetCommand={handleOpenFleetCommand}
           onCreateAgent={handleCreateAgent}
           onNavigate={(tab) => handleTabChange(tab as TabId)}
