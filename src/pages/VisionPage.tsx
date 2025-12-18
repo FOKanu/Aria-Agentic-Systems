@@ -1,21 +1,56 @@
 import { useState } from 'react';
-import { Eye, Type, Box, MousePointer, Target, Monitor, Cpu, Activity } from 'lucide-react';
+import { Eye, Type, Box, MousePointer, Target, Monitor, Cpu, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
 import { mockVisionData } from '@/data/mockData';
+import { mockAgents } from '@/data/agentsData';
 import { cn } from '@/lib/utils';
 import { MatrixRain } from '@/components/MatrixRain';
 import { GazeTracker } from '@/components/GazeTracker';
+import { Button } from '@/components/ui/button';
+
+// Only show agents that are actively working
+const activeAgents = mockAgents.filter(a => a.status === 'executing' || a.status === 'thinking');
 
 export function VisionPage() {
+  const [currentAgentIndex, setCurrentAgentIndex] = useState(0);
   const [showOCR, setShowOCR] = useState(true);
   const [showElements, setShowElements] = useState(true);
   const [showCursor, setShowCursor] = useState(true);
   const [showGaze, setShowGaze] = useState(true);
   const [isProcessing, setIsProcessing] = useState(true);
 
+  const currentAgent = activeAgents[currentAgentIndex] || mockAgents[0];
+  
+  const handlePrevAgent = () => {
+    setCurrentAgentIndex((prev) => (prev === 0 ? activeAgents.length - 1 : prev - 1));
+  };
+
+  const handleNextAgent = () => {
+    setCurrentAgentIndex((prev) => (prev === activeAgents.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="space-y-4 animate-slide-up">
+      {/* Header with navigation */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-display font-bold">Vision Stream</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-display font-bold">Vision Stream</h2>
+          
+          {/* Agent Navigation */}
+          {activeAgents.length > 1 && (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={handlePrevAgent} className="h-8 w-8">
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                {currentAgentIndex + 1} / {activeAgents.length}
+              </span>
+              <Button variant="ghost" size="icon" onClick={handleNextAgent} className="h-8 w-8">
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+        
         <div className="flex items-center gap-2">
           <div className={cn(
             "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs",
@@ -25,6 +60,23 @@ export function VisionPage() {
             <span>{isProcessing ? 'Processing' : 'Idle'}</span>
           </div>
         </div>
+      </div>
+
+      {/* Current Agent Display */}
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/50 border border-border">
+        <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center text-xl border border-border">
+          {currentAgent.avatar}
+        </div>
+        <div className="flex-1">
+          <p className="font-medium">{currentAgent.name}</p>
+          <p className="text-xs text-muted-foreground capitalize">
+            {currentAgent.type} • {currentAgent.status}
+          </p>
+        </div>
+        <div className={cn(
+          "w-3 h-3 rounded-full",
+          currentAgent.status === 'executing' ? "bg-success animate-pulse" : "bg-primary"
+        )} />
       </div>
 
       {/* Monitor Bezel Frame */}
