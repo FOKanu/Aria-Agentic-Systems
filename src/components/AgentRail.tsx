@@ -1,4 +1,5 @@
-import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -8,6 +9,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 export interface Agent {
   id: string;
@@ -19,11 +26,14 @@ export interface Agent {
 
 interface AgentRailProps {
   agents: Agent[];
+  visibleAgentIds: string[];
   selectedAgentId: string | null;
   onSelectAgent: (agentId: string) => void;
   onOpenFleetCommand: () => void;
   onCreateAgent: () => void;
   onNavigate?: (tab: string) => void;
+  onRemoveFromPanel?: (agentId: string) => void;
+  onAddToPanel?: (agentId: string) => void;
 }
 
 const statusColors: Record<Agent['status'], string> = {
@@ -54,12 +64,20 @@ const menuItems = [
 
 export function AgentRail({
   agents,
+  visibleAgentIds,
   selectedAgentId,
   onSelectAgent,
   onOpenFleetCommand,
   onCreateAgent,
   onNavigate,
+  onRemoveFromPanel,
+  onAddToPanel,
 }: AgentRailProps) {
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  
+  const visibleAgents = agents.filter(a => visibleAgentIds.includes(a.id));
+  const hiddenAgents = agents.filter(a => !visibleAgentIds.includes(a.id));
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="fixed left-0 top-0 h-full w-16 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 z-50">
@@ -77,7 +95,7 @@ export function AgentRail({
             align="start" 
             className="w-48 bg-popover border border-border z-[100]"
           >
-            {menuItems.map((item, index) => {
+            {menuItems.map((item) => {
               const Icon = item.icon;
               return (
                 <DropdownMenuItem
@@ -97,55 +115,117 @@ export function AgentRail({
 
         {/* Agent Avatars */}
         <div className="flex-1 flex flex-col items-center gap-2 overflow-y-auto scrollbar-thin">
-          {agents.map((agent) => (
-            <Tooltip key={agent.id}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => onSelectAgent(agent.id)}
-                  className={cn(
-                    "relative w-10 h-10 rounded-lg transition-all",
-                    "bg-secondary border border-transparent",
-                    "hover:border-primary/50",
-                    selectedAgentId === agent.id && "border-primary bg-primary/10"
-                  )}
-                >
-                  <div className="w-full h-full rounded-lg flex items-center justify-center text-lg">
-                    {agent.avatar || '🤖'}
-                  </div>
+          {visibleAgents.map((agent) => (
+            <ContextMenu key={agent.id}>
+              <ContextMenuTrigger>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => onSelectAgent(agent.id)}
+                      className={cn(
+                        "relative w-10 h-10 rounded-lg transition-all group",
+                        "bg-secondary border border-transparent",
+                        "hover:border-primary/50",
+                        selectedAgentId === agent.id && "border-primary bg-primary/10"
+                      )}
+                    >
+                      <div className="w-full h-full rounded-lg flex items-center justify-center text-lg">
+                        {agent.avatar || '🤖'}
+                      </div>
 
-                  {/* Status Indicator */}
-                  <div
-                    className={cn(
-                      "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-sidebar",
-                      statusColors[agent.status]
-                    )}
-                  />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p className="font-medium">{agent.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {typeLabels[agent.type]}
-                </p>
-              </TooltipContent>
-            </Tooltip>
+                      {/* Status Indicator */}
+                      <div
+                        className={cn(
+                          "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-sidebar",
+                          statusColors[agent.status]
+                        )}
+                      />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p className="font-medium">{agent.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {typeLabels[agent.type]}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Right-click for options
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="w-48 bg-popover border border-border z-[100]">
+                <ContextMenuItem 
+                  onClick={() => onSelectAgent(agent.id)}
+                  className="cursor-pointer"
+                >
+                  View Details
+                </ContextMenuItem>
+                <ContextMenuItem 
+                  onClick={() => onRemoveFromPanel?.(agent.id)}
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Remove from Panel
+                </ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
           ))}
 
           {/* Add Agent Button */}
-          {agents.length < 10 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
+          {visibleAgents.length < 10 && (
+            <DropdownMenu open={showAddMenu} onOpenChange={setShowAddMenu}>
+              <DropdownMenuTrigger asChild>
                 <button
-                  onClick={onCreateAgent}
                   className="w-10 h-10 rounded-lg border border-dashed border-border hover:border-primary/50 flex items-center justify-center transition-colors"
                 >
                   <Plus className="w-4 h-4 text-muted-foreground" />
                 </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p className="font-medium">Add Agent</p>
-              </TooltipContent>
-            </Tooltip>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                side="right" 
+                align="start"
+                className="w-56 bg-popover border border-border z-[100]"
+              >
+                {hiddenAgents.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground font-medium">
+                      Add to Panel
+                    </div>
+                    {hiddenAgents.map((agent) => (
+                      <DropdownMenuItem
+                        key={agent.id}
+                        onClick={() => {
+                          onAddToPanel?.(agent.id);
+                          setShowAddMenu(false);
+                        }}
+                        className="flex items-center gap-3 cursor-pointer"
+                      >
+                        <div className="w-6 h-6 rounded bg-secondary flex items-center justify-center text-sm">
+                          {agent.avatar || '🤖'}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm">{agent.name}</p>
+                          <p className="text-xs text-muted-foreground">{typeLabels[agent.type]}</p>
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem
+                  onClick={() => {
+                    onCreateAgent();
+                    setShowAddMenu(false);
+                  }}
+                  className="flex items-center gap-3 cursor-pointer"
+                >
+                  <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center">
+                    <Plus className="w-4 h-4 text-primary" />
+                  </div>
+                  <span>Create New Agent</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
 

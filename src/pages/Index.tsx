@@ -29,6 +29,7 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState<TabId>('home');
   const [viewMode, setViewMode] = useState<ViewMode>('main');
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
+  const [visibleAgentIds, setVisibleAgentIds] = useState<string[]>(initialAgents.map(a => a.id));
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(initialAgents[0]?.id || null);
   const [agentState, setAgentState] = useState<AgentState>('executing');
   const [autonomyLevel, setAutonomyLevel] = useState<AutonomyLevel>('assisted');
@@ -144,10 +145,29 @@ const Index = () => {
       status: 'idle',
     };
     setAgents(prev => [...prev, newAgent]);
+    setVisibleAgentIds(prev => [...prev, newAgent.id]);
     setSelectedAgentId(newAgent.id);
     toast({
       title: "Agent Created",
       description: `${newAgent.name} has been added to your fleet.`,
+    });
+  };
+
+  const handleRemoveFromPanel = (agentId: string) => {
+    setVisibleAgentIds(prev => prev.filter(id => id !== agentId));
+    const agent = agents.find(a => a.id === agentId);
+    toast({
+      title: "Agent Hidden",
+      description: `${agent?.name || 'Agent'} removed from panel. Task continues running.`,
+    });
+  };
+
+  const handleAddToPanel = (agentId: string) => {
+    setVisibleAgentIds(prev => [...prev, agentId]);
+    const agent = agents.find(a => a.id === agentId);
+    toast({
+      title: "Agent Added",
+      description: `${agent?.name || 'Agent'} added to panel.`,
     });
   };
 
@@ -274,11 +294,14 @@ const Index = () => {
         <div className="hidden lg:block">
           <AgentRail
             agents={agents}
+            visibleAgentIds={visibleAgentIds}
             selectedAgentId={selectedAgentId}
             onSelectAgent={handleSelectAgentAndViewDetails}
             onOpenFleetCommand={handleOpenFleetCommand}
             onCreateAgent={handleCreateAgent}
             onNavigate={(tab) => handleTabChange(tab as TabId)}
+            onRemoveFromPanel={handleRemoveFromPanel}
+            onAddToPanel={handleAddToPanel}
           />
         </div>
 
@@ -300,11 +323,14 @@ const Index = () => {
       <div className="hidden lg:block">
         <AgentRail
           agents={agents}
+          visibleAgentIds={visibleAgentIds}
           selectedAgentId={selectedAgentId}
           onSelectAgent={handleSelectAgentAndViewDetails}
           onOpenFleetCommand={handleOpenFleetCommand}
           onCreateAgent={handleCreateAgent}
           onNavigate={(tab) => handleTabChange(tab as TabId)}
+          onRemoveFromPanel={handleRemoveFromPanel}
+          onAddToPanel={handleAddToPanel}
         />
       </div>
 
