@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Mic, MicOff, X, Loader2, Paperclip, FileText, Image, File } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ChatAgent, ChatAttachment } from '@/types/chat';
 import { useToast } from '@/hooks/use-toast';
+import { useAgentMention } from '@/hooks/useAgentMention';
+import { AgentMentionPopover } from './AgentMentionPopover';
 
 const ACCEPTED_FILE_TYPES = {
   // Spreadsheets
@@ -42,7 +44,7 @@ const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_FILES = 10;
 
 interface ChatInputBarProps {
-  onSendMessage: (message: string, attachments?: ChatAttachment[]) => void;
+  onSendMessage: (message: string, attachments?: ChatAttachment[], mentionedAgentIds?: string[]) => void;
   onStartRecording: () => void;
   onStopRecording: () => void;
   isRecording: boolean;
@@ -50,6 +52,7 @@ interface ChatInputBarProps {
   transcriptionPreview: string;
   selectedAgents: ChatAgent[];
   onRemoveAgent: (agentId: string) => void;
+  onAddAgentFromMention?: (agentId: string) => void;
   disabled?: boolean;
 }
 
@@ -62,13 +65,17 @@ export function ChatInputBar({
   transcriptionPreview,
   selectedAgents,
   onRemoveAgent,
+  onAddAgentFromMention,
   disabled,
 }: ChatInputBarProps) {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  const { mentionState, handleInputChange, insertMention, parseMentions, closeMention } = useAgentMention();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -78,19 +85,71 @@ export function ChatInputBar({
     }
   }, [message]);
 
+  // Reset selected index when suggestions change
+  useEffect(() => {
+    setSelectedMentionIndex(0);
+  }, [mentionState.suggestions]);
+
+  const handleSelectMention = useCallback((agent: ChatAgent) => {
+    const newMessage = insertMention(agent, message);
+    setMessage(newMessage);
+    // Optionally add the agent to selected agents
+    if (onAddAgentFromMention && !selectedAgents.find(a => a.id === agent.id)) {
+      onAddAgentFromMention(agent.id);
+    }
+    textareaRef.current?.focus();
+  }, [insertMention, message, onAddAgentFromMention, selectedAgents]);
+
   const handleSend = () => {
     if ((message.trim() || attachments.length > 0) && !disabled) {
-      onSendMessage(message.trim(), attachments.length > 0 ? attachments : undefined);
+      const mentions = parseMentions(message);
+      const mentionedIds = mentions.map(m => m.id);
+      onSendMessage(message.trim(), attachments.length > 0 ? attachments : undefined, mentionedIds.length > 0 ? mentionedIds : undefined);
       setMessage('');
       setAttachments([]);
+      closeMention();
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (mentionState.isActive && mentionState.suggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedMentionIndex(prev => 
+          prev < mentionState.suggestions.length - 1 ? prev + 1 : 0
+        );
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedMentionIndex(prev => 
+          prev > 0 ? prev - 1 : mentionState.suggestions.length - 1
+        );
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        handleSelectMention(mentionState.suggestions[selectedMentionIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMention();
+        return;
+      }
+    }
+    
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    const cursorPosition = e.target.selectionStart || 0;
+    setMessage(value);
+    handleInputChange(value, cursorPosition);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -291,12 +350,22 @@ export function ChatInputBar({
             </Button>
 
             <div className="flex-1 relative">
+              {/* @Mention Popover */}
+              {mentionState.isActive && mentionState.suggestions.length > 0 && (
+                <AgentMentionPopover
+                  suggestions={mentionState.suggestions}
+                  selectedIndex={selectedMentionIndex}
+                  onSelect={handleSelectMention}
+                  position="above"
+                />
+              )}
+              
               <Textarea
                 ref={textareaRef}
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={handleChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask a question, assign a task, or attach files..."
+                placeholder="Type @ to mention an agent, or ask a question..."
                 className="min-h-[44px] max-h-[120px] resize-none pr-12 rounded-2xl"
                 disabled={disabled}
                 rows={1}
