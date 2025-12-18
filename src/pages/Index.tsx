@@ -3,11 +3,12 @@ import { StatusBar } from '@/components/StatusBar';
 import { BottomNav, TabId } from '@/components/BottomNav';
 import { AgentRail, Agent } from '@/components/AgentRail';
 import { TopBar } from '@/components/TopBar';
+import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
 import { VisionPage } from '@/pages/VisionPage';
 import { MemoryPage } from '@/pages/MemoryPage';
-import { FleetCommandPage } from '@/pages/FleetCommandPage';
+import { AgentsPage } from '@/pages/AgentsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
 import { AgentDetailsPage } from '@/pages/AgentDetailsPage';
 import { AuthPage, MockUser } from '@/pages/AuthPage';
@@ -25,7 +26,7 @@ const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // App state
-  const [activeTab, setActiveTab] = useState<TabId>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabId>('home');
   const [viewMode, setViewMode] = useState<ViewMode>('main');
   const [agents, setAgents] = useState<Agent[]>(initialAgents);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(initialAgents[0]?.id || null);
@@ -130,7 +131,7 @@ const Index = () => {
   };
 
   const handleOpenFleetCommand = () => {
-    setActiveTab('fleet');
+    setActiveTab('agents');
     setViewMode('main');
   };
 
@@ -219,6 +220,14 @@ const Index = () => {
 
     // Main tab views
     switch (activeTab) {
+      case 'home':
+        return (
+          <HomePage
+            onNavigateToAgents={() => setActiveTab('agents')}
+            onNavigateToTasks={() => setActiveTab('tasks')}
+            onNavigateToChat={() => setActiveTab('chat')}
+          />
+        );
       case 'chat':
         return <ChatPage />;
       case 'dashboard':
@@ -245,8 +254,8 @@ const Index = () => {
         return <MemoryPage />;
       case 'settings':
         return <SettingsPage autonomyLevel={autonomyLevel} onAutonomyChange={setAutonomyLevel} />;
-      case 'fleet':
-        return <FleetCommandPage onSelectAgent={handleSelectAgentFromFleet} />;
+      case 'agents':
+        return <AgentsPage onSelectAgent={handleSelectAgentFromFleet} />;
       default:
         return null;
     }
