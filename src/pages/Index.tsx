@@ -16,6 +16,7 @@ import { AgentDetailsPage } from '@/pages/AgentDetailsPage';
 import { AuthPage, MockUser } from '@/pages/AuthPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ChatPage } from '@/pages/ChatPage';
+import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -349,6 +350,8 @@ const Index = () => {
         return <SettingsPage autonomyLevel={autonomyLevel} onAutonomyChange={setAutonomyLevel} />;
       case 'agents':
         return <AgentsPage onSelectAgent={handleSelectAgentFromFleet} />;
+      case 'analytics':
+        return <AnalyticsPage />;
       default:
         return null;
     }
