@@ -1,5 +1,15 @@
 export type ChatStatus = 'idle' | 'listening' | 'thinking' | 'executing';
 
+export interface ChatAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  file?: File;
+  previewUrl?: string;
+  url?: string; // For uploaded files
+}
+
 export interface ChatMessage {
   id: string;
   content: string;
@@ -11,6 +21,7 @@ export interface ChatMessage {
   timestamp: Date;
   confidence?: number;
   type: 'text' | 'status' | 'structured';
+  attachments?: ChatAttachment[];
   structuredData?: {
     title?: string;
     items?: string[];

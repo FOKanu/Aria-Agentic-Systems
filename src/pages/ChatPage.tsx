@@ -5,7 +5,7 @@ import { ChatInputBar } from '@/components/chat/ChatInputBar';
 import { AgentSelectorModal } from '@/components/chat/AgentSelectorModal';
 import { QuickActions } from '@/components/chat/QuickActions';
 import { ApprovalInline } from '@/components/chat/ApprovalInline';
-import { ChatMessage, ChatStatus, ChatAgent, AgentPreset, CHAT_AGENTS } from '@/types/chat';
+import { ChatMessage, ChatStatus, ChatAgent, ChatAttachment, AgentPreset, CHAT_AGENTS } from '@/types/chat';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/hooks/use-toast';
@@ -34,13 +34,24 @@ export function ChatPage() {
     ]);
   }, []);
 
-  const simulateAgentResponse = useCallback(async (userMessage: string) => {
+  const simulateAgentResponse = useCallback(async (userMessage: string, attachments?: ChatAttachment[]) => {
     setStatus('thinking');
 
     // System message showing task delegation
+    const attachmentText = attachments && attachments.length > 0 
+      ? ` with ${attachments.length} file(s)` 
+      : '';
+    
     if (selectedAgentIds.length > 1) {
       addMessage({
-        content: `Task delegated to ${selectedAgentIds.length} agents`,
+        content: `Task delegated to ${selectedAgentIds.length} agents${attachmentText}`,
+        sender: 'system',
+        type: 'status',
+        structuredData: { status: 'started' },
+      });
+    } else if (attachments && attachments.length > 0) {
+      addMessage({
+        content: `Processing ${attachments.length} attached file(s)...`,
         sender: 'system',
         type: 'status',
         structuredData: { status: 'started' },
@@ -95,14 +106,15 @@ export function ChatPage() {
     setStatus('idle');
   }, [selectedAgentIds, addMessage, tts]);
 
-  const handleSendMessage = useCallback(async (content: string) => {
+  const handleSendMessage = useCallback(async (content: string, attachments?: ChatAttachment[]) => {
     addMessage({
       content,
       sender: 'user',
       type: 'text',
+      attachments,
     });
 
-    await simulateAgentResponse(content);
+    await simulateAgentResponse(content, attachments);
   }, [addMessage, simulateAgentResponse]);
 
   const handleVoiceStart = useCallback(() => {
