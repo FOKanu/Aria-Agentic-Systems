@@ -1,6 +1,13 @@
-import { Plus, LayoutGrid } from 'lucide-react';
+import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export interface Agent {
   id: string;
@@ -16,6 +23,7 @@ interface AgentRailProps {
   onSelectAgent: (agentId: string) => void;
   onOpenFleetCommand: () => void;
   onCreateAgent: () => void;
+  onNavigate?: (tab: string) => void;
 }
 
 const statusColors: Record<Agent['status'], string> = {
@@ -33,30 +41,57 @@ const typeLabels: Record<Agent['type'], string> = {
   researcher: 'Researcher',
 };
 
+const menuItems = [
+  { id: 'home', label: 'Home', icon: Home },
+  { id: 'chat', label: 'Chat', icon: MessageSquare },
+  { id: 'agents', label: 'Agents', icon: Bot },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'tasks', label: 'Tasks', icon: ListTodo },
+  { id: 'vision', label: 'Vision', icon: Eye },
+  { id: 'memory', label: 'Memory', icon: Brain },
+  { id: 'settings', label: 'Settings', icon: Settings },
+];
+
 export function AgentRail({
   agents,
   selectedAgentId,
   onSelectAgent,
   onOpenFleetCommand,
   onCreateAgent,
+  onNavigate,
 }: AgentRailProps) {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="fixed left-0 top-0 h-full w-16 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 z-50">
-        {/* Fleet Overview Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
+        {/* Main Menu Button */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <button
-              onClick={onOpenFleetCommand}
-              className="w-10 h-10 rounded-lg bg-primary/10 border border-border flex items-center justify-center mb-4 hover:bg-primary/20 transition-colors"
+              className="w-10 h-10 rounded-lg bg-primary/10 border border-border flex items-center justify-center mb-4 hover:bg-primary/20 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
             >
               <LayoutGrid className="w-5 h-5 text-primary" />
             </button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            <p className="font-medium">Fleet Overview</p>
-          </TooltipContent>
-        </Tooltip>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            side="right" 
+            align="start" 
+            className="w-48 bg-popover border border-border z-[100]"
+          >
+            {menuItems.map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <DropdownMenuItem
+                  key={item.id}
+                  onClick={() => onNavigate?.(item.id)}
+                  className="flex items-center gap-3 cursor-pointer"
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <div className="w-8 h-px bg-border mb-4" />
 
