@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageSquare, CheckCircle, Clock, Activity, Send, Bot } from 'lucide-react';
+import { MessageSquare, CheckCircle, Clock, Activity, Send, Bot, AlertTriangle, ShieldCheck, Calendar, TrendingUp, Users, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { mockTasks } from '@/data/mockData';
+import { mockTasks, mockEvents } from '@/data/mockData';
 import { mockAgents, mockAgentStats } from '@/data/agentsData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,20 @@ interface HomePageProps {
   onNavigateToChat: (mentionedAgentIds?: string[]) => void;
 }
 
+// Mock data for new cards
+const pendingApprovals = [
+  { id: 'apr-1', task: 'Export report to PDF', agent: 'Atlas-Planner', priority: 'high' },
+  { id: 'apr-2', task: 'Send email to team', agent: 'Aria-Communications', priority: 'medium' },
+];
+
+const scheduledTasks = [
+  { id: 'sch-1', name: 'Daily backup', scheduledFor: '2:00 PM', agent: 'Flux-DevOps' },
+  { id: 'sch-2', name: 'Weekly report generation', scheduledFor: 'Tomorrow 9:00 AM', agent: 'Atlas-Planner' },
+  { id: 'sch-3', name: 'Database cleanup', scheduledFor: 'Dec 20, 3:00 PM', agent: 'Nexus-Admin' },
+];
+
+const successRateTrend = [85, 88, 82, 91, 87, 94, 92]; // Last 7 days
+
 export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToChat }: HomePageProps) {
   const [miniChatInput, setMiniChatInput] = useState('');
   const [miniChatOpen, setMiniChatOpen] = useState(false);
@@ -25,8 +39,15 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
   
   const runningTasks = mockTasks.filter(t => t.status === 'running');
   const completedTasks = mockTasks.filter(t => t.status === 'completed');
+  const failedTasks = mockTasks.filter(t => t.status === 'failed');
   const activeAgents = mockAgents.filter(a => a.status === 'executing' || a.status === 'thinking');
+  const idleAgents = mockAgents.filter(a => a.status === 'idle');
   const totalTasksCompleted = Object.values(mockAgentStats).reduce((acc, s) => acc + s.tasksCompleted, 0);
+  const avgSuccessRate = Math.round(Object.values(mockAgentStats).reduce((acc, s) => acc + s.successRate, 0) / Object.values(mockAgentStats).length);
+  
+  // Filter approval events
+  const approvalEvents = mockEvents.filter(e => e.type === 'approval');
+  const warningEvents = mockEvents.filter(e => e.type === 'warning');
 
   // Reset selected index when suggestions change
   useEffect(() => {
@@ -84,6 +105,33 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
     }
   };
 
+  // Mini sparkline component
+  const Sparkline = ({ data }: { data: number[] }) => {
+    const max = Math.max(...data);
+    const min = Math.min(...data);
+    const range = max - min || 1;
+    const height = 24;
+    const width = 80;
+    const points = data.map((val, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((val - min) / range) * height;
+      return `${x},${y}`;
+    }).join(' ');
+
+    return (
+      <svg width={width} height={height} className="overflow-visible">
+        <polyline
+          fill="none"
+          stroke="hsl(var(--primary))"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          points={points}
+        />
+      </svg>
+    );
+  };
+
   return (
     <div className="space-y-8 animate-slide-up">
       {/* Hero Section */}
@@ -117,8 +165,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary)/0.15),transparent_50%)]" />
       </div>
 
-      {/* Quick Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Quick Stats Row - Extended */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <div className="glass-card p-4 rounded-xl">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Activity className="w-4 h-4 text-success" />
@@ -147,10 +195,117 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           </div>
           <p className="text-2xl font-semibold">{totalTasksCompleted}</p>
         </div>
+        <div className="glass-card p-4 rounded-xl">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <ShieldCheck className="w-4 h-4 text-warning" />
+            <span className="text-sm">Pending Approvals</span>
+          </div>
+          <p className="text-2xl font-semibold">{pendingApprovals.length}</p>
+        </div>
+        <div className="glass-card p-4 rounded-xl">
+          <div className="flex items-center gap-2 text-muted-foreground mb-1">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <span className="text-sm">Avg Success Rate</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-semibold">{avgSuccessRate}%</p>
+            <Sparkline data={successRateTrend} />
+          </div>
+        </div>
       </div>
 
-      {/* Content Cards */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Priority Row - Pending Approvals & Errors */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Pending Approvals Card */}
+        <div className="glass-card rounded-xl p-5 border border-warning/30 bg-warning/5">
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldCheck className="w-5 h-5 text-warning" />
+            <h2 className="font-semibold">Pending Approvals</h2>
+            {pendingApprovals.length > 0 && (
+              <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-warning/20 text-warning rounded-full">
+                {pendingApprovals.length} waiting
+              </span>
+            )}
+          </div>
+          <div className="space-y-3">
+            {pendingApprovals.length > 0 ? (
+              pendingApprovals.map((item) => (
+                <div 
+                  key={item.id} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/50"
+                >
+                  <div>
+                    <p className="font-medium text-sm">{item.task}</p>
+                    <p className="text-xs text-muted-foreground">by {item.agent}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="h-7 px-2 text-xs">
+                      Reject
+                    </Button>
+                    <Button size="sm" className="h-7 px-2 text-xs">
+                      Approve
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No pending approvals</p>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Errors Card */}
+        <div className="glass-card rounded-xl p-5 border border-destructive/30 bg-destructive/5">
+          <div className="flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
+            <h2 className="font-semibold">Recent Errors & Alerts</h2>
+            {failedTasks.length > 0 && (
+              <span className="ml-auto px-2 py-0.5 text-xs font-medium bg-destructive/20 text-destructive rounded-full">
+                {failedTasks.length} issues
+              </span>
+            )}
+          </div>
+          <div className="space-y-3">
+            {failedTasks.length > 0 ? (
+              failedTasks.map((task) => (
+                <div 
+                  key={task.id} 
+                  className="p-3 rounded-lg bg-background/50 border border-border/50"
+                >
+                  <div className="flex items-start gap-2">
+                    <XCircle className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{task.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {task.steps.find(s => s.status === 'failed')?.error || 'Task failed'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-success" />
+                No errors - all systems operational
+              </p>
+            )}
+            {warningEvents.length > 0 && (
+              <div className="p-3 rounded-lg bg-background/50 border border-border/50">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-warning mt-0.5 shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Low confidence warning</p>
+                    <p className="text-xs text-muted-foreground">{warningEvents[0].message}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content Cards - 4 Columns */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Running Tasks Card */}
         <div className="glass-card rounded-xl p-5 border border-border">
           <div className="flex items-center gap-2 mb-4">
@@ -191,38 +346,61 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           </Button>
         </div>
 
-        {/* Completed Tasks Card */}
+        {/* Scheduled Tasks Card */}
         <div className="glass-card rounded-xl p-5 border border-border">
           <div className="flex items-center gap-2 mb-4">
-            <CheckCircle className="w-5 h-5 text-success" />
-            <h2 className="font-semibold">Recently Completed</h2>
+            <Calendar className="w-5 h-5 text-primary" />
+            <h2 className="font-semibold">Scheduled Tasks</h2>
           </div>
           <div className="space-y-3">
-            {completedTasks.length > 0 ? (
-              completedTasks.slice(0, 3).map((task) => (
-                <div 
-                  key={task.id} 
-                  className="p-3 rounded-lg bg-secondary/50 border border-border/50"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-sm">{task.name}</p>
-                    <CheckCircle className="w-4 h-4 text-success" />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {task.steps.length} steps completed
-                  </p>
+            {scheduledTasks.slice(0, 3).map((task) => (
+              <div 
+                key={task.id} 
+                className="p-3 rounded-lg bg-secondary/50 border border-border/50"
+              >
+                <p className="font-medium text-sm">{task.name}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-muted-foreground">{task.agent}</p>
+                  <span className="text-xs text-primary">{task.scheduledFor}</span>
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground">No completed tasks yet</p>
-            )}
+              </div>
+            ))}
           </div>
           <Button 
             variant="ghost" 
             className="w-full mt-4 text-sm"
             onClick={onNavigateToTasks}
           >
-            View All Tasks
+            View Schedule
+          </Button>
+        </div>
+
+        {/* Agent Availability Card */}
+        <div className="glass-card rounded-xl p-5 border border-border">
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-5 h-5 text-success" />
+            <h2 className="font-semibold">Agent Availability</h2>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-success/10 border border-success/20">
+              <span className="text-sm font-medium">Active</span>
+              <span className="text-lg font-semibold text-success">{activeAgents.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/50">
+              <span className="text-sm font-medium">Idle (Available)</span>
+              <span className="text-lg font-semibold text-muted-foreground">{idleAgents.length}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary/50 border border-border/50">
+              <span className="text-sm font-medium">Total Fleet</span>
+              <span className="text-lg font-semibold">{mockAgents.length}</span>
+            </div>
+          </div>
+          <Button 
+            variant="ghost" 
+            className="w-full mt-4 text-sm"
+            onClick={onNavigateToAgents}
+          >
+            Manage Fleet
           </Button>
         </div>
 
@@ -234,7 +412,7 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           </div>
           <div className="space-y-3">
             {activeAgents.length > 0 ? (
-              activeAgents.map((agent) => (
+              activeAgents.slice(0, 3).map((agent) => (
                 <div 
                   key={agent.id} 
                   className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border/50"
