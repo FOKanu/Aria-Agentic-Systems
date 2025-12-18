@@ -14,11 +14,6 @@ interface AgentDetailsPageProps {
   onBack: () => void;
 }
 
-const typeLabels: Record<string, string> = {
-  assistant: 'Assistant',
-  developer: 'Developer',
-  researcher: 'Researcher',
-};
 
 const statusConfig = {
   idle: { label: 'Idle', class: 'bg-muted text-muted-foreground', dot: 'bg-muted-foreground' },
@@ -103,7 +98,7 @@ export function AgentDetailsPage({ agent, stats, onBack }: AgentDetailsPageProps
                 {status.label}
               </span>
             </div>
-            <p className="text-muted-foreground">{typeLabels[agent.type]}</p>
+            <p className="text-muted-foreground">{agent.title || agent.role}</p>
           </div>
         </div>
       </div>

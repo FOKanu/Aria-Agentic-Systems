@@ -21,11 +21,6 @@ interface DashboardPageProps {
   onExportLogs: () => void;
 }
 
-const typeLabels: Record<string, string> = {
-  assistant: 'Assistant',
-  developer: 'Developer',
-  researcher: 'Researcher',
-};
 
 export function DashboardPage({ 
   agentState, 
@@ -60,7 +55,7 @@ export function DashboardPage({
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">{selectedAgent.name}</h2>
                 <span className="text-xs px-2 py-0.5 rounded bg-secondary text-muted-foreground">
-                  {typeLabels[selectedAgent.type]}
+                  {selectedAgent.title || selectedAgent.role}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">

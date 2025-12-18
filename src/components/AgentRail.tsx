@@ -20,9 +20,10 @@ import { Button } from "@/components/ui/button";
 export interface Agent {
   id: string;
   name: string;
+  title?: string;
   avatar?: string;
-  status: 'idle' | 'thinking' | 'executing' | 'waiting' | 'error' | 'stunned';
-  type: 'assistant' | 'developer' | 'researcher';
+  status: 'idle' | 'thinking' | 'executing' | 'waiting' | 'error' | 'stunned' | 'available' | 'busy' | 'offline';
+  role?: string;
 }
 
 interface AgentRailProps {
@@ -41,19 +42,16 @@ interface AgentRailProps {
   onModifyTask?: (agentId: string) => void;
 }
 
-const statusColors: Record<Agent['status'], string> = {
+const statusColors: Record<string, string> = {
   idle: 'bg-muted-foreground',
   thinking: 'bg-primary animate-pulse',
   executing: 'bg-success animate-pulse',
   waiting: 'bg-warning',
   error: 'bg-destructive',
   stunned: 'bg-destructive/50',
-};
-
-const typeLabels: Record<Agent['type'], string> = {
-  assistant: 'Assistant',
-  developer: 'Developer',
-  researcher: 'Researcher',
+  available: 'bg-success',
+  busy: 'bg-warning',
+  offline: 'bg-muted-foreground',
 };
 
 // Navigation items
@@ -195,7 +193,7 @@ export function AgentRail({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{agent.name}</p>
-                    <p className="text-xs text-muted-foreground">{typeLabels[agent.type]}</p>
+                    <p className="text-xs text-muted-foreground">{agent.title || agent.role}</p>
                   </div>
                   <div className={cn(
                     "px-2 py-0.5 rounded text-xs font-medium",
@@ -346,7 +344,7 @@ export function AgentRail({
                         </div>
                         <div className="flex-1">
                           <p className="text-sm">{agent.name}</p>
-                          <p className="text-xs text-muted-foreground">{typeLabels[agent.type]}</p>
+                          <p className="text-xs text-muted-foreground">{agent.title || agent.role}</p>
                         </div>
                       </DropdownMenuItem>
                     ))}

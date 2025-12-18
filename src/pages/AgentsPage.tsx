@@ -24,11 +24,6 @@ const statusConfig = {
   stunned: { label: 'Offline', class: 'bg-destructive/10 text-destructive', dot: 'bg-destructive' },
 };
 
-const typeLabels: Record<string, string> = {
-  assistant: 'Assistant',
-  developer: 'Developer',
-  researcher: 'Researcher',
-};
 
 function AgentCard({ agent, stats, onSelect }: { 
   agent: Agent; 
@@ -53,7 +48,7 @@ function AgentCard({ agent, stats, onSelect }: {
             <div>
               <h3 className="font-semibold">{agent.name}</h3>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-muted-foreground">{typeLabels[agent.type]}</span>
+                <span className="text-xs text-muted-foreground">{agent.title || agent.role}</span>
                 <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", status.class)}>
                   {status.label}
                 </span>
