@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { LayoutDashboard, ListTodo, Eye, Brain, Settings, Rocket, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Eye, Brain, Settings, Bot, MessageSquare, ChevronLeft, ChevronRight, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type TabId = 'dashboard' | 'tasks' | 'vision' | 'memory' | 'settings' | 'fleet' | 'chat';
+export type TabId = 'home' | 'dashboard' | 'tasks' | 'vision' | 'memory' | 'settings' | 'agents' | 'chat';
 
 interface BottomNavProps {
   activeTab: TabId;
@@ -11,8 +11,9 @@ interface BottomNavProps {
 }
 
 const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
+  { id: 'home', label: 'Home', icon: Home },
   { id: 'chat', label: 'Chat', icon: MessageSquare },
-  { id: 'fleet', label: 'Fleet', icon: Rocket },
+  { id: 'agents', label: 'Agents', icon: Bot },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
   { id: 'vision', label: 'Vision', icon: Eye },
