@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { StatusBar } from '@/components/StatusBar';
 import { BottomNav, TabId } from '@/components/BottomNav';
 import { AgentRail, Agent } from '@/components/AgentRail';
 import { TopBar } from '@/components/TopBar';
+import { CommandPalette } from '@/components/CommandPalette';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
@@ -16,6 +17,7 @@ import { ProfilePage } from '@/pages/ProfilePage';
 import { ChatPage } from '@/pages/ChatPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { mockAgents as initialAgents, mockAgentStats, fleetStatus } from '@/data/agentsData';
 
 type ViewMode = 'main' | 'details' | 'profile';
@@ -259,6 +261,22 @@ const Index = () => {
     setViewMode('main');
   };
 
+  const handleTogglePause = useCallback(() => {
+    if (isPaused) {
+      handleResume();
+    } else {
+      handlePause();
+    }
+  }, [isPaused]);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onNavigate: handleTabChange,
+    onTogglePause: handleTogglePause,
+    onStop: handleStop,
+    isAuthenticated,
+  });
+
   // Show auth page if not authenticated
   if (!isAuthenticated) {
     return <AuthPage onLogin={handleLogin} />;
@@ -335,6 +353,16 @@ const Index = () => {
   if (activeTab === 'chat' && isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
+        {/* Global Command Palette */}
+        <CommandPalette
+          onNavigate={handleTabChange}
+          onSelectAgent={handleSelectAgentAndViewDetails}
+          onPauseAgent={handlePauseAgent}
+          onResumeAgent={handleResumeAgent}
+          onStopAgent={handleStopAgent}
+          onViewProfile={handleViewProfile}
+        />
+
         {/* Left Agent Rail - Desktop */}
         <div className="hidden lg:block">
           <AgentRail
@@ -368,6 +396,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Global Command Palette */}
+      <CommandPalette
+        onNavigate={handleTabChange}
+        onSelectAgent={handleSelectAgentAndViewDetails}
+        onPauseAgent={handlePauseAgent}
+        onResumeAgent={handleResumeAgent}
+        onStopAgent={handleStopAgent}
+        onViewProfile={handleViewProfile}
+      />
+
       {/* Left Agent Rail - Desktop */}
       <div className="hidden lg:block">
         <AgentRail
@@ -396,6 +434,11 @@ const Index = () => {
           user={user || undefined}
           onViewProfile={handleViewProfile}
           onLogout={handleLogout}
+          activeTab={activeTab}
+          viewMode={viewMode}
+          agentName={selectedAgent?.name}
+          onNavigate={handleTabChange}
+          onBackToMain={handleBackFromDetails}
         />
       </div>
 
