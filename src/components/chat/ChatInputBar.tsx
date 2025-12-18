@@ -1,12 +1,36 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Mic, MicOff, X, Loader2 } from 'lucide-react';
+import { Send, Mic, MicOff, X, Loader2, Paperclip, FileText, Image, File } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ChatAgent } from '@/types/chat';
+import { ChatAgent, ChatAttachment } from '@/types/chat';
+import { useToast } from '@/hooks/use-toast';
+
+const ACCEPTED_FILE_TYPES = {
+  // Documents
+  'text/csv': { icon: FileText, label: 'CSV' },
+  'application/pdf': { icon: FileText, label: 'PDF' },
+  'application/msword': { icon: FileText, label: 'DOC' },
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { icon: FileText, label: 'DOCX' },
+  // Code
+  'text/html': { icon: FileText, label: 'HTML' },
+  'text/css': { icon: FileText, label: 'CSS' },
+  'text/x-python': { icon: FileText, label: 'Python' },
+  'application/x-python-code': { icon: FileText, label: 'Python' },
+  'application/json': { icon: FileText, label: 'JSON' },
+  // Images
+  'image/jpeg': { icon: Image, label: 'JPEG' },
+  'image/png': { icon: Image, label: 'PNG' },
+  'image/webp': { icon: Image, label: 'WebP' },
+  'image/gif': { icon: Image, label: 'GIF' },
+};
+
+const ACCEPTED_EXTENSIONS = '.csv,.pdf,.doc,.docx,.html,.css,.py,.ipynb,.json,.jpeg,.jpg,.png,.webp,.gif';
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_FILES = 10;
 
 interface ChatInputBarProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, attachments?: ChatAttachment[]) => void;
   onStartRecording: () => void;
   onStopRecording: () => void;
   isRecording: boolean;
@@ -29,7 +53,10 @@ export function ChatInputBar({
   disabled,
 }: ChatInputBarProps) {
   const [message, setMessage] = useState('');
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   // Auto-resize textarea
   useEffect(() => {
@@ -40,9 +67,10 @@ export function ChatInputBar({
   }, [message]);
 
   const handleSend = () => {
-    if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
+    if ((message.trim() || attachments.length > 0) && !disabled) {
+      onSendMessage(message.trim(), attachments.length > 0 ? attachments : undefined);
       setMessage('');
+      setAttachments([]);
     }
   };
 
@@ -51,6 +79,73 @@ export function ChatInputBar({
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    if (attachments.length + files.length > MAX_FILES) {
+      toast({
+        title: 'Too many files',
+        description: `Maximum ${MAX_FILES} files allowed per message.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const validFiles: ChatAttachment[] = [];
+    
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: 'File too large',
+          description: `${file.name} exceeds 20MB limit.`,
+          variant: 'destructive',
+        });
+        continue;
+      }
+
+      // Create preview URL for images
+      const isImage = file.type.startsWith('image/');
+      const previewUrl = isImage ? URL.createObjectURL(file) : undefined;
+
+      validFiles.push({
+        id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        file,
+        previewUrl,
+      });
+    }
+
+    setAttachments((prev) => [...prev, ...validFiles]);
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => {
+      const attachment = prev.find((a) => a.id === id);
+      if (attachment?.previewUrl) {
+        URL.revokeObjectURL(attachment.previewUrl);
+      }
+      return prev.filter((a) => a.id !== id);
+    });
+  };
+
+  const getFileIcon = (type: string) => {
+    const config = ACCEPTED_FILE_TYPES[type as keyof typeof ACCEPTED_FILE_TYPES];
+    return config?.icon || File;
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -74,6 +169,49 @@ export function ChatInputBar({
                 </button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Attached Files */}
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {attachments.map((attachment) => {
+              const FileIcon = getFileIcon(attachment.type);
+              const isImage = attachment.type.startsWith('image/');
+
+              return (
+                <div
+                  key={attachment.id}
+                  className="relative group flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary border border-border"
+                >
+                  {isImage && attachment.previewUrl ? (
+                    <img
+                      src={attachment.previewUrl}
+                      alt={attachment.name}
+                      className="w-10 h-10 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 flex items-center justify-center rounded bg-muted">
+                      <FileIcon className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium truncate max-w-[120px]">
+                      {attachment.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatFileSize(attachment.size)}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeAttachment(attachment.id)}
+                    className="absolute -top-1 -right-1 p-1 rounded-full bg-destructive text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -121,13 +259,32 @@ export function ChatInputBar({
         {/* Input Area */}
         {!isRecording && !isTranscribing && (
           <div className="flex items-end gap-2">
+            {/* File Upload Button */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_EXTENSIONS}
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full h-11 w-11 flex-shrink-0"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={disabled || attachments.length >= MAX_FILES}
+            >
+              <Paperclip className="w-5 h-5" />
+            </Button>
+
             <div className="flex-1 relative">
               <Textarea
                 ref={textareaRef}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask a question, assign a task, or speak..."
+                placeholder="Ask a question, assign a task, or attach files..."
                 className="min-h-[44px] max-h-[120px] resize-none pr-12 rounded-2xl"
                 disabled={disabled}
                 rows={1}
@@ -157,7 +314,7 @@ export function ChatInputBar({
               size="icon"
               className="rounded-full h-11 w-11 flex-shrink-0"
               onClick={handleSend}
-              disabled={!message.trim() || disabled}
+              disabled={(!message.trim() && attachments.length === 0) || disabled}
             >
               <Send className="w-5 h-5" />
             </Button>
