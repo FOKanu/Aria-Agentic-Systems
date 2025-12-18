@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X } from 'lucide-react';
+import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 export interface Agent {
   id: string;
@@ -34,6 +34,10 @@ interface AgentRailProps {
   onNavigate?: (tab: string) => void;
   onRemoveFromPanel?: (agentId: string) => void;
   onAddToPanel?: (agentId: string) => void;
+  onPauseAgent?: (agentId: string) => void;
+  onResumeAgent?: (agentId: string) => void;
+  onStopAgent?: (agentId: string) => void;
+  onModifyTask?: (agentId: string) => void;
 }
 
 const statusColors: Record<Agent['status'], string> = {
@@ -72,11 +76,19 @@ export function AgentRail({
   onNavigate,
   onRemoveFromPanel,
   onAddToPanel,
+  onPauseAgent,
+  onResumeAgent,
+  onStopAgent,
+  onModifyTask,
 }: AgentRailProps) {
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [openAgentPopover, setOpenAgentPopover] = useState<string | null>(null);
   
   const visibleAgents = agents.filter(a => visibleAgentIds.includes(a.id));
   const hiddenAgents = agents.filter(a => !visibleAgentIds.includes(a.id));
+
+  const isAgentActive = (status: Agent['status']) => 
+    status === 'thinking' || status === 'executing' || status === 'waiting';
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -116,59 +128,160 @@ export function AgentRail({
         {/* Agent Avatars */}
         <div className="flex-1 flex flex-col items-center gap-2 overflow-y-auto scrollbar-thin">
           {visibleAgents.map((agent) => (
-            <ContextMenu key={agent.id}>
-              <ContextMenuTrigger>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => onSelectAgent(agent.id)}
-                      className={cn(
-                        "relative w-10 h-10 rounded-lg transition-all group",
-                        "bg-secondary border border-transparent",
-                        "hover:border-primary/50",
-                        selectedAgentId === agent.id && "border-primary bg-primary/10"
-                      )}
-                    >
-                      <div className="w-full h-full rounded-lg flex items-center justify-center text-lg">
-                        {agent.avatar || '🤖'}
-                      </div>
+            <Popover 
+              key={agent.id} 
+              open={openAgentPopover === agent.id}
+              onOpenChange={(open) => setOpenAgentPopover(open ? agent.id : null)}
+            >
+              <PopoverTrigger asChild>
+                <button
+                  className={cn(
+                    "relative w-10 h-10 rounded-lg transition-all group",
+                    "bg-secondary border border-transparent",
+                    "hover:border-primary/50",
+                    selectedAgentId === agent.id && "border-primary bg-primary/10"
+                  )}
+                >
+                  <div className="w-full h-full rounded-lg flex items-center justify-center text-lg">
+                    {agent.avatar || '🤖'}
+                  </div>
 
-                      {/* Status Indicator */}
-                      <div
-                        className={cn(
-                          "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-sidebar",
-                          statusColors[agent.status]
-                        )}
-                      />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p className="font-medium">{agent.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {typeLabels[agent.type]}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Right-click for options
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </ContextMenuTrigger>
-              <ContextMenuContent className="w-48 bg-popover border border-border z-[100]">
-                <ContextMenuItem 
-                  onClick={() => onSelectAgent(agent.id)}
-                  className="cursor-pointer"
-                >
-                  View Details
-                </ContextMenuItem>
-                <ContextMenuItem 
-                  onClick={() => onRemoveFromPanel?.(agent.id)}
-                  className="cursor-pointer text-destructive focus:text-destructive"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Remove from Panel
-                </ContextMenuItem>
-              </ContextMenuContent>
-            </ContextMenu>
+                  {/* Status Indicator */}
+                  <div
+                    className={cn(
+                      "absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-sidebar",
+                      statusColors[agent.status]
+                    )}
+                  />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent 
+                side="right" 
+                align="start"
+                className="w-64 p-3 bg-popover border border-border z-[100]"
+              >
+                {/* Agent Header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-xl">
+                    {agent.avatar || '🤖'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{agent.name}</p>
+                    <p className="text-xs text-muted-foreground">{typeLabels[agent.type]}</p>
+                  </div>
+                  <div className={cn(
+                    "px-2 py-0.5 rounded text-xs font-medium",
+                    agent.status === 'executing' && "bg-success/20 text-success",
+                    agent.status === 'thinking' && "bg-primary/20 text-primary",
+                    agent.status === 'waiting' && "bg-warning/20 text-warning",
+                    agent.status === 'idle' && "bg-muted text-muted-foreground",
+                    agent.status === 'error' && "bg-destructive/20 text-destructive",
+                    agent.status === 'stunned' && "bg-destructive/20 text-destructive",
+                  )}>
+                    {agent.status}
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                  <div className="bg-secondary/50 rounded p-2">
+                    <p className="text-muted-foreground">Success Rate</p>
+                    <p className="font-medium text-foreground">94%</p>
+                  </div>
+                  <div className="bg-secondary/50 rounded p-2">
+                    <p className="text-muted-foreground">Running Ops</p>
+                    <p className="font-medium text-foreground">{isAgentActive(agent.status) ? '1' : '0'}</p>
+                  </div>
+                </div>
+
+                {/* Agent Controls */}
+                <div className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground font-medium mb-2">Agent Controls</p>
+                  
+                  {isAgentActive(agent.status) ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start gap-2 text-warning hover:text-warning hover:bg-warning/10"
+                      onClick={() => {
+                        onPauseAgent?.(agent.id);
+                        setOpenAgentPopover(null);
+                      }}
+                    >
+                      <Pause className="w-4 h-4" />
+                      Pause Agent
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start gap-2 text-success hover:text-success hover:bg-success/10"
+                      onClick={() => {
+                        onResumeAgent?.(agent.id);
+                        setOpenAgentPopover(null);
+                      }}
+                    >
+                      <Play className="w-4 h-4" />
+                      Resume Agent
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start gap-2"
+                    onClick={() => {
+                      onModifyTask?.(agent.id);
+                      setOpenAgentPopover(null);
+                    }}
+                  >
+                    <Edit className="w-4 h-4" />
+                    Modify Task
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      onStopAgent?.(agent.id);
+                      setOpenAgentPopover(null);
+                    }}
+                  >
+                    <Square className="w-4 h-4" />
+                    Stop Agent
+                  </Button>
+
+                  <DropdownMenuSeparator className="my-2" />
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start gap-2"
+                    onClick={() => {
+                      onSelectAgent(agent.id);
+                      setOpenAgentPopover(null);
+                    }}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                    View Details
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+                    onClick={() => {
+                      onRemoveFromPanel?.(agent.id);
+                      setOpenAgentPopover(null);
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                    Remove from Panel
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           ))}
 
           {/* Add Agent Button */}

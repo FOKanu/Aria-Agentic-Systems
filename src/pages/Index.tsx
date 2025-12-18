@@ -171,6 +171,51 @@ const Index = () => {
     });
   };
 
+  const handlePauseAgent = (agentId: string) => {
+    setAgents(prev => prev.map(a => 
+      a.id === agentId ? { ...a, status: 'waiting' as const } : a
+    ));
+    const agent = agents.find(a => a.id === agentId);
+    toast({
+      title: "Agent Paused",
+      description: `${agent?.name || 'Agent'} has been paused.`,
+    });
+  };
+
+  const handleResumeAgent = (agentId: string) => {
+    setAgents(prev => prev.map(a => 
+      a.id === agentId ? { ...a, status: 'executing' as const } : a
+    ));
+    const agent = agents.find(a => a.id === agentId);
+    toast({
+      title: "Agent Resumed",
+      description: `${agent?.name || 'Agent'} has resumed.`,
+    });
+  };
+
+  const handleStopAgent = (agentId: string) => {
+    setAgents(prev => prev.map(a => 
+      a.id === agentId ? { ...a, status: 'idle' as const } : a
+    ));
+    const agent = agents.find(a => a.id === agentId);
+    toast({
+      title: "Agent Stopped",
+      description: `${agent?.name || 'Agent'} has been stopped.`,
+      variant: "destructive",
+    });
+  };
+
+  const handleModifyTask = (agentId: string) => {
+    const agent = agents.find(a => a.id === agentId);
+    toast({
+      title: "Modify Task",
+      description: `Opening task editor for ${agent?.name || 'Agent'}.`,
+    });
+    // Navigate to tasks page for modification
+    setSelectedAgentId(agentId);
+    setActiveTab('tasks');
+  };
+
   const handleViewDetails = () => {
     setViewMode('details');
   };
@@ -302,6 +347,10 @@ const Index = () => {
             onNavigate={(tab) => handleTabChange(tab as TabId)}
             onRemoveFromPanel={handleRemoveFromPanel}
             onAddToPanel={handleAddToPanel}
+            onPauseAgent={handlePauseAgent}
+            onResumeAgent={handleResumeAgent}
+            onStopAgent={handleStopAgent}
+            onModifyTask={handleModifyTask}
           />
         </div>
 
@@ -331,6 +380,10 @@ const Index = () => {
           onNavigate={(tab) => handleTabChange(tab as TabId)}
           onRemoveFromPanel={handleRemoveFromPanel}
           onAddToPanel={handleAddToPanel}
+          onPauseAgent={handlePauseAgent}
+          onResumeAgent={handleResumeAgent}
+          onStopAgent={handleStopAgent}
+          onModifyTask={handleModifyTask}
         />
       </div>
 
