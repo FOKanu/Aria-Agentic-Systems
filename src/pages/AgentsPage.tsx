@@ -30,7 +30,7 @@ function AgentCard({ agent, stats, onSelect }: {
   stats: AgentStats; 
   onSelect: () => void;
 }) {
-  const status = statusConfig[agent.status];
+  const status = statusConfig[agent.status as keyof typeof statusConfig] || statusConfig.idle;
   const agentTasks = mockTasks.filter(t => t.status === 'running');
   
   return (
