@@ -174,6 +174,10 @@ const Index = () => {
     });
   };
 
+  const handleReorderAgents = (newOrder: string[]) => {
+    setVisibleAgentIds(newOrder);
+  };
+
   const handlePauseAgent = (agentId: string) => {
     setAgents(prev => prev.map(a => 
       a.id === agentId ? { ...a, status: 'waiting' as const } : a
@@ -380,6 +384,7 @@ const Index = () => {
             onResumeAgent={handleResumeAgent}
             onStopAgent={handleStopAgent}
             onModifyTask={handleModifyTask}
+            onReorderAgents={handleReorderAgents}
           />
         </div>
 
@@ -426,6 +431,7 @@ const Index = () => {
           onResumeAgent={handleResumeAgent}
           onStopAgent={handleStopAgent}
           onModifyTask={handleModifyTask}
+          onReorderAgents={handleReorderAgents}
         />
       </div>
 
