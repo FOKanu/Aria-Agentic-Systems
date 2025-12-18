@@ -1,6 +1,7 @@
 import { Activity, ChevronRight, Clock, CheckCircle, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QuickActionsMenu } from '@/components/QuickActionsMenu';
+import { ActivityLog } from '@/components/ActivityLog';
 import { AgentState } from '@/types/agent';
 import { mockActiveTask } from '@/data/mockData';
 import { Agent } from '@/components/AgentRail';
@@ -119,57 +120,62 @@ export function DashboardPage({
         </div>
       </div>
 
-      {/* Current Task */}
-      <div className="glass-card p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-            Current Task
-          </h3>
-          <span className="text-xs px-2 py-1 rounded bg-success/10 text-success font-medium">
-            In Progress
-          </span>
-        </div>
-        
-        <div>
-          <p className="font-semibold text-lg mb-3">{mockActiveTask.name}</p>
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Current Task */}
+        <div className="glass-card p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              Current Task
+            </h3>
+            <span className="text-xs px-2 py-1 rounded bg-success/10 text-success font-medium">
+              In Progress
+            </span>
+          </div>
           
-          {/* Progress */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Progress</span>
-              <span>{completedSteps}/{totalSteps} steps</span>
+          <div>
+            <p className="font-semibold text-lg mb-3">{mockActiveTask.name}</p>
+            
+            {/* Progress */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Progress</span>
+                <span>{completedSteps}/{totalSteps} steps</span>
+              </div>
+              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all duration-500 rounded-full"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
-            <div className="h-2 bg-secondary rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary transition-all duration-500 rounded-full"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+          </div>
+
+          {/* Current Step */}
+          <div className="p-3 rounded-lg bg-secondary/50 border border-border">
+            <p className="text-xs text-muted-foreground mb-1">Current Step</p>
+            <p className="text-sm">
+              {mockActiveTask.steps.find(s => s.status === 'running')?.plan || 'Waiting...'}
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2">
+            <Button 
+              variant={isPaused ? "default" : "secondary"} 
+              size="sm"
+              onClick={isPaused ? onResume : onPause}
+              className="flex-1"
+            >
+              {isPaused ? 'Resume' : 'Pause'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={onApprove} className="flex-1">
+              Approve Next
+            </Button>
           </div>
         </div>
 
-        {/* Current Step */}
-        <div className="p-3 rounded-lg bg-secondary/50 border border-border">
-          <p className="text-xs text-muted-foreground mb-1">Current Step</p>
-          <p className="text-sm">
-            {mockActiveTask.steps.find(s => s.status === 'running')?.plan || 'Waiting...'}
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          <Button 
-            variant={isPaused ? "default" : "secondary"} 
-            size="sm"
-            onClick={isPaused ? onResume : onPause}
-            className="flex-1"
-          >
-            {isPaused ? 'Resume' : 'Pause'}
-          </Button>
-          <Button variant="outline" size="sm" onClick={onApprove} className="flex-1">
-            Approve Next
-          </Button>
-        </div>
+        {/* Activity Log */}
+        <ActivityLog maxHeight="280px" limit={5} />
       </div>
 
       {/* Quick Stats */}
