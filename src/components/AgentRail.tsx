@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight } from 'lucide-react';
+import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import {
   Popover,
@@ -55,15 +56,26 @@ const typeLabels: Record<Agent['type'], string> = {
   researcher: 'Researcher',
 };
 
-const menuItems = [
+// Navigation items
+const navItems = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'chat', label: 'Chat', icon: MessageSquare },
   { id: 'agents', label: 'Agents', icon: Bot },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'vision', label: 'Vision', icon: Eye },
-  { id: 'memory', label: 'Memory', icon: Brain },
   { id: 'settings', label: 'Settings', icon: Settings },
+];
+
+// Agent capabilities/task types
+const capabilityItems = [
+  { id: 'vision', label: 'Vision Mode', icon: Eye },
+  { id: 'calendar', label: 'Calendar', icon: Calendar },
+  { id: 'tasks', label: 'Tasks', icon: ListTodo },
+  { id: 'email', label: 'Email', icon: Mail },
+  { id: 'phone', label: 'Phone & Calls', icon: Phone },
+  { id: 'documents', label: 'Documents', icon: FileText },
+  { id: 'devops', label: 'DevOps', icon: Code },
+  { id: 'memory', label: 'Memory', icon: Brain },
+  { id: 'reservations', label: 'Reservations', icon: Bookmark },
 ];
 
 export function AgentRail({
@@ -105,9 +117,25 @@ export function AgentRail({
           <DropdownMenuContent 
             side="right" 
             align="start" 
-            className="w-48 bg-popover border border-border z-[100]"
+            className="w-52 bg-popover border border-border z-[100] max-h-[80vh] overflow-y-auto"
           >
-            {menuItems.map((item) => {
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Navigation</DropdownMenuLabel>
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <DropdownMenuItem
+                  key={item.id}
+                  onClick={() => onNavigate?.(item.id)}
+                  className="flex items-center gap-3 cursor-pointer"
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </DropdownMenuItem>
+              );
+            })}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Agent Capabilities</DropdownMenuLabel>
+            {capabilityItems.map((item) => {
               const Icon = item.icon;
               return (
                 <DropdownMenuItem
