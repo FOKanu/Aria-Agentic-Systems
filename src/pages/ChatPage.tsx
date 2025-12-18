@@ -106,7 +106,15 @@ export function ChatPage() {
     setStatus('idle');
   }, [selectedAgentIds, addMessage, tts]);
 
-  const handleSendMessage = useCallback(async (content: string, attachments?: ChatAttachment[]) => {
+  const handleSendMessage = useCallback(async (content: string, attachments?: ChatAttachment[], mentionedAgentIds?: string[]) => {
+    // If agents were @mentioned, add them to selected agents
+    if (mentionedAgentIds && mentionedAgentIds.length > 0) {
+      setSelectedAgentIds(prev => {
+        const newIds = mentionedAgentIds.filter(id => !prev.includes(id));
+        return [...prev, ...newIds];
+      });
+    }
+    
     addMessage({
       content,
       sender: 'user',
@@ -116,6 +124,13 @@ export function ChatPage() {
 
     await simulateAgentResponse(content, attachments);
   }, [addMessage, simulateAgentResponse]);
+
+  const handleAddAgentFromMention = useCallback((agentId: string) => {
+    setSelectedAgentIds(prev => {
+      if (prev.includes(agentId)) return prev;
+      return [...prev, agentId];
+    });
+  }, []);
 
   const handleVoiceStart = useCallback(() => {
     voiceInput.startRecording();
@@ -225,6 +240,7 @@ export function ChatPage() {
         transcriptionPreview={voiceInput.transcriptionPreview}
         selectedAgents={selectedAgents}
         onRemoveAgent={handleRemoveAgent}
+        onAddAgentFromMention={handleAddAgentFromMention}
       />
 
       <AgentSelectorModal

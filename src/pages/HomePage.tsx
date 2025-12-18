@@ -1,30 +1,86 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, CheckCircle, Clock, Activity, Send, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mockTasks } from '@/data/mockData';
 import { mockAgents, mockAgentStats } from '@/data/agentsData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAgentMention } from '@/hooks/useAgentMention';
+import { AgentMentionPopover } from '@/components/chat/AgentMentionPopover';
+import { ChatAgent, CHAT_AGENTS } from '@/types/chat';
 
 interface HomePageProps {
   onNavigateToAgents: () => void;
   onNavigateToTasks: () => void;
-  onNavigateToChat: () => void;
+  onNavigateToChat: (mentionedAgentIds?: string[]) => void;
 }
 
 export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToChat }: HomePageProps) {
   const [miniChatInput, setMiniChatInput] = useState('');
   const [miniChatOpen, setMiniChatOpen] = useState(false);
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  
+  const { mentionState, handleInputChange, insertMention, parseMentions, closeMention } = useAgentMention();
   
   const runningTasks = mockTasks.filter(t => t.status === 'running');
   const completedTasks = mockTasks.filter(t => t.status === 'completed');
   const activeAgents = mockAgents.filter(a => a.status === 'executing' || a.status === 'thinking');
   const totalTasksCompleted = Object.values(mockAgentStats).reduce((acc, s) => acc + s.tasksCompleted, 0);
 
+  // Reset selected index when suggestions change
+  useEffect(() => {
+    setSelectedMentionIndex(0);
+  }, [mentionState.suggestions]);
+
+  const handleSelectMention = (agent: ChatAgent) => {
+    const newMessage = insertMention(agent, miniChatInput);
+    setMiniChatInput(newMessage);
+    inputRef.current?.focus();
+  };
+
   const handleMiniChatSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (miniChatInput.trim()) {
-      onNavigateToChat();
+      const mentions = parseMentions(miniChatInput);
+      const mentionedIds = mentions.map(m => m.id);
+      onNavigateToChat(mentionedIds.length > 0 ? mentionedIds : undefined);
+    }
+  };
+
+  const handleInputChange2 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const cursorPosition = e.target.selectionStart || 0;
+    setMiniChatInput(value);
+    handleInputChange(value, cursorPosition);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (mentionState.isActive && mentionState.suggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedMentionIndex(prev => 
+          prev < mentionState.suggestions.length - 1 ? prev + 1 : 0
+        );
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedMentionIndex(prev => 
+          prev > 0 ? prev - 1 : mentionState.suggestions.length - 1
+        );
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        handleSelectMention(mentionState.suggestions[selectedMentionIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeMention();
+        return;
+      }
     }
   };
 
@@ -41,7 +97,7 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={onNavigateToChat}
+              onClick={() => onNavigateToChat()}
               className="gap-2"
               size="lg"
             >
@@ -228,15 +284,28 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
             </div>
             <div className="p-4 h-48 bg-background/50">
               <p className="text-sm text-muted-foreground">
-                How can I help you today? Type a message to start.
+                How can I help you today? Type <span className="text-primary font-medium">@</span> to mention an agent.
               </p>
             </div>
-            <form onSubmit={handleMiniChatSubmit} className="p-3 border-t border-border">
+            <form onSubmit={handleMiniChatSubmit} className="p-3 border-t border-border relative">
+              {/* @Mention Popover */}
+              {mentionState.isActive && mentionState.suggestions.length > 0 && (
+                <div className="absolute bottom-full left-0 right-0 mb-1">
+                  <AgentMentionPopover
+                    suggestions={mentionState.suggestions}
+                    selectedIndex={selectedMentionIndex}
+                    onSelect={handleSelectMention}
+                    position="above"
+                  />
+                </div>
+              )}
               <div className="flex gap-2">
                 <Input
+                  ref={inputRef}
                   value={miniChatInput}
-                  onChange={(e) => setMiniChatInput(e.target.value)}
-                  placeholder="Ask anything..."
+                  onChange={handleInputChange2}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type @ to mention an agent..."
                   className="flex-1 h-9 text-sm"
                 />
                 <Button type="submit" size="sm" className="px-3">
