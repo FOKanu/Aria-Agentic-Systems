@@ -4,6 +4,7 @@ import { BottomNav, TabId } from '@/components/BottomNav';
 import { AgentRail, Agent } from '@/components/AgentRail';
 import { TopBar } from '@/components/TopBar';
 import { CommandPalette } from '@/components/CommandPalette';
+import { OnboardingDialog } from '@/components/OnboardingDialog';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
@@ -396,6 +397,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Onboarding Dialog */}
+      <OnboardingDialog />
+
       {/* Global Command Palette */}
       <CommandPalette
         onNavigate={handleTabChange}
