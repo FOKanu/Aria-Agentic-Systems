@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/UserMenu';
 import { MockUser } from '@/pages/AuthPage';
 import { AppBreadcrumb } from '@/components/AppBreadcrumb';
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
 import { TabId } from '@/components/BottomNav';
 
 interface TopBarProps {
@@ -67,13 +69,15 @@ export function TopBar({
         </div>
       </div>
 
-      {/* Right Section - Keyboard shortcut hint & User */}
-      <div className="flex items-center gap-4">
+      {/* Right Section - Notifications, Shortcuts & User */}
+      <div className="flex items-center gap-2">
         <div className="hidden xl:flex items-center gap-1.5 px-2 py-1 rounded bg-muted/50 text-muted-foreground text-xs">
           <Command className="h-3 w-3" />
           <span>K</span>
           <span className="text-muted-foreground/60">to search</span>
         </div>
+        <KeyboardShortcutsHelp />
+        <NotificationCenter />
         {user && onViewProfile && onLogout && (
           <UserMenu 
             user={user} 
