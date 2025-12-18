@@ -336,11 +336,6 @@ const Index = () => {
       <div className="lg:hidden">
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
       </div>
-
-      {/* Desktop Tab Bar */}
-      <div className="hidden lg:block">
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} isDesktop />
-      </div>
     </div>
   );
 };
