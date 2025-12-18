@@ -1,7 +1,7 @@
-import { LayoutDashboard, ListTodo, Eye, Brain, Settings, Bot, MessageSquare, Home, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Monitor, Brain, Settings, Bot, MessageSquare, Home, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type TabId = 'home' | 'dashboard' | 'tasks' | 'vision' | 'memory' | 'settings' | 'agents' | 'chat' | 'analytics';
+export type TabId = 'home' | 'dashboard' | 'tasks' | 'monitoring' | 'memory' | 'settings' | 'agents' | 'chat' | 'analytics';
 
 interface BottomNavProps {
   activeTab: TabId;
@@ -15,7 +15,7 @@ const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'vision', label: 'Vision', icon: Eye },
+  { id: 'monitoring', label: 'Monitor', icon: Monitor },
   { id: 'memory', label: 'Memory', icon: Brain },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];

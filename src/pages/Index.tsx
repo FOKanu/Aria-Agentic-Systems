@@ -8,7 +8,7 @@ import { OnboardingDialog } from '@/components/OnboardingDialog';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
-import { VisionPage } from '@/pages/VisionPage';
+import { MonitoringPage } from '@/pages/MonitoringPage';
 import { MemoryPage } from '@/pages/MemoryPage';
 import { AgentsPage } from '@/pages/AgentsPage';
 import { SettingsPage } from '@/pages/SettingsPage';
@@ -342,8 +342,8 @@ const Index = () => {
         );
       case 'tasks':
         return <TasksPage />;
-      case 'vision':
-        return <VisionPage />;
+      case 'monitoring':
+        return <MonitoringPage />;
       case 'memory':
         return <MemoryPage />;
       case 'settings':

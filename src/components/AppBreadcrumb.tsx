@@ -22,7 +22,7 @@ const tabLabels: Record<TabId, string> = {
   chat: 'Chat',
   dashboard: 'Dashboard',
   tasks: 'Tasks',
-  vision: 'Vision',
+  monitoring: 'Monitoring',
   memory: 'Memory',
   agents: 'Fleet Command',
   settings: 'Settings',
