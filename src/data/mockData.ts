@@ -115,16 +115,15 @@ export const mockTasks: Task[] = [
 
 export const mockVisionData: VisionData = {
   screenshot: undefined,
-  ocrText: 'Sales Report Q4 2024\nTotal Revenue: $1,247,832\nGrowth: +12.3%\n[Export] [Print] [Share]',
+  ocrText: 'Task Manager\nActive Tasks: 3\nCompleted: 12\n[New Task] [Refresh] [Export]',
   detectedElements: [
-    { id: 'el-1', type: 'button', label: 'Export', bounds: { x: 120, y: 340, width: 80, height: 32 }, confidence: 0.94 },
-    { id: 'el-2', type: 'button', label: 'Print', bounds: { x: 210, y: 340, width: 70, height: 32 }, confidence: 0.92 },
-    { id: 'el-3', type: 'button', label: 'Share', bounds: { x: 290, y: 340, width: 75, height: 32 }, confidence: 0.91 },
-    { id: 'el-4', type: 'text', label: 'Revenue Display', bounds: { x: 50, y: 120, width: 200, height: 40 }, confidence: 0.97 },
+    { id: 'el-1', type: 'button', label: 'New Task', bounds: { x: 120, y: 340, width: 80, height: 32 }, confidence: 0.94 },
+    { id: 'el-2', type: 'button', label: 'Refresh', bounds: { x: 210, y: 340, width: 70, height: 32 }, confidence: 0.92 },
+    { id: 'el-3', type: 'button', label: 'Export', bounds: { x: 290, y: 340, width: 75, height: 32 }, confidence: 0.91 },
   ],
-  cursorTarget: { x: 160, y: 356, label: 'Export Button' },
+  cursorTarget: { x: 160, y: 356, label: 'New Task Button' },
   confidence: 0.89,
-  nextAction: 'Click Export button to save report as PDF',
+  nextAction: 'Click New Task button to create a task',
 };
 
 export const mockMemoryShortTerm: MemoryEntry[] = [
