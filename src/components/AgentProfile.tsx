@@ -8,12 +8,6 @@ interface AgentProfileProps {
   stats: AgentStats;
 }
 
-const typeLabels: Record<Agent['type'], string> = {
-  assistant: 'Assistant',
-  developer: 'Developer',
-  researcher: 'Researcher',
-};
-
 export function AgentProfile({ agent, stats }: AgentProfileProps) {
   return (
     <div className="glass-card p-4 rounded-lg space-y-4 animate-slide-up">
@@ -49,7 +43,7 @@ export function AgentProfile({ agent, stats }: AgentProfileProps) {
         <div className="flex-1">
           <h2 className="text-lg font-semibold">{agent.name}</h2>
           <p className="text-sm text-muted-foreground">
-            {typeLabels[agent.type]}
+            {agent.title || agent.role}
           </p>
           
           {/* Status text */}

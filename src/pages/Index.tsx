@@ -141,7 +141,7 @@ const Index = () => {
       id: `agent-${Date.now()}`,
       name: `Agent ${agents.length + 1}`,
       avatar: '🤖',
-      type: 'assistant',
+      title: 'Assistant',
       status: 'idle',
     };
     setAgents(prev => [...prev, newAgent]);

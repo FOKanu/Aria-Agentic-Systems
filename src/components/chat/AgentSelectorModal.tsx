@@ -110,6 +110,7 @@ export function AgentSelectorModal({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{agent.name}</span>
+                      <span className="text-xs text-muted-foreground">- {agent.title}</span>
                       <span
                         className={cn(
                           'w-2 h-2 rounded-full',

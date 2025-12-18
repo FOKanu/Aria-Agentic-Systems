@@ -70,7 +70,7 @@ export function VisionPage() {
         <div className="flex-1">
           <p className="font-medium">{currentAgent.name}</p>
           <p className="text-xs text-muted-foreground capitalize">
-            {currentAgent.type} • {currentAgent.status}
+            {currentAgent.title} • {currentAgent.status}
           </p>
         </div>
         <div className={cn(
