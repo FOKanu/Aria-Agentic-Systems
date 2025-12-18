@@ -273,6 +273,7 @@ const Index = () => {
             onSelectAgent={setSelectedAgentId}
             onOpenFleetCommand={handleOpenFleetCommand}
             onCreateAgent={handleCreateAgent}
+            onNavigate={(tab) => handleTabChange(tab as TabId)}
           />
         </div>
 
@@ -298,6 +299,7 @@ const Index = () => {
           onSelectAgent={setSelectedAgentId}
           onOpenFleetCommand={handleOpenFleetCommand}
           onCreateAgent={handleCreateAgent}
+          onNavigate={(tab) => handleTabChange(tab as TabId)}
         />
       </div>
 
