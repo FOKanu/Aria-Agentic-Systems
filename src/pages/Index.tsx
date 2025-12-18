@@ -12,6 +12,7 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { AgentDetailsPage } from '@/pages/AgentDetailsPage';
 import { AuthPage, MockUser } from '@/pages/AuthPage';
 import { ProfilePage } from '@/pages/ProfilePage';
+import { ChatPage } from '@/pages/ChatPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { mockAgents as initialAgents, mockAgentStats, fleetStatus } from '@/data/agentsData';
@@ -218,6 +219,8 @@ const Index = () => {
 
     // Main tab views
     switch (activeTab) {
+      case 'chat':
+        return <ChatPage />;
       case 'dashboard':
         return (
           <DashboardPage
@@ -248,6 +251,33 @@ const Index = () => {
         return null;
     }
   };
+
+  // Chat page has its own full-screen layout
+  if (activeTab === 'chat' && isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Left Agent Rail - Desktop */}
+        <div className="hidden lg:block">
+          <AgentRail
+            agents={agents}
+            selectedAgentId={selectedAgentId}
+            onSelectAgent={setSelectedAgentId}
+            onOpenFleetCommand={handleOpenFleetCommand}
+            onCreateAgent={handleCreateAgent}
+          />
+        </div>
+
+        <div className="lg:pl-20">
+          <ChatPage />
+        </div>
+
+        {/* Bottom Nav - Mobile */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+          <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
