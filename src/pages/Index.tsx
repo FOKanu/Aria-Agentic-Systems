@@ -315,8 +315,10 @@ const Index = () => {
       </div>
       
       {/* Main Content */}
-      <main className="pt-14 pb-20 px-4 lg:pl-24 lg:pt-20 lg:pb-4 max-w-6xl">
-        {renderPage()}
+      <main className="pt-14 pb-20 px-4 lg:pl-24 lg:pr-4 lg:pt-20 lg:pb-4">
+        <div className="max-w-6xl mx-auto">
+          {renderPage()}
+        </div>
       </main>
       
       {/* Bottom Nav - Mobile */}
