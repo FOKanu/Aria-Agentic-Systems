@@ -67,11 +67,6 @@ const navItems = [
 // Monitoring items - dedicated section for monitoring features
 const monitoringItems = [
   { id: 'monitoring', label: 'Monitoring Hub', icon: Monitor },
-  { id: 'monitoring-vision', label: 'Vision', icon: Eye },
-  { id: 'monitoring-activity', label: 'Activity Stream', icon: Activity },
-  { id: 'monitoring-trace', label: 'Execution Trace', icon: GitBranch },
-  { id: 'monitoring-tools', label: 'Tool Monitor', icon: Wrench },
-  { id: 'monitoring-alerts', label: 'Alerts & Controls', icon: AlertTriangle },
 ];
 
 // Agent capabilities/task types
