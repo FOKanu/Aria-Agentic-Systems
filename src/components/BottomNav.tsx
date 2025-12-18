@@ -1,4 +1,5 @@
-import { LayoutDashboard, ListTodo, Eye, Brain, Settings, Rocket } from 'lucide-react';
+import { useState } from 'react';
+import { LayoutDashboard, ListTodo, Eye, Brain, Settings, Rocket, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type TabId = 'dashboard' | 'tasks' | 'vision' | 'memory' | 'settings' | 'fleet';
@@ -19,32 +20,64 @@ const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
 ];
 
 export function BottomNav({ activeTab, onTabChange, isDesktop }: BottomNavProps) {
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   if (isDesktop) {
+    const handleTabClick = (tabId: TabId) => {
+      onTabChange(tabId);
+      setIsCollapsed(true);
+    };
+
     return (
-      <nav className="fixed top-14 left-20 h-[calc(100vh-3.5rem)] w-48 bg-card/60 backdrop-blur-xl border-r border-border z-30">
-        <div className="flex flex-col gap-1 p-3 pt-6">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onTabChange(tab.id)}
-                className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-display font-medium',
-                  isActive 
-                    ? 'bg-primary/20 text-primary glow-primary' 
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
-                )}
-              >
-                <Icon className={cn('w-5 h-5', isActive && 'drop-shadow-[0_0_8px_hsl(var(--primary))]')} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      <>
+        {/* Collapsed state - just a toggle button */}
+        <button
+          onClick={() => setIsCollapsed(false)}
+          className={cn(
+            "fixed top-20 left-20 z-40 p-2 rounded-lg bg-card/80 backdrop-blur border border-border hover:bg-secondary transition-all",
+            !isCollapsed && "opacity-0 pointer-events-none"
+          )}
+        >
+          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+        </button>
+
+        {/* Expanded sidebar */}
+        <nav 
+          className={cn(
+            "fixed top-14 left-20 h-[calc(100vh-3.5rem)] w-48 bg-card/95 backdrop-blur-xl border-r border-border z-30 transition-transform duration-200",
+            isCollapsed && "-translate-x-full opacity-0 pointer-events-none"
+          )}
+        >
+          <div className="flex flex-col gap-1 p-3 pt-6">
+            <button
+              onClick={() => setIsCollapsed(true)}
+              className="self-end p-2 rounded-lg hover:bg-secondary transition-colors mb-2"
+            >
+              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.id)}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-display font-medium',
+                    isActive 
+                      ? 'bg-primary/20 text-primary glow-primary' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                  )}
+                >
+                  <Icon className={cn('w-5 h-5', isActive && 'drop-shadow-[0_0_8px_hsl(var(--primary))]')} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      </>
     );
   }
 
