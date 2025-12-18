@@ -7,25 +7,37 @@ import { ChatAgent, ChatAttachment } from '@/types/chat';
 import { useToast } from '@/hooks/use-toast';
 
 const ACCEPTED_FILE_TYPES = {
-  // Documents
+  // Spreadsheets
   'text/csv': { icon: FileText, label: 'CSV' },
+  'application/vnd.ms-excel': { icon: FileText, label: 'XLS' },
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { icon: FileText, label: 'XLSX' },
+  // Documents
   'application/pdf': { icon: FileText, label: 'PDF' },
   'application/msword': { icon: FileText, label: 'DOC' },
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': { icon: FileText, label: 'DOCX' },
+  'application/vnd.ms-powerpoint': { icon: FileText, label: 'PPT' },
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': { icon: FileText, label: 'PPTX' },
+  'text/plain': { icon: FileText, label: 'TXT' },
+  'text/markdown': { icon: FileText, label: 'MD' },
   // Code
   'text/html': { icon: FileText, label: 'HTML' },
   'text/css': { icon: FileText, label: 'CSS' },
+  'text/javascript': { icon: FileText, label: 'JS' },
+  'application/javascript': { icon: FileText, label: 'JS' },
   'text/x-python': { icon: FileText, label: 'Python' },
   'application/x-python-code': { icon: FileText, label: 'Python' },
   'application/json': { icon: FileText, label: 'JSON' },
+  'application/xml': { icon: FileText, label: 'XML' },
+  'text/xml': { icon: FileText, label: 'XML' },
   // Images
   'image/jpeg': { icon: Image, label: 'JPEG' },
   'image/png': { icon: Image, label: 'PNG' },
   'image/webp': { icon: Image, label: 'WebP' },
   'image/gif': { icon: Image, label: 'GIF' },
+  'image/svg+xml': { icon: Image, label: 'SVG' },
 };
 
-const ACCEPTED_EXTENSIONS = '.csv,.pdf,.doc,.docx,.html,.css,.py,.ipynb,.json,.jpeg,.jpg,.png,.webp,.gif';
+const ACCEPTED_EXTENSIONS = '.csv,.xls,.xlsx,.pdf,.doc,.docx,.ppt,.pptx,.txt,.md,.html,.css,.js,.ts,.tsx,.py,.ipynb,.json,.xml,.jpeg,.jpg,.png,.webp,.gif,.svg';
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_FILES = 10;
 
