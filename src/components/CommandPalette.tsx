@@ -21,7 +21,8 @@ import {
   Play,
   Pause,
   Square,
-  User
+  User,
+  FolderOpen
 } from 'lucide-react';
 import { AGENTS, UnifiedAgent } from '@/data/agentsData';
 import { TabId } from '@/components/BottomNav';
@@ -38,6 +39,7 @@ interface CommandPaletteProps {
 const pages = [
   { id: 'home', label: 'Home', icon: Home, keywords: ['home', 'main', 'start'] },
   { id: 'chat', label: 'Chat', icon: MessageSquare, keywords: ['chat', 'message', 'talk', 'conversation'] },
+  { id: 'files', label: 'Files', icon: FolderOpen, keywords: ['files', 'documents', 'folders', 'upload', 'storage'] },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, keywords: ['dashboard', 'overview', 'stats'] },
   { id: 'tasks', label: 'Tasks', icon: ListTodo, keywords: ['tasks', 'todo', 'missions', 'work'] },
   { id: 'vision', label: 'Vision', icon: Eye, keywords: ['vision', 'view', 'monitor', 'watch'] },
