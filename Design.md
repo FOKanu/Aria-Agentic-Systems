@@ -26,7 +26,7 @@
 
 ## Project Vision
 
-ARIA is a sophisticated multi-agent AI command center designed to orchestrate multiple AI agents for research, development, and automation tasks. The system emphasizes **local-first AI processing** with cloud fallback, ensuring privacy, speed, and cost efficiency.
+ARIA is My beloved project, a sophisticated multi-agent AI command center designed to orchestrate multiple AI agents for research, development, and automation tasks. The system emphasizes **local-first AI processing** with cloud fallback, ensuring privacy, speed, and cost efficiency.
 
 ### Core Philosophy
 - **Local-First AI:** 95% of workloads handled by local models (Ollama/Docker)
@@ -960,7 +960,7 @@ CREATE TABLE agent_preferences (
 
 ### License
 
-[To be determined]
+Patented by Francis Okorie Iyeke-Kanu
 
 ---
 
