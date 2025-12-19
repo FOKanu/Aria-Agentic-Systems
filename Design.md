@@ -6,7 +6,7 @@
 **Project Creator:** Francis Okorie Iyeke-Kanu  
 **Contact:** francis.okorie.Ik@gmail.com  
 **Version:** 0.1.0-alpha  
-**Last Updated:** December 19, 2024
+**Last Updated:** December 17, 2025
 
 ---
 
