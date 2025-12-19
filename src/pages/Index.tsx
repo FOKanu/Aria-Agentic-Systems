@@ -17,6 +17,7 @@ import { AuthPage, MockUser } from '@/pages/AuthPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { ChatPage } from '@/pages/ChatPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
+import { FilesPage } from '@/pages/FilesPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -370,6 +371,8 @@ const Index = () => {
         return <AgentsPage onSelectAgent={handleSelectAgentFromFleet} />;
       case 'analytics':
         return <AnalyticsPage />;
+      case 'files':
+        return <FilesPage />;
       default:
         return null;
     }
