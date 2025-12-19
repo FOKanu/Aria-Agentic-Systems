@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark, GripVertical, Monitor, Activity, GitBranch, Wrench, AlertTriangle } from 'lucide-react';
+import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark, GripVertical, Monitor, Activity, GitBranch, Wrench, AlertTriangle, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -59,6 +59,7 @@ const statusColors: Record<string, string> = {
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'chat', label: 'Chat', icon: MessageSquare },
+  { id: 'files', label: 'Files', icon: FolderOpen },
   { id: 'agents', label: 'Agents', icon: Bot },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'settings', label: 'Settings', icon: Settings },
