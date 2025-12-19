@@ -10,6 +10,19 @@ export type AIModel =
   | 'openai/gpt-5-mini'
   | 'openai/gpt-5';
 
+// String literal type for agent role IDs (for use as Record keys)
+export type AgentRoleId = 
+  | 'atlas' 
+  | 'nova' 
+  | 'sage' 
+  | 'echo' 
+  | 'pixel' 
+  | 'nexus' 
+  | 'cipher' 
+  | 'flux' 
+  | 'aria' 
+  | 'orion';
+
 export interface RoutingDecision {
   provider: AIProvider;
   model: AIModel;
@@ -19,8 +32,8 @@ export interface RoutingDecision {
   fallbackModel?: AIModel;
 }
 
-export interface AgentRole {
-  id: string;
+export interface AgentRoleConfig {
+  id: AgentRoleId;
   name: string;
   primaryFunction: string;
   preferredFileTypes: string[];
@@ -42,13 +55,26 @@ export interface AgentExecutionContext {
   temperature?: number;
 }
 
-export interface FileContext {
+export interface FileContextItem {
   fileId: string;
   fileName: string;
   fileType: string;
   summary?: string;
   relevanceScore: number;
   hasPermission: boolean;
+}
+
+// Built file context for agent task execution
+export interface FileContext {
+  availableFiles: Array<{
+    id: string;
+    name: string;
+    type: string;
+    summary?: string;
+    relevance: number;
+  }>;
+  pendingAccessFiles: string[];
+  deniedFiles: string[];
 }
 
 export interface ChatMessage {
