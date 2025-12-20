@@ -1008,6 +1008,738 @@ CREATE TABLE agent_preferences (
 
 ---
 
+## Social Media Automation System
+
+### Overview
+
+The Social Media Automation system provides AI-powered content scheduling, automated message responses, and multi-platform management across 7 major platforms.
+
+### System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SOCIAL MEDIA AUTOMATION HUB                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                     AI CONTENT CALENDAR (Drag & Drop)                  │ │
+│  │                                                                         │ │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │ │
+│  │  │   Mon    │  │   Tue    │  │   Wed    │  │   Thu    │  │   Fri    │ │ │
+│  │  │ ═════════│  │ ═════════│  │ ═════════│  │ ═════════│  │ ═════════│ │ │
+│  │  │ 📸 IG    │  │ 🐦 Tweet │  │ 📺 YT    │  │ 💼 LinkedIn│ │ 🎵 TikTok│ │ │
+│  │  │ 9:00 AM  │  │ 12:00 PM │  │ 3:00 PM  │  │ 10:00 AM │  │ 6:00 PM  │ │ │
+│  │  │          │  │          │  │          │  │          │  │          │ │ │
+│  │  │ 🔮 OF    │  │          │  │ 🎮 Twitch│  │          │  │ 📸 IG    │ │ │
+│  │  │ 8:00 PM  │  │          │  │ 7:00 PM  │  │          │  │ 9:00 PM  │ │ │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘ │ │
+│  │                                                                         │ │
+│  │  [AI Suggestions] [Optimal Timing] [Bulk Schedule] [Export Calendar]   │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                         AUTO-RESPONSE SYSTEM                            │ │
+│  │                     (Hybrid: Local First → Cloud Fallback)             │ │
+│  │                                                                         │ │
+│  │  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────────┐ │ │
+│  │  │  Incoming DM    │───▶│  Local Model    │───▶│  Response Sent      │ │ │
+│  │  │  or Comment     │    │  (Ollama/Docker)│    │  (< 2s latency)     │ │ │
+│  │  └─────────────────┘    └────────┬────────┘    └─────────────────────┘ │ │
+│  │                                  │                                      │ │
+│  │                       ┌──────────▼──────────┐                           │ │
+│  │                       │ Stuck/Timeout (>5s) │                           │ │
+│  │                       │ or Complex Query    │                           │ │
+│  │                       └──────────┬──────────┘                           │ │
+│  │                                  │                                      │ │
+│  │                       ┌──────────▼──────────┐                           │ │
+│  │                       │  Lovable AI Gateway │                           │ │
+│  │                       │  (Gemini 2.5 Flash) │                           │ │
+│  │                       └─────────────────────┘                           │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                        PLATFORM ADAPTERS (7)                            │ │
+│  │                                                                         │ │
+│  │  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐          │ │
+│  │  │ Twitter │ │Instagram│ │LinkedIn │ │ YouTube │ │ TikTok  │          │ │
+│  │  │   /X    │ │         │ │         │ │         │ │         │          │ │
+│  │  │ ─────── │ │ ─────── │ │ ─────── │ │ ─────── │ │ ─────── │          │ │
+│  │  │ • Post  │ │ • Post  │ │ • Post  │ │ • Upload│ │ • Upload│          │ │
+│  │  │ • Reply │ │ • Story │ │ • Article│ │ • Shorts│ │ • Video │          │ │
+│  │  │ • DM    │ │ • Reel  │ │ • DM    │ │ • Comment│ │ • Comment│         │ │
+│  │  │ • Like  │ │ • DM    │ │ • Comment│ │ • Reply │ │ • Reply │          │ │
+│  │  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘          │ │
+│  │                                                                         │ │
+│  │  ┌─────────┐ ┌─────────┐                                               │ │
+│  │  │OnlyFans │ │  Twitch │                                               │ │
+│  │  │         │ │         │                                               │ │
+│  │  │ ─────── │ │ ─────── │                                               │ │
+│  │  │ • Post  │ │ • Stream│                                               │ │
+│  │  │ • Message│ │ • Title│                                               │ │
+│  │  │ • PPV   │ │ • Chat  │                                               │ │
+│  │  │ • Tip   │ │ • Clip  │                                               │ │
+│  │  └─────────┘ └─────────┘                                               │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Database Schema
+
+```sql
+-- ═══════════════════════════════════════════════════════════════════════════
+-- SOCIAL MEDIA AUTOMATION TABLES
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Platform connection types
+CREATE TYPE public.social_platform AS ENUM (
+  'twitter', 'instagram', 'linkedin', 'youtube', 'tiktok', 'onlyfans', 'twitch'
+);
+
+-- Post status tracking
+CREATE TYPE public.post_status AS ENUM (
+  'draft', 'scheduled', 'publishing', 'published', 'failed', 'cancelled'
+);
+
+-- Auto-response mode
+CREATE TYPE public.response_mode AS ENUM (
+  'ai_generated', 'template', 'hybrid'
+);
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- PLATFORM CONNECTIONS
+-- Stores OAuth tokens and platform-specific settings per user
+-- ───────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.platform_connections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  platform social_platform NOT NULL,
+  account_id TEXT NOT NULL,                    -- Platform-specific account ID
+  account_name TEXT,                           -- Display name (@handle)
+  account_avatar TEXT,                         -- Profile image URL
+  access_token TEXT NOT NULL,                  -- Encrypted OAuth token
+  refresh_token TEXT,                          -- For token refresh
+  token_expires_at TIMESTAMPTZ,
+  scopes TEXT[],                               -- Granted API scopes
+  is_active BOOLEAN DEFAULT true,
+  metadata JSONB DEFAULT '{}',                 -- Platform-specific data
+  connected_at TIMESTAMPTZ DEFAULT now(),
+  last_synced_at TIMESTAMPTZ,
+  
+  UNIQUE(user_id, platform, account_id)
+);
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- SCHEDULED POSTS
+-- Content queue with drag-drop calendar support
+-- ───────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.scheduled_posts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
+  
+  -- Content
+  content TEXT NOT NULL,                       -- Post text/caption
+  media_urls TEXT[],                           -- Attached media URLs
+  media_types TEXT[],                          -- 'image', 'video', 'gif'
+  link_url TEXT,                               -- Optional link attachment
+  
+  -- Scheduling
+  scheduled_for TIMESTAMPTZ NOT NULL,
+  timezone TEXT DEFAULT 'UTC',
+  status post_status DEFAULT 'scheduled',
+  
+  -- Calendar positioning (for drag-drop)
+  calendar_order INTEGER DEFAULT 0,            -- Order within same time slot
+  color_tag TEXT,                              -- Visual color coding
+  
+  -- AI Suggestions
+  ai_generated BOOLEAN DEFAULT false,
+  ai_prompt TEXT,                              -- Prompt used to generate content
+  optimal_time_suggested BOOLEAN DEFAULT false,
+  engagement_prediction REAL,                  -- 0-1 predicted engagement score
+  
+  -- Tracking
+  platform_post_id TEXT,                       -- ID returned after publishing
+  published_at TIMESTAMPTZ,
+  error_message TEXT,
+  retry_count INTEGER DEFAULT 0,
+  
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Index for calendar queries (7+ days range)
+CREATE INDEX idx_scheduled_posts_calendar 
+  ON public.scheduled_posts(user_id, scheduled_for, status);
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- AUTO-RESPONSE RULES
+-- Template and AI-based response configurations
+-- ───────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.auto_response_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE,
+  
+  -- Rule definition
+  name TEXT NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  priority INTEGER DEFAULT 0,                  -- Higher = evaluated first
+  
+  -- Trigger conditions
+  trigger_type TEXT NOT NULL,                  -- 'dm', 'comment', 'mention', 'all'
+  keyword_triggers TEXT[],                     -- Keywords to match
+  keyword_match_mode TEXT DEFAULT 'any',       -- 'any', 'all', 'exact'
+  exclude_keywords TEXT[],                     -- Skip if these present
+  
+  -- Response configuration
+  response_mode response_mode DEFAULT 'hybrid',
+  template_response TEXT,                      -- Static template (with variables)
+  ai_system_prompt TEXT,                       -- Custom AI persona/instructions
+  ai_context TEXT,                             -- Additional context for AI
+  
+  -- AI Model routing
+  prefer_local_model BOOLEAN DEFAULT true,     -- Try local first
+  local_timeout_ms INTEGER DEFAULT 5000,       -- Fallback to cloud after
+  cloud_model TEXT DEFAULT 'google/gemini-2.5-flash',
+  
+  -- Rate limiting
+  max_responses_per_hour INTEGER DEFAULT 60,
+  delay_min_seconds INTEGER DEFAULT 30,        -- Min delay before responding
+  delay_max_seconds INTEGER DEFAULT 120,       -- Max delay (randomized)
+  
+  -- Tracking
+  responses_sent INTEGER DEFAULT 0,
+  last_triggered_at TIMESTAMPTZ,
+  
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- AUTO-RESPONSE LOGS
+-- History of all automated responses for audit/analytics
+-- ───────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.auto_response_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  rule_id UUID REFERENCES public.auto_response_rules(id) ON DELETE SET NULL,
+  connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
+  
+  -- Original message
+  incoming_message_id TEXT,                    -- Platform-specific ID
+  incoming_content TEXT NOT NULL,
+  incoming_author TEXT,
+  incoming_author_id TEXT,
+  
+  -- Response details
+  response_content TEXT NOT NULL,
+  response_model TEXT,                         -- 'local:llama3.2' or 'cloud:gemini-2.5-flash'
+  response_latency_ms INTEGER,
+  
+  -- Status
+  was_sent BOOLEAN DEFAULT false,
+  sent_at TIMESTAMPTZ,
+  error_message TEXT,
+  
+  -- Human review
+  flagged_for_review BOOLEAN DEFAULT false,
+  reviewed_by UUID REFERENCES auth.users(id),
+  review_outcome TEXT,                         -- 'approved', 'rejected', 'edited'
+  
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- CONTENT ANALYTICS
+-- Performance tracking for scheduled and auto-response content
+-- ───────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.content_analytics (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id UUID REFERENCES public.scheduled_posts(id) ON DELETE CASCADE,
+  connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
+  
+  -- Engagement metrics
+  impressions INTEGER DEFAULT 0,
+  reach INTEGER DEFAULT 0,
+  likes INTEGER DEFAULT 0,
+  comments INTEGER DEFAULT 0,
+  shares INTEGER DEFAULT 0,
+  saves INTEGER DEFAULT 0,
+  clicks INTEGER DEFAULT 0,
+  
+  -- Platform-specific
+  retweets INTEGER,                            -- Twitter
+  story_views INTEGER,                         -- Instagram
+  video_views INTEGER,                         -- YouTube/TikTok/Twitch
+  watch_time_seconds INTEGER,
+  subscribers_gained INTEGER,
+  
+  -- Calculated
+  engagement_rate REAL,                        -- (interactions / impressions) * 100
+  
+  last_synced_at TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- ───────────────────────────────────────────────────────────────────────────
+-- OPTIMAL POSTING TIMES
+-- AI-learned best times to post per platform/user
+-- ───────────────────────────────────────────────────────────────────────────
+CREATE TABLE public.optimal_posting_times (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
+  
+  day_of_week INTEGER NOT NULL,                -- 0 = Sunday, 6 = Saturday
+  hour_utc INTEGER NOT NULL,                   -- 0-23
+  
+  avg_engagement_rate REAL,
+  sample_size INTEGER DEFAULT 0,
+  confidence_score REAL,                       -- 0-1, higher = more reliable
+  
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  
+  UNIQUE(connection_id, day_of_week, hour_utc)
+);
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- ROW LEVEL SECURITY POLICIES
+-- ═══════════════════════════════════════════════════════════════════════════
+
+ALTER TABLE public.platform_connections ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.scheduled_posts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.auto_response_rules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.auto_response_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.content_analytics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.optimal_posting_times ENABLE ROW LEVEL SECURITY;
+
+-- Users can only access their own data
+CREATE POLICY "Users access own connections" ON public.platform_connections
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Users access own posts" ON public.scheduled_posts
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Users access own rules" ON public.auto_response_rules
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Users access own logs" ON public.auto_response_logs
+  FOR ALL USING (
+    connection_id IN (
+      SELECT id FROM public.platform_connections WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users access own analytics" ON public.content_analytics
+  FOR ALL USING (
+    connection_id IN (
+      SELECT id FROM public.platform_connections WHERE user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users access own optimal times" ON public.optimal_posting_times
+  FOR ALL USING (
+    connection_id IN (
+      SELECT id FROM public.platform_connections WHERE user_id = auth.uid()
+    )
+  );
+```
+
+### Edge Functions
+
+#### 1. `process-auto-reply` - Hybrid AI Response Handler
+
+```typescript
+// supabase/functions/process-auto-reply/index.ts
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface IncomingMessage {
+  platform: string;
+  messageId: string;
+  content: string;
+  authorId: string;
+  authorName: string;
+  connectionId: string;
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+
+  try {
+    const { message }: { message: IncomingMessage } = await req.json();
+    
+    // 1. Find matching auto-response rule
+    const { data: rules } = await supabase
+      .from('auto_response_rules')
+      .select('*')
+      .eq('connection_id', message.connectionId)
+      .eq('is_active', true)
+      .order('priority', { ascending: false });
+
+    const matchedRule = rules?.find(rule => {
+      if (rule.keyword_triggers?.length) {
+        const hasKeyword = rule.keyword_triggers.some(
+          (kw: string) => message.content.toLowerCase().includes(kw.toLowerCase())
+        );
+        if (!hasKeyword) return false;
+      }
+      return true;
+    });
+
+    if (!matchedRule) {
+      return new Response(JSON.stringify({ skipped: true, reason: 'No matching rule' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 2. Generate response based on mode
+    let response: string;
+    let modelUsed: string;
+    const startTime = Date.now();
+
+    if (matchedRule.response_mode === 'template') {
+      response = matchedRule.template_response
+        .replace('{{author}}', message.authorName)
+        .replace('{{message}}', message.content);
+      modelUsed = 'template';
+    } else {
+      // Try local model first
+      if (matchedRule.prefer_local_model) {
+        try {
+          const localResponse = await Promise.race([
+            callLocalModel(message.content, matchedRule.ai_system_prompt),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('timeout')), matchedRule.local_timeout_ms)
+            )
+          ]);
+          response = localResponse as string;
+          modelUsed = 'local:llama3.2';
+        } catch {
+          // Fallback to cloud
+          response = await callLovableAI(message.content, matchedRule);
+          modelUsed = `cloud:${matchedRule.cloud_model}`;
+        }
+      } else {
+        response = await callLovableAI(message.content, matchedRule);
+        modelUsed = `cloud:${matchedRule.cloud_model}`;
+      }
+    }
+
+    const latency = Date.now() - startTime;
+
+    // 3. Log the response
+    await supabase.from('auto_response_logs').insert({
+      rule_id: matchedRule.id,
+      connection_id: message.connectionId,
+      incoming_message_id: message.messageId,
+      incoming_content: message.content,
+      incoming_author: message.authorName,
+      incoming_author_id: message.authorId,
+      response_content: response,
+      response_model: modelUsed,
+      response_latency_ms: latency,
+    });
+
+    return new Response(JSON.stringify({ response, modelUsed, latency }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Auto-reply error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+async function callLocalModel(content: string, systemPrompt: string): Promise<string> {
+  const response = await fetch('http://localhost:11434/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'llama3.2:8b',
+      messages: [
+        { role: 'system', content: systemPrompt || 'You are a helpful social media assistant.' },
+        { role: 'user', content }
+      ],
+      stream: false,
+    }),
+  });
+  const data = await response.json();
+  return data.message.content;
+}
+
+async function callLovableAI(content: string, rule: any): Promise<string> {
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: rule.cloud_model,
+      messages: [
+        { role: 'system', content: rule.ai_system_prompt || 'You are a helpful social media assistant.' },
+        { role: 'user', content }
+      ],
+    }),
+  });
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+```
+
+#### 2. `schedule-post` - CRON-based Post Publisher
+
+```typescript
+// supabase/functions/schedule-post/index.ts
+// Triggered by pg_cron every minute
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+serve(async (req) => {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+
+  try {
+    // Get posts due for publishing
+    const now = new Date().toISOString();
+    const { data: duePosts } = await supabase
+      .from('scheduled_posts')
+      .select('*, platform_connections(*)')
+      .eq('status', 'scheduled')
+      .lte('scheduled_for', now)
+      .limit(10);
+
+    const results = [];
+
+    for (const post of duePosts || []) {
+      try {
+        // Mark as publishing
+        await supabase
+          .from('scheduled_posts')
+          .update({ status: 'publishing' })
+          .eq('id', post.id);
+
+        // Publish via platform adapter
+        const platformPostId = await publishToPlatform(post);
+
+        // Mark as published
+        await supabase
+          .from('scheduled_posts')
+          .update({
+            status: 'published',
+            platform_post_id: platformPostId,
+            published_at: new Date().toISOString(),
+          })
+          .eq('id', post.id);
+
+        results.push({ id: post.id, status: 'published' });
+      } catch (error) {
+        // Mark as failed with retry
+        await supabase
+          .from('scheduled_posts')
+          .update({
+            status: post.retry_count < 3 ? 'scheduled' : 'failed',
+            retry_count: post.retry_count + 1,
+            error_message: error.message,
+          })
+          .eq('id', post.id);
+
+        results.push({ id: post.id, status: 'failed', error: error.message });
+      }
+    }
+
+    return new Response(JSON.stringify({ processed: results.length, results }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+async function publishToPlatform(post: any): Promise<string> {
+  const platform = post.platform_connections.platform;
+  const token = post.platform_connections.access_token;
+
+  // Platform-specific publishing logic
+  switch (platform) {
+    case 'twitter':
+      return await publishToTwitter(post.content, post.media_urls, token);
+    case 'instagram':
+      return await publishToInstagram(post.content, post.media_urls, token);
+    case 'linkedin':
+      return await publishToLinkedIn(post.content, post.media_urls, token);
+    // ... other platforms
+    default:
+      throw new Error(`Unsupported platform: ${platform}`);
+  }
+}
+```
+
+#### 3. `ai-content-generator` - AI Content Suggestions
+
+```typescript
+// supabase/functions/ai-content-generator/index.ts
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { platform, topic, tone, count = 5 } = await req.json();
+
+    const systemPrompt = `You are a social media content strategist. Generate ${count} post ideas for ${platform}.
+Tone: ${tone || 'professional but engaging'}
+Topic: ${topic}
+
+For each post, provide:
+1. The post content (platform-appropriate length)
+2. Suggested hashtags
+3. Best time to post (day and hour)
+4. Expected engagement level (high/medium/low)
+
+Format as JSON array.`;
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Generate content ideas about: ${topic}` }
+        ],
+        tools: [{
+          type: 'function',
+          function: {
+            name: 'suggest_posts',
+            description: 'Generate social media post suggestions',
+            parameters: {
+              type: 'object',
+              properties: {
+                suggestions: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      content: { type: 'string' },
+                      hashtags: { type: 'array', items: { type: 'string' } },
+                      bestDay: { type: 'string' },
+                      bestHour: { type: 'number' },
+                      engagementLevel: { type: 'string', enum: ['high', 'medium', 'low'] }
+                    },
+                    required: ['content', 'hashtags', 'bestDay', 'bestHour', 'engagementLevel']
+                  }
+                }
+              },
+              required: ['suggestions']
+            }
+          }
+        }],
+        tool_choice: { type: 'function', function: { name: 'suggest_posts' } }
+      }),
+    });
+
+    const data = await response.json();
+    const toolCall = data.choices[0].message.tool_calls?.[0];
+    const suggestions = JSON.parse(toolCall.function.arguments);
+
+    return new Response(JSON.stringify(suggestions), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error('Content generation error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+```
+
+### Platform Integration Specs
+
+| Platform | API | Auth Method | Rate Limits | Capabilities |
+|----------|-----|-------------|-------------|--------------|
+| **Twitter/X** | Twitter API v2 | OAuth 2.0 | 300 tweets/3hr (free), 100 DMs/day | Post, Reply, DM, Like, Retweet |
+| **Instagram** | Meta Graph API | OAuth 2.0 | 200 posts/day, 1000 DMs/day | Post, Story, Reel, DM, Comment |
+| **LinkedIn** | LinkedIn API | OAuth 2.0 | 100 posts/day | Post, Article, DM, Comment |
+| **YouTube** | YouTube Data API v3 | OAuth 2.0 | 10,000 units/day | Upload, Shorts, Comment, Reply |
+| **TikTok** | TikTok API | OAuth 2.0 | 100 videos/day | Upload, Comment, Reply |
+| **OnlyFans** | OnlyFans API | API Key | Varies | Post, Message, PPV, Tips |
+| **Twitch** | Twitch Helix API | OAuth 2.0 | 800/min | Stream Title, Chat, Clips |
+
+### UI Components
+
+```
+src/
+├── social-media/
+│   ├── components/
+│   │   ├── ContentCalendar.tsx       # Drag-drop 7+ day calendar
+│   │   ├── PostCard.tsx              # Draggable post card
+│   │   ├── AutoResponseRules.tsx     # Rule configuration UI
+│   │   ├── PlatformConnectionCard.tsx # OAuth connect buttons
+│   │   ├── ContentSuggestions.tsx    # AI-generated content
+│   │   ├── AnalyticsDashboard.tsx    # Engagement metrics
+│   │   └── OptimalTimesChart.tsx     # Best posting times
+│   ├── hooks/
+│   │   ├── useScheduledPosts.ts      # CRUD for scheduled posts
+│   │   ├── useAutoResponses.ts       # Auto-response rule management
+│   │   ├── usePlatformConnections.ts # OAuth connection state
+│   │   └── useContentGenerator.ts    # AI content suggestions
+│   ├── lib/
+│   │   ├── platformAdapters.ts       # Platform-specific formatting
+│   │   └── calendarUtils.ts          # Drag-drop calendar logic
+│   └── types/
+│       └── index.ts                  # TypeScript interfaces
+```
+
+### Implementation Priority
+
+| Phase | Feature | Complexity | Dependencies |
+|-------|---------|------------|--------------|
+| **1** | Database schema + migrations | Medium | Lovable Cloud |
+| **2** | Platform OAuth connections | High | Platform API keys |
+| **3** | Content Calendar UI | Medium | scheduled_posts table |
+| **4** | AI Content Generator | Medium | Lovable AI Gateway |
+| **5** | Auto-Response System | High | Local model + Cloud fallback |
+| **6** | Analytics Dashboard | Medium | content_analytics table |
+| **7** | CRON job for publishing | Medium | Edge function + pg_cron |
+
+---
+
 ## Appendix
 
 ### Contact & Support
