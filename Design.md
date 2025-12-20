@@ -5,8 +5,30 @@
 
 **Project Creator:** Francis Okorie Iyeke-Kanu  
 **Contact:** francis.okorie.Ik@gmail.com  
-**Version:** 0.1.0-alpha  
-**Last Updated:** December 17, 2025
+**Version:** 0.2.0-alpha  
+**Last Updated:** December 20, 2025
+
+---
+
+## Recent Changes (v0.2.0)
+
+### Global Chat System
+- **Persistent Floating Chat Panel:** Chat is now accessible from all capability pages via `FloatingChatPanel.tsx`
+- **Page Context Injection:** Each page automatically injects context (pageId, pageName, pageCategory) into chat
+- **Chat Context Provider:** New `useChatContext.tsx` hook provides global chat state management
+- **Context-Aware Responses:** Agents receive page context to provide relevant assistance
+
+### Voice Input System
+- **Floating Voice Button:** New `FloatingVoiceButton.tsx` positioned on left side, opposite chat button
+- **Voice Recording Panel:** Animated waveform display during recording with transcription preview
+- **Page Context Badge:** Voice input shows current page context for contextual commands
+- **Chat Integration:** Transcribed voice messages are automatically sent through chat system
+
+### DevOps Module Navigation
+- **Fixed Routing:** All DevOps pages (CI/CD, Code Review, Deployment, Infrastructure, Security, Logs) now properly render
+- **Updated BottomNav:** Extended TabId type to include DevOps page identifiers
+- **Breadcrumb Support:** AppBreadcrumb now includes DevOps sub-page labels
+- **AgentRail Corrections:** DevOps navigation items now use correct route IDs
 
 ---
 
