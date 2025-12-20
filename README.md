@@ -59,6 +59,22 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase (via Lovable Cloud)
+
+## Project Structure
+
+```
+src/
+├── core/           # Shared hooks, types, utils, providers
+├── shell/          # App chrome, routing, context providers
+├── features/       # Feature modules (chat, agents, dashboard, auth, etc.)
+├── agent-engine/   # AI routing & model services
+├── components/     # Shared UI components
+├── pages/          # Page components
+└── integrations/   # External integrations (Supabase)
+```
+
+See `Design.md` for detailed architecture documentation.
 
 ## How can I deploy this project?
 
