@@ -1,3 +1,7 @@
+/**
+ * Main Application Index
+ * Created by Francis Okorie Iyeke-Kanu
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { StatusBar } from '@/components/StatusBar';
 import { BottomNav, TabId } from '@/components/BottomNav';
@@ -36,6 +40,8 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { mockAgents as initialAgents, mockAgentStats, fleetStatus } from '@/data/agentsData';
 
 type ViewMode = 'main' | 'details' | 'profile';
+
+// Francis Okorie Iyeke-Kanu - Main Index Component
 
 const Index = () => {
   // Auth state

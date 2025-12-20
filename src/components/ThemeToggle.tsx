@@ -1,3 +1,4 @@
+// Theme Toggle - Created by Francis Okorie Iyeke-Kanu
 import { Moon, Sun, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +10,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 
+/* Francis Okorie Iyeke-Kanu */
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
 

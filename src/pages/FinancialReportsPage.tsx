@@ -1,3 +1,4 @@
+// Financial Reports Page - Created by Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { BarChart3, Download, Calendar, TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, PieChart, LineChart, Filter, RefreshCw, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';

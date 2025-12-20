@@ -1,3 +1,4 @@
+// Invoices Page - Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Receipt, Plus, Search, Filter, Download, Send, Calendar, DollarSign, Clock, CheckCircle, AlertCircle, XCircle, MoreVertical, Bot, Eye, FileText, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';

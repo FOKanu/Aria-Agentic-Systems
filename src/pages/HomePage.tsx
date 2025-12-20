@@ -1,3 +1,7 @@
+/**
+ * Home Page Component
+ * Author: Francis Okorie Iyeke-Kanu
+ */
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, CheckCircle, Clock, Activity, Send, Bot, AlertTriangle, ShieldCheck, Calendar, TrendingUp, Users, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -29,6 +33,7 @@ const scheduledTasks = [
 
 const successRateTrend = [85, 88, 82, 91, 87, 94, 92]; // Last 7 days
 
+// Francis Okorie Iyeke-Kanu - Home Page
 export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToChat }: HomePageProps) {
   const [miniChatInput, setMiniChatInput] = useState('');
   const [miniChatOpen, setMiniChatOpen] = useState(false);

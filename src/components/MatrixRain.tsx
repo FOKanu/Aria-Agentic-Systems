@@ -1,9 +1,11 @@
+// Matrix Rain Effect - Author: Francis Okorie Iyeke-Kanu
 import { useEffect, useRef } from 'react';
 
 interface MatrixRainProps {
   active: boolean;
 }
 
+/* Created by Francis Okorie Iyeke-Kanu */
 export function MatrixRain({ active }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

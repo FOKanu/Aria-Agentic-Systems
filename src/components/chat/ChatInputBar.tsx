@@ -1,3 +1,4 @@
+// Chat Input Bar - Francis Okorie Iyeke-Kanu
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Mic, MicOff, X, Loader2, Paperclip, FileText, Image, File } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -8,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAgentMention } from '@/hooks/useAgentMention';
 import { AgentMentionPopover } from './AgentMentionPopover';
 
+/* Francis Okorie Iyeke-Kanu - Accepted File Types */
 const ACCEPTED_FILE_TYPES = {
   // Spreadsheets
   'text/csv': { icon: FileText, label: 'CSV' },
@@ -56,6 +58,7 @@ interface ChatInputBarProps {
   disabled?: boolean;
 }
 
+// Created by Francis Okorie Iyeke-Kanu
 export function ChatInputBar({
   onSendMessage,
   onStartRecording,

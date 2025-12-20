@@ -1,5 +1,5 @@
 // FilesPage - Main file management interface
-
+// Developed by Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { UserFile, FileType } from '@/file-management/types';
 import { AGENTS } from '@/data/agentsData';
 import { getFileTypeFromExtension } from '@/file-management/lib/fileUtils';
 
+/* Francis Okorie Iyeke-Kanu */
 export function FilesPage() {
   const {
     files,

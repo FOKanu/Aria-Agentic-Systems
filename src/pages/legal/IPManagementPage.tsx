@@ -1,3 +1,4 @@
+// IP Management Page - Created by Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Lightbulb, Plus, Search, Filter, Calendar, AlertTriangle, CheckCircle, Clock, FileText, Globe, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,3 +1,4 @@
+// XP Bar Component - Francis Okorie Iyeke-Kanu
 import { cn } from '@/lib/utils';
 
 interface XPBarProps {
@@ -9,6 +10,7 @@ interface XPBarProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
+/* Developed by Francis Okorie Iyeke-Kanu */
 export function XPBar({ 
   current, 
   max, 

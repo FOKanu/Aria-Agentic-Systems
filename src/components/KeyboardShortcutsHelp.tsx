@@ -1,3 +1,4 @@
+// Keyboard Shortcuts Help - Author: Francis Okorie Iyeke-Kanu
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,7 @@ interface KeyboardShortcutsHelpProps {
   trigger?: React.ReactNode;
 }
 
+/* © Francis Okorie Iyeke-Kanu */
 export function KeyboardShortcutsHelp({ trigger }: KeyboardShortcutsHelpProps) {
   return (
     <Dialog>

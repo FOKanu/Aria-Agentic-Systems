@@ -1,3 +1,4 @@
+// Payments Page - Author: Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { DollarSign, Search, Filter, Send, Clock, CheckCircle, AlertCircle, XCircle, Plus, Calendar, User, MoreVertical, ArrowDownLeft, ArrowUpRight, Bot, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,3 +1,4 @@
+// Status Card Component - Francis Okorie Iyeke-Kanu
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
 
@@ -18,6 +19,7 @@ const statusColors = {
   primary: 'border-primary/50 bg-primary/5',
 };
 
+/* Developed by Francis Okorie Iyeke-Kanu */
 export function StatusCard({ title, value, icon: Icon, status = 'default', subtitle, className }: StatusCardProps) {
   return (
     <div className={cn(

@@ -1,3 +1,4 @@
+// Memory Page - Created by Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Brain, Clock, Database, Wrench, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ const tabs: { id: MemoryTab; label: string; icon: React.ElementType }[] = [
   { id: 'files', label: 'Files', icon: FileText },
 ];
 
+/* © Francis Okorie Iyeke-Kanu */
 export function MemoryPage() {
   const [activeTab, setActiveTab] = useState<MemoryTab>('short');
 

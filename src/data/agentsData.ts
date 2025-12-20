@@ -1,3 +1,7 @@
+/**
+ * Agent Data Module
+ * Created by Francis Okorie Iyeke-Kanu
+ */
 // Unified agent data - single source of truth for all agents across the app
 export type AgentRole = 'planner' | 'developer' | 'researcher' | 'assistant' | 'vision' | 'admin' | 'security' | 'devops' | 'communications' | 'scheduler';
 
@@ -13,7 +17,7 @@ export interface UnifiedAgent {
   capabilities: string[];
 }
 
-// 10 unique named agents with specialties
+// Francis Okorie Iyeke-Kanu - 10 unique named agents with specialties
 export const AGENTS: UnifiedAgent[] = [
   {
     id: 'atlas',
@@ -107,9 +111,11 @@ export const AGENTS: UnifiedAgent[] = [
   },
 ];
 
-// Helper to get agent by ID
+// Francis Okorie Iyeke-Kanu - Helper to get agent by ID
 export const getAgentById = (id: string): UnifiedAgent | undefined => 
   AGENTS.find(agent => agent.id === id);
+
+// © Francis Okorie Iyeke-Kanu
 
 // Helper to get display name (Name - Title)
 export const getAgentDisplayName = (agent: UnifiedAgent): string => 

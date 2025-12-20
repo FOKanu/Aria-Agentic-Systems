@@ -1,3 +1,4 @@
+// NDA Generator Page - © Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { FileText, Sparkles, Download, Send, Copy, Eye, Settings, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';

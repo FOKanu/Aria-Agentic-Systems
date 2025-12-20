@@ -1,3 +1,4 @@
+// Expenses Page - © Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { CreditCard, Plus, Search, Filter, Upload, Camera, Receipt, Tag, Calendar, DollarSign, TrendingUp, TrendingDown, PieChart, Bot, MoreVertical, FileText, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
