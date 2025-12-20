@@ -3,6 +3,7 @@ import { Settings, Shield, Eye, ScrollText, Terminal, Globe, Mail, FolderOpen } 
 import { Switch } from '@/components/ui/switch';
 import { AutonomyLevel } from '@/types/agent';
 import { cn } from '@/lib/utils';
+import { ProviderConfigSection } from '@/components/settings/ProviderConfigSection';
 
 const autonomyLevels: { id: AutonomyLevel; label: string; description: string }[] = [
   { id: 'manual', label: 'Manual', description: 'All actions require approval' },
@@ -37,6 +38,9 @@ export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPagePr
         <Settings className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-semibold">Settings</h2>
       </div>
+
+      {/* Provider Configuration */}
+      <ProviderConfigSection />
 
       {/* Autonomy Level */}
       <div className="space-y-3">
