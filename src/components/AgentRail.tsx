@@ -124,12 +124,12 @@ const capabilityCategories = [
     label: 'DevOps',
     icon: Code,
     subItems: [
-      { id: 'cicd', label: 'CI/CD Pipelines', icon: GitMerge },
-      { id: 'code-review', label: 'Code Review', icon: Code },
-      { id: 'deployment', label: 'Deployment Automation', icon: GitBranch },
-      { id: 'infrastructure', label: 'Infrastructure Monitoring', icon: Monitor },
-      { id: 'security', label: 'Security Scanning', icon: Shield },
-      { id: 'logs', label: 'Log Analysis', icon: Activity },
+      { id: 'devops-pipelines', label: 'CI/CD Pipelines', icon: GitMerge },
+      { id: 'devops-code-review', label: 'Code Review', icon: Code },
+      { id: 'devops-deployment', label: 'Deployment Automation', icon: GitBranch },
+      { id: 'devops-infrastructure', label: 'Infrastructure Monitoring', icon: Monitor },
+      { id: 'devops-security', label: 'Security Scanning', icon: Shield },
+      { id: 'devops-logs', label: 'Log Analysis', icon: Activity },
     ],
   },
   {

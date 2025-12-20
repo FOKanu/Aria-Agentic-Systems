@@ -1,7 +1,7 @@
 import { LayoutDashboard, ListTodo, Monitor, Brain, Settings, Bot, MessageSquare, Home, BarChart3, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type TabId = 'home' | 'dashboard' | 'tasks' | 'monitoring' | 'memory' | 'settings' | 'agents' | 'chat' | 'analytics' | 'files' | 'calendar' | 'contacts' | 'email' | 'workflows' | 'phone' | 'reservations' | 'invoices' | 'expenses' | 'budget' | 'reports' | 'payments' | 'tax' | 'documents';
+export type TabId = 'home' | 'dashboard' | 'tasks' | 'monitoring' | 'memory' | 'settings' | 'agents' | 'chat' | 'analytics' | 'files' | 'calendar' | 'contacts' | 'email' | 'workflows' | 'phone' | 'reservations' | 'invoices' | 'expenses' | 'budget' | 'reports' | 'payments' | 'tax' | 'documents' | 'devops-pipelines' | 'devops-code-review' | 'devops-deployment' | 'devops-infrastructure' | 'devops-security' | 'devops-logs';
 
 interface BottomNavProps {
   activeTab: TabId;

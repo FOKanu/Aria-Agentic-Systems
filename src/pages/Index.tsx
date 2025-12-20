@@ -34,6 +34,13 @@ import { BudgetPage } from '@/pages/BudgetPage';
 import { FinancialReportsPage } from '@/pages/FinancialReportsPage';
 import { PaymentsPage } from '@/pages/PaymentsPage';
 import { TaxPage } from '@/pages/TaxPage';
+// DevOps Module
+import CICDPipelinesPage from '@/pages/devops/CICDPipelinesPage';
+import CodeReviewPage from '@/pages/devops/CodeReviewPage';
+import DeploymentPage from '@/pages/devops/DeploymentPage';
+import InfrastructurePage from '@/pages/devops/InfrastructurePage';
+import SecurityScanningPage from '@/pages/devops/SecurityScanningPage';
+import LogAnalysisPage from '@/pages/devops/LogAnalysisPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -417,6 +424,19 @@ const Index = () => {
         return <TaxPage />;
       case 'documents':
         return <FilesPage />;
+      // DevOps Module
+      case 'devops-pipelines':
+        return <CICDPipelinesPage />;
+      case 'devops-code-review':
+        return <CodeReviewPage />;
+      case 'devops-deployment':
+        return <DeploymentPage />;
+      case 'devops-infrastructure':
+        return <InfrastructurePage />;
+      case 'devops-security':
+        return <SecurityScanningPage />;
+      case 'devops-logs':
+        return <LogAnalysisPage />;
       default:
         return null;
     }
