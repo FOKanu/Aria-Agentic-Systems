@@ -20,6 +20,13 @@ import { ContactsPage } from "./pages/ContactsPage";
 import { EmailPage } from "./pages/EmailPage";
 import { WorkflowsPage } from "./pages/WorkflowsPage";
 import NotFound from "./pages/NotFound";
+// DevOps Module
+import CICDPipelinesPage from "./pages/devops/CICDPipelinesPage";
+import CodeReviewPage from "./pages/devops/CodeReviewPage";
+import DeploymentPage from "./pages/devops/DeploymentPage";
+import InfrastructurePage from "./pages/devops/InfrastructurePage";
+import SecurityScanningPage from "./pages/devops/SecurityScanningPage";
+import LogAnalysisPage from "./pages/devops/LogAnalysisPage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +53,13 @@ const App = () => (
                         <Route path="/contacts" element={<ContactsPage />} />
                         <Route path="/email" element={<EmailPage />} />
                         <Route path="/workflows" element={<WorkflowsPage />} />
+                        {/* DevOps Routes */}
+                        <Route path="/devops/pipelines" element={<CICDPipelinesPage />} />
+                        <Route path="/devops/code-review" element={<CodeReviewPage />} />
+                        <Route path="/devops/deployment" element={<DeploymentPage />} />
+                        <Route path="/devops/infrastructure" element={<InfrastructurePage />} />
+                        <Route path="/devops/security" element={<SecurityScanningPage />} />
+                        <Route path="/devops/logs" element={<LogAnalysisPage />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </BrowserRouter>
