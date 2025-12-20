@@ -36,6 +36,69 @@ ARIA is My beloved project, a sophisticated multi-agent AI command center design
 
 ---
 
+## Agent Capability Categories
+
+ARIA organizes agent capabilities into structured categories for efficient task routing and specialized automation:
+
+### Admin
+| Capability | Description | Icon |
+|------------|-------------|------|
+| Calendar Management | Scheduling, reminders, meeting coordination | Calendar |
+| Email Automation | Drafting, filtering, auto-responses | Mail |
+| Phone & Calls | Call scheduling, transcription, VoIP | Phone |
+| Reservations & Booking | Restaurant, travel, appointment booking | Bookmark |
+| Contact Management | CRM integration, contact sync | Contact |
+| Workflow Automation | Task triggers, process automation | Workflow |
+
+### Finance
+| Capability | Description | Icon |
+|------------|-------------|------|
+| Invoice Generation | Auto-create and send invoices | Receipt |
+| Expense Tracking | Categorize and monitor spending | CreditCard |
+| Budget Planning | Forecasting and allocation | PieChart |
+| Financial Reports | P&L, cash flow, custom reports | BarChart3 |
+| Payment Processing | Payment gateway integration | DollarSign |
+| Tax Preparation | Document gathering, form prep | FileCheck |
+
+### Legal
+| Capability | Description | Icon |
+|------------|-------------|------|
+| Contract Drafting | Template-based contract creation | FileText |
+| Document Review | AI-powered clause analysis | FileCheck |
+| Compliance Monitoring | Regulatory tracking and alerts | Shield |
+| NDA Generator | Automated NDA creation | Gavel |
+| IP Management | Patent/trademark tracking | Scale |
+| Case Research | Legal precedent search | Search |
+
+### DevOps
+| Capability | Description | Icon |
+|------------|-------------|------|
+| CI/CD Pipelines | Build and deploy automation | GitMerge |
+| Code Review | Automated code analysis | Code |
+| Deployment Automation | Zero-downtime deployments | GitBranch |
+| Infrastructure Monitoring | Server health and metrics | Monitor |
+| Security Scanning | Vulnerability detection | Shield |
+| Log Analysis | Error tracking and insights | Activity |
+
+### Social Media
+| Capability | Description | Icon |
+|------------|-------------|------|
+| Content Scheduling | Multi-platform post scheduling | Calendar |
+| Post Generation | AI-powered content creation | Megaphone |
+| Analytics Dashboard | Engagement metrics and insights | TrendingUp |
+| Community Management | Comment moderation, replies | Users |
+| Influencer Outreach | Partnership management | Heart |
+| Trend Monitoring | Hashtag and topic tracking | BarChart3 |
+
+### Standalone Capabilities
+| Capability | Description | Icon |
+|------------|-------------|------|
+| Documents | File management and processing | FileText |
+| Memory | Context and knowledge retention | Brain |
+| Tasks | Task creation and tracking | ListTodo |
+
+---
+
 ## Architecture Overview
 
 ### High-Level System Architecture

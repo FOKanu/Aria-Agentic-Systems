@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark, GripVertical, Monitor, Activity, GitBranch, Wrench, AlertTriangle, FolderOpen } from 'lucide-react';
+import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark, GripVertical, Monitor, Activity, GitBranch, Wrench, AlertTriangle, FolderOpen, Scale, DollarSign, Share2, Users, Receipt, Gavel, GitMerge, TrendingUp, CreditCard, PieChart, FileCheck, Shield, Search, Megaphone, BarChart3, Heart, Workflow, Contact } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -9,6 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   Popover,
@@ -70,16 +73,80 @@ const monitoringItems = [
   { id: 'monitoring', label: 'Monitoring Hub', icon: Monitor },
 ];
 
-// Agent capabilities/task types
-const capabilityItems = [
-  { id: 'calendar', label: 'Calendar', icon: Calendar },
-  { id: 'tasks', label: 'Tasks', icon: ListTodo },
-  { id: 'email', label: 'Email', icon: Mail },
-  { id: 'phone', label: 'Phone & Calls', icon: Phone },
+// Agent capability categories with sub-items
+const capabilityCategories = [
+  {
+    id: 'admin',
+    label: 'Admin',
+    icon: Settings,
+    subItems: [
+      { id: 'calendar', label: 'Calendar Management', icon: Calendar },
+      { id: 'email', label: 'Email Automation', icon: Mail },
+      { id: 'phone', label: 'Phone & Calls', icon: Phone },
+      { id: 'reservations', label: 'Reservations & Booking', icon: Bookmark },
+      { id: 'contacts', label: 'Contact Management', icon: Contact },
+      { id: 'workflows', label: 'Workflow Automation', icon: Workflow },
+    ],
+  },
+  {
+    id: 'finance',
+    label: 'Finance',
+    icon: DollarSign,
+    subItems: [
+      { id: 'invoices', label: 'Invoice Generation', icon: Receipt },
+      { id: 'expenses', label: 'Expense Tracking', icon: CreditCard },
+      { id: 'budget', label: 'Budget Planning', icon: PieChart },
+      { id: 'reports', label: 'Financial Reports', icon: BarChart3 },
+      { id: 'payments', label: 'Payment Processing', icon: DollarSign },
+      { id: 'tax', label: 'Tax Preparation', icon: FileCheck },
+    ],
+  },
+  {
+    id: 'legal',
+    label: 'Legal',
+    icon: Scale,
+    subItems: [
+      { id: 'contracts', label: 'Contract Drafting', icon: FileText },
+      { id: 'review', label: 'Document Review', icon: FileCheck },
+      { id: 'compliance', label: 'Compliance Monitoring', icon: Shield },
+      { id: 'nda', label: 'NDA Generator', icon: Gavel },
+      { id: 'ip', label: 'IP Management', icon: Scale },
+      { id: 'research', label: 'Case Research', icon: Search },
+    ],
+  },
+  {
+    id: 'devops',
+    label: 'DevOps',
+    icon: Code,
+    subItems: [
+      { id: 'cicd', label: 'CI/CD Pipelines', icon: GitMerge },
+      { id: 'code-review', label: 'Code Review', icon: Code },
+      { id: 'deployment', label: 'Deployment Automation', icon: GitBranch },
+      { id: 'infrastructure', label: 'Infrastructure Monitoring', icon: Monitor },
+      { id: 'security', label: 'Security Scanning', icon: Shield },
+      { id: 'logs', label: 'Log Analysis', icon: Activity },
+    ],
+  },
+  {
+    id: 'social',
+    label: 'Social Media',
+    icon: Share2,
+    subItems: [
+      { id: 'scheduling', label: 'Content Scheduling', icon: Calendar },
+      { id: 'posts', label: 'Post Generation', icon: Megaphone },
+      { id: 'analytics', label: 'Analytics Dashboard', icon: TrendingUp },
+      { id: 'community', label: 'Community Management', icon: Users },
+      { id: 'outreach', label: 'Influencer Outreach', icon: Heart },
+      { id: 'trends', label: 'Trend Monitoring', icon: BarChart3 },
+    ],
+  },
+];
+
+// Standalone capability items
+const standaloneCapabilities = [
   { id: 'documents', label: 'Documents', icon: FileText },
-  { id: 'devops', label: 'DevOps', icon: Code },
   { id: 'memory', label: 'Memory', icon: Brain },
-  { id: 'reservations', label: 'Reservations', icon: Bookmark },
+  { id: 'tasks', label: 'Tasks', icon: ListTodo },
 ];
 
 export function AgentRail({
@@ -218,7 +285,34 @@ export function AgentRail({
             })}
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-xs text-muted-foreground">Agent Capabilities</DropdownMenuLabel>
-            {capabilityItems.map((item) => {
+            {capabilityCategories.map((category) => {
+              const CategoryIcon = category.icon;
+              return (
+                <DropdownMenuSub key={category.id}>
+                  <DropdownMenuSubTrigger className="flex items-center gap-3 cursor-pointer">
+                    <CategoryIcon className="w-4 h-4" />
+                    <span>{category.label}</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="bg-popover border border-border z-[110]">
+                    {category.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      return (
+                        <DropdownMenuItem
+                          key={subItem.id}
+                          onClick={() => onNavigate?.(subItem.id)}
+                          className="flex items-center gap-3 cursor-pointer"
+                        >
+                          <SubIcon className="w-4 h-4" />
+                          <span>{subItem.label}</span>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              );
+            })}
+            <DropdownMenuSeparator />
+            {standaloneCapabilities.map((item) => {
               const Icon = item.icon;
               return (
                 <DropdownMenuItem
