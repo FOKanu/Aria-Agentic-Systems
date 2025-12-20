@@ -56,6 +56,7 @@ interface ChatInputBarProps {
   onRemoveAgent: (agentId: string) => void;
   onAddAgentFromMention?: (agentId: string) => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 // Created by Francis Okorie Iyeke-Kanu
@@ -70,6 +71,7 @@ export function ChatInputBar({
   onRemoveAgent,
   onAddAgentFromMention,
   disabled,
+  compact = false,
 }: ChatInputBarProps) {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
@@ -223,8 +225,12 @@ export function ChatInputBar({
   };
 
   return (
-    <div className="fixed bottom-16 lg:bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border p-4 lg:left-20">
-      <div className="max-w-4xl mx-auto space-y-3">
+    <div className={cn(
+      compact 
+        ? "w-full" 
+        : "fixed bottom-16 lg:bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xl border-t border-border p-4 lg:left-20"
+    )}>
+      <div className={cn(compact ? "space-y-2" : "max-w-4xl mx-auto space-y-3")}>
         {/* Selected Agents Chips */}
         {selectedAgents.length > 0 && (
           <div className="flex flex-wrap gap-2">
