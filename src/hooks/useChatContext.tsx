@@ -1,14 +1,15 @@
 // Global Chat Context - Francis Okorie Iyeke-Kanu
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useRef } from 'react';
 import { ChatMessage, ChatStatus, ChatAttachment, CHAT_AGENTS } from '@/types/chat';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/hooks/use-toast';
+import { streamChat, ChatMessage as StreamChatMessage } from '@/lib/chatStream';
 
 export interface PageContext {
   pageId: string;
   pageName: string;
   pageCategory?: string;
-  contextData?: Record<string, any>;
+  contextData?: Record<string, unknown>;
 }
 
 interface ChatContextType {
@@ -37,6 +38,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [pageContext, setPageContext] = useState<PageContext | null>(null);
+  const streamingContentRef = useRef<string>('');
 
   const { toast } = useToast();
   const tts = useTextToSpeech();
@@ -52,119 +54,32 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     ]);
   }, []);
 
-  const simulateAgentResponse = useCallback(async (
-    userMessage: string,
-    attachments?: ChatAttachment[],
-    context?: PageContext | null
-  ) => {
-    setStatus('thinking');
-
-    const attachmentText = attachments && attachments.length > 0
-      ? ` with ${attachments.length} file(s)`
-      : '';
-
-    const contextText = context
-      ? ` (Context: ${context.pageName})`
-      : '';
-
-    if (selectedAgentIds.length > 1) {
-      addMessage({
-        content: `Task delegated to ${selectedAgentIds.length} agents${attachmentText}${contextText}`,
-        sender: 'system',
-        type: 'status',
-        structuredData: { status: 'started' },
-      });
-    } else if (context) {
-      addMessage({
-        content: `Fetching context from ${context.pageName}...`,
-        sender: 'system',
-        type: 'status',
-        structuredData: { status: 'started' },
-      });
-    }
-
-    await new Promise((r) => setTimeout(r, 1500));
-    setStatus('executing');
-
-    const respondingAgent =
-      selectedAgentIds.length === 0
-        ? CHAT_AGENTS.find((a) => a.role === 'planner')!
-        : CHAT_AGENTS.find((a) => selectedAgentIds.includes(a.id)) || CHAT_AGENTS[0];
-
-    // Context-aware responses
-    const contextResponses: Record<string, string[]> = {
-      'devops-pipelines': [
-        'I can see your CI/CD pipeline status. Let me analyze the recent builds.',
-        'I\'ve accessed the pipeline configuration. Here\'s what I found.',
-        'Based on your current pipeline metrics, I can help optimize the workflow.',
-      ],
-      'devops-code-review': [
-        'I\'m reviewing the pending code reviews. Here\'s the summary.',
-        'I can see there are several PRs awaiting review.',
-        'Let me analyze the code quality metrics from recent reviews.',
-      ],
-      'devops-deployment': [
-        'I\'ve accessed the deployment dashboard. Current status looks stable.',
-        'I can see your deployment history and current environments.',
-        'Let me check the latest deployment metrics for you.',
-      ],
-      'devops-infrastructure': [
-        'I\'m monitoring your infrastructure. All systems appear healthy.',
-        'I can see CPU and memory usage across your clusters.',
-        'Here\'s the infrastructure health report.',
-      ],
-      'devops-security': [
-        'I\'ve scanned for security vulnerabilities. Here\'s the report.',
-        'I can see the latest security scan results.',
-        'Let me summarize the security findings for you.',
-      ],
-      'devops-logs': [
-        'I\'m analyzing the logs for patterns and anomalies.',
-        'I can see recent log entries. Let me filter for relevant information.',
-        'Here\'s what I found in the log analysis.',
-      ],
-      'tasks': [
-        'I can see your current tasks. Would you like me to help prioritize them?',
-        'I\'ve reviewed your task list. Here are some suggestions.',
-      ],
-      'calendar': [
-        'I\'ve accessed your calendar. Here\'s your upcoming schedule.',
-        'I can help you manage your calendar events.',
-      ],
-      'files': [
-        'I can see your file storage. What would you like to find?',
-        'I\'ve accessed the file system. Here are the recent documents.',
-      ],
-      'default': [
-        'I\'ve analyzed your request. Here\'s what I found:',
-        'Based on my analysis, I can help you with that.',
-        'Let me break this down for you.',
-      ],
-    };
-
-    const responses = context?.pageId
-      ? contextResponses[context.pageId] || contextResponses['default']
-      : contextResponses['default'];
-
-    const response = responses[Math.floor(Math.random() * responses.length)];
-
-    addMessage({
-      content: response,
-      sender: 'agent',
-      type: 'text',
-      agentId: respondingAgent.id,
-      agentName: respondingAgent.name,
-      agentRole: respondingAgent.role,
-      agentAvatar: respondingAgent.avatar,
-      confidence: Math.floor(Math.random() * 15) + 85,
+  const updateLastAssistantMessage = useCallback((content: string) => {
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last?.sender === 'agent') {
+        return prev.map((m, i) => 
+          i === prev.length - 1 ? { ...m, content } : m
+        );
+      }
+      // First token - create new assistant message
+      const respondingAgent = CHAT_AGENTS.find((a) => a.role === 'planner')!;
+      return [
+        ...prev,
+        {
+          id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          content,
+          sender: 'agent' as const,
+          type: 'text' as const,
+          timestamp: new Date(),
+          agentId: respondingAgent.id,
+          agentName: respondingAgent.name,
+          agentRole: respondingAgent.role,
+          agentAvatar: respondingAgent.avatar,
+        },
+      ];
     });
-
-    if (tts.enabled) {
-      tts.speak(response);
-    }
-
-    setStatus('idle');
-  }, [selectedAgentIds, addMessage, tts]);
+  }, []);
 
   const sendMessage = useCallback(async (
     content: string,
@@ -178,6 +93,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       });
     }
 
+    // Add user message
     addMessage({
       content,
       sender: 'user',
@@ -185,8 +101,61 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       attachments,
     });
 
-    await simulateAgentResponse(content, attachments, pageContext);
-  }, [addMessage, simulateAgentResponse, pageContext]);
+    setStatus('thinking');
+    streamingContentRef.current = '';
+
+    // Convert messages to API format
+    const apiMessages: StreamChatMessage[] = messages
+      .filter(m => m.type === 'text' && (m.sender === 'user' || m.sender === 'agent'))
+      .map(m => ({
+        role: m.sender === 'user' ? 'user' as const : 'assistant' as const,
+        content: m.content,
+      }));
+    
+    // Add current message
+    apiMessages.push({ role: 'user', content });
+
+    try {
+      await streamChat({
+        messages: apiMessages,
+        context: pageContext ? {
+          pageName: pageContext.pageName,
+          pageCategory: pageContext.pageCategory,
+          contextData: pageContext.contextData,
+        } : undefined,
+        onDelta: (delta) => {
+          if (status !== 'executing') {
+            setStatus('executing');
+          }
+          streamingContentRef.current += delta;
+          updateLastAssistantMessage(streamingContentRef.current);
+        },
+        onDone: () => {
+          setStatus('idle');
+          if (tts.enabled && streamingContentRef.current) {
+            tts.speak(streamingContentRef.current);
+          }
+        },
+        onError: (error) => {
+          console.error('Chat error:', error);
+          toast({
+            title: "Chat Error",
+            description: error.message,
+            variant: "destructive",
+          });
+          setStatus('idle');
+        },
+      });
+    } catch (error) {
+      console.error('Chat error:', error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect to AI service. Please try again.",
+        variant: "destructive",
+      });
+      setStatus('idle');
+    }
+  }, [messages, addMessage, updateLastAssistantMessage, pageContext, tts, toast, status]);
 
   const toggleChat = useCallback(() => {
     setIsOpen(prev => !prev);
