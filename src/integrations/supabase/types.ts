@@ -91,6 +91,81 @@ export type Database = {
           },
         ]
       }
+      calendar_events: {
+        Row: {
+          all_day: boolean | null
+          assigned_agent: string | null
+          attendees: Json | null
+          color: string | null
+          created_at: string
+          description: string | null
+          end_time: string
+          external_id: string | null
+          external_provider:
+            | Database["public"]["Enums"]["storage_provider"]
+            | null
+          id: string
+          location: string | null
+          metadata: Json | null
+          recurrence_rule: string | null
+          reminders: Json | null
+          start_time: string
+          status: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          visibility: string | null
+        }
+        Insert: {
+          all_day?: boolean | null
+          assigned_agent?: string | null
+          attendees?: Json | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time: string
+          external_id?: string | null
+          external_provider?:
+            | Database["public"]["Enums"]["storage_provider"]
+            | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          recurrence_rule?: string | null
+          reminders?: Json | null
+          start_time: string
+          status?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+          visibility?: string | null
+        }
+        Update: {
+          all_day?: boolean | null
+          assigned_agent?: string | null
+          attendees?: Json | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string
+          external_id?: string | null
+          external_provider?:
+            | Database["public"]["Enums"]["storage_provider"]
+            | null
+          id?: string
+          location?: string | null
+          metadata?: Json | null
+          recurrence_rule?: string | null
+          reminders?: Json | null
+          start_time?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          visibility?: string | null
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           access_count: number | null
