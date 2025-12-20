@@ -28,6 +28,19 @@ const tabLabels: Record<TabId, string> = {
   settings: 'Settings',
   analytics: 'Analytics',
   files: 'Files',
+  calendar: 'Calendar',
+  contacts: 'Contacts',
+  email: 'Email',
+  workflows: 'Workflows',
+  phone: 'Phone',
+  reservations: 'Reservations',
+  invoices: 'Invoices',
+  expenses: 'Expenses',
+  budget: 'Budget',
+  reports: 'Reports',
+  payments: 'Payments',
+  tax: 'Tax',
+  documents: 'Documents',
 };
 
 export function AppBreadcrumb({
