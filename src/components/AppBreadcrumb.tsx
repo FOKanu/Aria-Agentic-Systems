@@ -41,6 +41,12 @@ const tabLabels: Record<TabId, string> = {
   payments: 'Payments',
   tax: 'Tax',
   documents: 'Documents',
+  'devops-pipelines': 'CI/CD Pipelines',
+  'devops-code-review': 'Code Review',
+  'devops-deployment': 'Deployment',
+  'devops-infrastructure': 'Infrastructure',
+  'devops-security': 'Security Scanning',
+  'devops-logs': 'Log Analysis',
 };
 
 export function AppBreadcrumb({
