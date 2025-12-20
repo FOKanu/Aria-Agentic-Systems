@@ -18,6 +18,18 @@ import { ProfilePage } from '@/pages/ProfilePage';
 import { ChatPage } from '@/pages/ChatPage';
 import { AnalyticsPage } from '@/pages/AnalyticsPage';
 import { FilesPage } from '@/pages/FilesPage';
+import { CalendarPage } from '@/pages/CalendarPage';
+import { ContactsPage } from '@/pages/ContactsPage';
+import { EmailPage } from '@/pages/EmailPage';
+import { WorkflowsPage } from '@/pages/WorkflowsPage';
+import { PhonePage } from '@/pages/PhonePage';
+import { ReservationsPage } from '@/pages/ReservationsPage';
+import { InvoicesPage } from '@/pages/InvoicesPage';
+import { ExpensesPage } from '@/pages/ExpensesPage';
+import { BudgetPage } from '@/pages/BudgetPage';
+import { FinancialReportsPage } from '@/pages/FinancialReportsPage';
+import { PaymentsPage } from '@/pages/PaymentsPage';
+import { TaxPage } from '@/pages/TaxPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -372,6 +384,32 @@ const Index = () => {
       case 'analytics':
         return <AnalyticsPage />;
       case 'files':
+        return <FilesPage />;
+      case 'calendar':
+        return <CalendarPage />;
+      case 'contacts':
+        return <ContactsPage />;
+      case 'email':
+        return <EmailPage />;
+      case 'workflows':
+        return <WorkflowsPage />;
+      case 'phone':
+        return <PhonePage />;
+      case 'reservations':
+        return <ReservationsPage />;
+      case 'invoices':
+        return <InvoicesPage />;
+      case 'expenses':
+        return <ExpensesPage />;
+      case 'budget':
+        return <BudgetPage />;
+      case 'reports':
+        return <FinancialReportsPage />;
+      case 'payments':
+        return <PaymentsPage />;
+      case 'tax':
+        return <TaxPage />;
+      case 'documents':
         return <FilesPage />;
       default:
         return null;
