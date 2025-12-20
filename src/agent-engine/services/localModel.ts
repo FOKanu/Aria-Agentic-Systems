@@ -25,16 +25,16 @@ export async function checkLocalModelHealth(
   config: LocalModelConfig = defaultConfig
 ): Promise<boolean> {
   const endpoint = config.endpoint || DEFAULT_LOCAL_ENDPOINT;
-  
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+
     const response = await fetch(`${endpoint}/models`, {
       method: 'GET',
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
     return response.ok;
   } catch {
@@ -47,16 +47,16 @@ export async function getAvailableLocalModels(
   config: LocalModelConfig = defaultConfig
 ): Promise<string[]> {
   const endpoint = config.endpoint || DEFAULT_LOCAL_ENDPOINT;
-  
+
   try {
     const response = await fetch(`${endpoint}/models`, {
       method: 'GET',
     });
-    
+
     if (!response.ok) {
       return [];
     }
-    
+
     const data = await response.json();
     return data.models?.map((m: { id?: string; name?: string }) => m.id || m.name) || [];
   } catch {
@@ -71,13 +71,13 @@ export async function callLocalModel(
 ): Promise<AIResponse> {
   const endpoint = config.endpoint || DEFAULT_LOCAL_ENDPOINT;
   const model = payload.model || config.defaultModel || 'llama3.1:8b';
-  
+
   const controller = new AbortController();
   const timeoutId = setTimeout(
     () => controller.abort(),
     config.timeout || 60000
   );
-  
+
   try {
     const response = await fetch(`${endpoint}/chat/completions`, {
       method: 'POST',
@@ -93,17 +93,17 @@ export async function callLocalModel(
       }),
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw createLocalError('invalid_request', `Local model error: ${errorText}`, false);
     }
-    
+
     const data = await response.json();
     const content = parseNonStreamingResponse(data);
-    
+
     return {
       id: data.id || `local-${Date.now()}`,
       content,
@@ -118,15 +118,15 @@ export async function callLocalModel(
     };
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error instanceof Error && error.name === 'AbortError') {
       throw createLocalError('timeout', 'Local model request timed out', true);
     }
-    
+
     if ((error as AIError).type) {
       throw error;
     }
-    
+
     throw createLocalError(
       'network_error',
       `Failed to connect to local model: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -142,13 +142,13 @@ export async function callLocalModelStreaming(
 ): Promise<Response> {
   const endpoint = config.endpoint || DEFAULT_LOCAL_ENDPOINT;
   const model = payload.model || config.defaultModel || 'llama3.1:8b';
-  
+
   const controller = new AbortController();
   const timeoutId = setTimeout(
     () => controller.abort(),
     config.timeout || 60000
   );
-  
+
   try {
     const response = await fetch(`${endpoint}/chat/completions`, {
       method: 'POST',
@@ -164,26 +164,26 @@ export async function callLocalModelStreaming(
       }),
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw createLocalError('invalid_request', `Local model error: ${errorText}`, false);
     }
-    
+
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error instanceof Error && error.name === 'AbortError') {
       throw createLocalError('timeout', 'Local model request timed out', true);
     }
-    
+
     if ((error as AIError).type) {
       throw error;
     }
-    
+
     throw createLocalError(
       'network_error',
       `Failed to connect to local model: ${error instanceof Error ? error.message : 'Unknown error'}`,

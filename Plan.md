@@ -1,8 +1,8 @@
 # ARIA - Project Plan
 
-**Project Creator:** Francis Okorie Iyeke-Kanu  
-**Contact:** francis.okorie.Ik@gmail.com  
-**Version:** 0.2.1-alpha  
+**Project Creator:** Francis Okorie Iyeke-Kanu
+**Contact:** francis.okorie.Ik@gmail.com
+**Version:** 0.2.1-alpha
 **Last Updated:** December 20, 2025
 
 ---
@@ -61,10 +61,6 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 ---
 
 ## Phase Breakdown
-
-### Phase 6: Chat Edge Function
-**Priority:** Critical  
-**Effort:** 2-3 days  
 **Goal:** Replace mock responses with real AI
 
 | Task | Status | Details |
@@ -77,8 +73,8 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Update ChatPage.tsx | 🔴 | Connect to real AI endpoint |
 
 ### Phase 9: Capability Pages
-**Priority:** High  
-**Effort:** 2-3 weeks  
+**Priority:** High
+**Effort:** 2-3 weeks
 **Build Order:** Optimized for dependencies
 
 #### Build Order
@@ -137,7 +133,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Trend Monitoring | 🔴 Not Started | Social Media | 1 day |
 
 ### Phase 10: Provider Configuration
-**Priority:** Medium  
+**Priority:** Medium
 **Effort:** 3-4 days
 
 | Task | Status | Details |
@@ -149,7 +145,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Fallback handling | 🔴 | Graceful degradation when primary fails |
 
 ### Phase 11: Agent Memory & Context
-**Priority:** Medium  
+**Priority:** Medium
 **Effort:** 4-5 days
 
 | Task | Status | Details |
@@ -163,7 +159,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Cross-agent memory | 🔴 | Shared knowledge between agents |
 
 ### Phase 12: Voice Integration
-**Priority:** Medium  
+**Priority:** Medium
 **Effort:** 3-4 days
 
 | Task | Status | Details |
@@ -175,7 +171,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Audio visualization | 🟡 | Waveform animation (basic implemented) |
 
 ### Phase 13: Local Model Integration
-**Priority:** Low (Post-MVP)  
+**Priority:** Low (Post-MVP)
 **Effort:** 5-7 days
 
 | Task | Status | Details |
@@ -187,7 +183,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Model management UI | 🔴 | Download/update models |
 
 ### Phase 14: Security Hardening
-**Priority:** High (Pre-Production)  
+**Priority:** High (Pre-Production)
 **Effort:** 3-4 days
 
 | Task | Status | Details |
@@ -199,7 +195,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Security headers | 🔴 | CSP, HSTS, etc. |
 
 ### Phase 15: Performance Optimization
-**Priority:** Medium (Pre-Production)  
+**Priority:** Medium (Pre-Production)
 **Effort:** 2-3 days
 
 | Task | Status | Details |

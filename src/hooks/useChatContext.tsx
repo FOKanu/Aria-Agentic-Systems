@@ -17,7 +17,7 @@ interface ChatContextType {
   selectedAgentIds: string[];
   isOpen: boolean;
   pageContext: PageContext | null;
-  
+
   // Actions
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
   sendMessage: (content: string, attachments?: ChatAttachment[], mentionedAgentIds?: string[]) => Promise<void>;
@@ -37,7 +37,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [pageContext, setPageContext] = useState<PageContext | null>(null);
-  
+
   const { toast } = useToast();
   const tts = useTextToSpeech();
 
@@ -53,20 +53,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const simulateAgentResponse = useCallback(async (
-    userMessage: string, 
+    userMessage: string,
     attachments?: ChatAttachment[],
     context?: PageContext | null
   ) => {
     setStatus('thinking');
 
-    const attachmentText = attachments && attachments.length > 0 
-      ? ` with ${attachments.length} file(s)` 
+    const attachmentText = attachments && attachments.length > 0
+      ? ` with ${attachments.length} file(s)`
       : '';
-    
-    const contextText = context 
-      ? ` (Context: ${context.pageName})` 
+
+    const contextText = context
+      ? ` (Context: ${context.pageName})`
       : '';
-    
+
     if (selectedAgentIds.length > 1) {
       addMessage({
         content: `Task delegated to ${selectedAgentIds.length} agents${attachmentText}${contextText}`,
@@ -142,7 +142,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       ],
     };
 
-    const responses = context?.pageId 
+    const responses = context?.pageId
       ? contextResponses[context.pageId] || contextResponses['default']
       : contextResponses['default'];
 
@@ -167,8 +167,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [selectedAgentIds, addMessage, tts]);
 
   const sendMessage = useCallback(async (
-    content: string, 
-    attachments?: ChatAttachment[], 
+    content: string,
+    attachments?: ChatAttachment[],
     mentionedAgentIds?: string[]
   ) => {
     if (mentionedAgentIds && mentionedAgentIds.length > 0) {
@@ -177,7 +177,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         return [...prev, ...newIds];
       });
     }
-    
+
     addMessage({
       content,
       sender: 'user',
@@ -239,7 +239,7 @@ export function useChatContext() {
 // Hook to set page context when navigating
 export function usePageChatContext(pageId: string, pageName: string, pageCategory?: string) {
   const { setPageContext } = useChatContext();
-  
+
   React.useEffect(() => {
     setPageContext({ pageId, pageName, pageCategory });
     return () => setPageContext(null);

@@ -3,9 +3,9 @@
 
 ---
 
-**Project Creator:** Francis Okorie Iyeke-Kanu  
-**Contact:** francis.okorie.Ik@gmail.com  
-**Version:** 0.2.0-alpha  
+**Project Creator:** Francis Okorie Iyeke-Kanu
+**Contact:** francis.okorie.Ik@gmail.com
+**Version:** 0.2.0-alpha
 **Last Updated:** December 20, 2025
 
 ---
@@ -1147,7 +1147,7 @@ CREATE TABLE public.platform_connections (
   metadata JSONB DEFAULT '{}',                 -- Platform-specific data
   connected_at TIMESTAMPTZ DEFAULT now(),
   last_synced_at TIMESTAMPTZ,
-  
+
   UNIQUE(user_id, platform, account_id)
 );
 
@@ -1159,40 +1159,40 @@ CREATE TABLE public.scheduled_posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
-  
+
   -- Content
   content TEXT NOT NULL,                       -- Post text/caption
   media_urls TEXT[],                           -- Attached media URLs
   media_types TEXT[],                          -- 'image', 'video', 'gif'
   link_url TEXT,                               -- Optional link attachment
-  
+
   -- Scheduling
   scheduled_for TIMESTAMPTZ NOT NULL,
   timezone TEXT DEFAULT 'UTC',
   status post_status DEFAULT 'scheduled',
-  
+
   -- Calendar positioning (for drag-drop)
   calendar_order INTEGER DEFAULT 0,            -- Order within same time slot
   color_tag TEXT,                              -- Visual color coding
-  
+
   -- AI Suggestions
   ai_generated BOOLEAN DEFAULT false,
   ai_prompt TEXT,                              -- Prompt used to generate content
   optimal_time_suggested BOOLEAN DEFAULT false,
   engagement_prediction REAL,                  -- 0-1 predicted engagement score
-  
+
   -- Tracking
   platform_post_id TEXT,                       -- ID returned after publishing
   published_at TIMESTAMPTZ,
   error_message TEXT,
   retry_count INTEGER DEFAULT 0,
-  
+
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- Index for calendar queries (7+ days range)
-CREATE INDEX idx_scheduled_posts_calendar 
+CREATE INDEX idx_scheduled_posts_calendar
   ON public.scheduled_posts(user_id, scheduled_for, status);
 
 -- ───────────────────────────────────────────────────────────────────────────
@@ -1203,38 +1203,38 @@ CREATE TABLE public.auto_response_rules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE,
-  
+
   -- Rule definition
   name TEXT NOT NULL,
   is_active BOOLEAN DEFAULT true,
   priority INTEGER DEFAULT 0,                  -- Higher = evaluated first
-  
+
   -- Trigger conditions
   trigger_type TEXT NOT NULL,                  -- 'dm', 'comment', 'mention', 'all'
   keyword_triggers TEXT[],                     -- Keywords to match
   keyword_match_mode TEXT DEFAULT 'any',       -- 'any', 'all', 'exact'
   exclude_keywords TEXT[],                     -- Skip if these present
-  
+
   -- Response configuration
   response_mode response_mode DEFAULT 'hybrid',
   template_response TEXT,                      -- Static template (with variables)
   ai_system_prompt TEXT,                       -- Custom AI persona/instructions
   ai_context TEXT,                             -- Additional context for AI
-  
+
   -- AI Model routing
   prefer_local_model BOOLEAN DEFAULT true,     -- Try local first
   local_timeout_ms INTEGER DEFAULT 5000,       -- Fallback to cloud after
   cloud_model TEXT DEFAULT 'google/gemini-2.5-flash',
-  
+
   -- Rate limiting
   max_responses_per_hour INTEGER DEFAULT 60,
   delay_min_seconds INTEGER DEFAULT 30,        -- Min delay before responding
   delay_max_seconds INTEGER DEFAULT 120,       -- Max delay (randomized)
-  
+
   -- Tracking
   responses_sent INTEGER DEFAULT 0,
   last_triggered_at TIMESTAMPTZ,
-  
+
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -1247,28 +1247,28 @@ CREATE TABLE public.auto_response_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   rule_id UUID REFERENCES public.auto_response_rules(id) ON DELETE SET NULL,
   connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
-  
+
   -- Original message
   incoming_message_id TEXT,                    -- Platform-specific ID
   incoming_content TEXT NOT NULL,
   incoming_author TEXT,
   incoming_author_id TEXT,
-  
+
   -- Response details
   response_content TEXT NOT NULL,
   response_model TEXT,                         -- 'local:llama3.2' or 'cloud:gemini-2.5-flash'
   response_latency_ms INTEGER,
-  
+
   -- Status
   was_sent BOOLEAN DEFAULT false,
   sent_at TIMESTAMPTZ,
   error_message TEXT,
-  
+
   -- Human review
   flagged_for_review BOOLEAN DEFAULT false,
   reviewed_by UUID REFERENCES auth.users(id),
   review_outcome TEXT,                         -- 'approved', 'rejected', 'edited'
-  
+
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -1280,7 +1280,7 @@ CREATE TABLE public.content_analytics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   post_id UUID REFERENCES public.scheduled_posts(id) ON DELETE CASCADE,
   connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
-  
+
   -- Engagement metrics
   impressions INTEGER DEFAULT 0,
   reach INTEGER DEFAULT 0,
@@ -1289,17 +1289,17 @@ CREATE TABLE public.content_analytics (
   shares INTEGER DEFAULT 0,
   saves INTEGER DEFAULT 0,
   clicks INTEGER DEFAULT 0,
-  
+
   -- Platform-specific
   retweets INTEGER,                            -- Twitter
   story_views INTEGER,                         -- Instagram
   video_views INTEGER,                         -- YouTube/TikTok/Twitch
   watch_time_seconds INTEGER,
   subscribers_gained INTEGER,
-  
+
   -- Calculated
   engagement_rate REAL,                        -- (interactions / impressions) * 100
-  
+
   last_synced_at TIMESTAMPTZ DEFAULT now(),
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -1311,16 +1311,16 @@ CREATE TABLE public.content_analytics (
 CREATE TABLE public.optimal_posting_times (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   connection_id UUID REFERENCES public.platform_connections(id) ON DELETE CASCADE NOT NULL,
-  
+
   day_of_week INTEGER NOT NULL,                -- 0 = Sunday, 6 = Saturday
   hour_utc INTEGER NOT NULL,                   -- 0-23
-  
+
   avg_engagement_rate REAL,
   sample_size INTEGER DEFAULT 0,
   confidence_score REAL,                       -- 0-1, higher = more reliable
-  
+
   updated_at TIMESTAMPTZ DEFAULT now(),
-  
+
   UNIQUE(connection_id, day_of_week, hour_utc)
 );
 
@@ -1403,7 +1403,7 @@ serve(async (req) => {
 
   try {
     const { message }: { message: IncomingMessage } = await req.json();
-    
+
     // 1. Find matching auto-response rule
     const { data: rules } = await supabase
       .from('auto_response_rules')
@@ -1444,7 +1444,7 @@ serve(async (req) => {
         try {
           const localResponse = await Promise.race([
             callLocalModel(message.content, matchedRule.ai_system_prompt),
-            new Promise((_, reject) => 
+            new Promise((_, reject) =>
               setTimeout(() => reject(new Error('timeout')), matchedRule.local_timeout_ms)
             )
           ]);

@@ -39,9 +39,9 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
   const [miniChatOpen, setMiniChatOpen] = useState(false);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   const { mentionState, handleInputChange, insertMention, parseMentions, closeMention } = useAgentMention();
-  
+
   const runningTasks = mockTasks.filter(t => t.status === 'running');
   const completedTasks = mockTasks.filter(t => t.status === 'completed');
   const failedTasks = mockTasks.filter(t => t.status === 'failed');
@@ -49,7 +49,7 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
   const idleAgents = mockAgents.filter(a => a.status === 'idle');
   const totalTasksCompleted = Object.values(mockAgentStats).reduce((acc, s) => acc + s.tasksCompleted, 0);
   const avgSuccessRate = Math.round(Object.values(mockAgentStats).reduce((acc, s) => acc + s.successRate, 0) / Object.values(mockAgentStats).length);
-  
+
   // Filter approval events
   const approvalEvents = mockEvents.filter(e => e.type === 'approval');
   const warningEvents = mockEvents.filter(e => e.type === 'warning');
@@ -85,14 +85,14 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
     if (mentionState.isActive && mentionState.suggestions.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelectedMentionIndex(prev => 
+        setSelectedMentionIndex(prev =>
           prev < mentionState.suggestions.length - 1 ? prev + 1 : 0
         );
         return;
       }
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setSelectedMentionIndex(prev => 
+        setSelectedMentionIndex(prev =>
           prev > 0 ? prev - 1 : mentionState.suggestions.length - 1
         );
         return;
@@ -149,7 +149,7 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
             Monitor your AI agents, track ongoing tasks, and manage operations in real-time.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
+            <Button
               onClick={() => onNavigateToChat()}
               className="gap-2"
               size="lg"
@@ -157,7 +157,7 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
               <MessageSquare className="w-5 h-5" />
               Start Conversation
             </Button>
-            <Button 
+            <Button
               onClick={onNavigateToAgents}
               variant="outline"
               size="lg"
@@ -235,8 +235,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           <div className="space-y-3">
             {pendingApprovals.length > 0 ? (
               pendingApprovals.map((item) => (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border/50"
                 >
                   <div>
@@ -273,8 +273,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           <div className="space-y-3">
             {failedTasks.length > 0 ? (
               failedTasks.map((task) => (
-                <div 
-                  key={task.id} 
+                <div
+                  key={task.id}
                   className="p-3 rounded-lg bg-background/50 border border-border/50"
                 >
                   <div className="flex items-start gap-2">
@@ -320,14 +320,14 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           <div className="space-y-3">
             {runningTasks.length > 0 ? (
               runningTasks.map((task) => (
-                <div 
-                  key={task.id} 
+                <div
+                  key={task.id}
                   className="p-3 rounded-lg bg-secondary/50 border border-border/50"
                 >
                   <p className="font-medium text-sm">{task.name}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-primary rounded-full animate-pulse"
                         style={{ width: `${(task.steps.filter(s => s.status === 'completed').length / task.steps.length) * 100}%` }}
                       />
@@ -342,8 +342,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
               <p className="text-sm text-muted-foreground">No running operations</p>
             )}
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full mt-4 text-sm"
             onClick={onNavigateToTasks}
           >
@@ -359,8 +359,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           </div>
           <div className="space-y-3">
             {scheduledTasks.slice(0, 3).map((task) => (
-              <div 
-                key={task.id} 
+              <div
+                key={task.id}
                 className="p-3 rounded-lg bg-secondary/50 border border-border/50"
               >
                 <p className="font-medium text-sm">{task.name}</p>
@@ -371,8 +371,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
               </div>
             ))}
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full mt-4 text-sm"
             onClick={onNavigateToTasks}
           >
@@ -400,8 +400,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
               <span className="text-lg font-semibold">{mockAgents.length}</span>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full mt-4 text-sm"
             onClick={onNavigateToAgents}
           >
@@ -418,8 +418,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
           <div className="space-y-3">
             {activeAgents.length > 0 ? (
               activeAgents.slice(0, 3).map((agent) => (
-                <div 
-                  key={agent.id} 
+                <div
+                  key={agent.id}
                   className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border/50"
                 >
                   <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center text-lg border border-border">
@@ -439,8 +439,8 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
               <p className="text-sm text-muted-foreground">No active agents</p>
             )}
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full mt-4 text-sm"
             onClick={onNavigateToAgents}
           >
@@ -458,7 +458,7 @@ export function HomePage({ onNavigateToAgents, onNavigateToTasks, onNavigateToCh
                 <Bot className="w-5 h-5 text-primary" />
                 <span className="font-medium text-sm">AI Assistant</span>
               </div>
-              <button 
+              <button
                 onClick={() => setMiniChatOpen(false)}
                 className="text-muted-foreground hover:text-foreground"
               >
