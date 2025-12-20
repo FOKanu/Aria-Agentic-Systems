@@ -174,7 +174,8 @@ export function ChatPage() {
       addMessage({
         content: "I'm having trouble connecting to my brain (Ollama). Please check if the local AI service is running.",
         sender: 'system',
-        type: 'error',
+        type: 'status',
+        structuredData: { status: 'error' },
       });
     } finally {
       setStatus('idle');
