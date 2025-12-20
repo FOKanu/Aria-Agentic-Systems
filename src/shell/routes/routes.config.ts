@@ -13,9 +13,13 @@ export interface RouteConfig {
 
 // Lazy-loaded page components (handling different export styles)
 export const LazyPages = {
-  // Main pages
+  // Main pages (Index is the main app shell)
   Index: lazy(() => import('@/pages/Index')),
+  
+  // Chat (named export)
   Chat: lazy(() => import('@/pages/ChatPage').then(m => ({ default: m.ChatPage }))),
+  
+  // Auth (named exports)
   Auth: lazy(() => import('@/pages/AuthPage').then(m => ({ default: m.AuthPage }))),
   Login: lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage }))),
   Signup: lazy(() => import('@/pages/SignupPage').then(m => ({ default: m.SignupPage }))),

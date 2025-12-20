@@ -1,5 +1,5 @@
 // Floating Chat Panel - Francis Okorie Iyeke-Kanu
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef } from 'react';
 import { MessageSquare, X, Minimize2, Maximize2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import { CHAT_AGENTS, AgentPreset } from '@/types/chat';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { cn } from '@/lib/utils';
 
-export function FloatingChatPanel() {
+export const FloatingChatPanel = forwardRef<HTMLDivElement>(function FloatingChatPanel(_props, _ref) {
   const {
     messages,
     status,
@@ -210,4 +210,4 @@ export function FloatingChatPanel() {
       />
     </>
   );
-}
+});

@@ -1,5 +1,5 @@
 // Floating Voice Button - Francis Okorie Iyeke-Kanu
-import { useState, useCallback } from 'react';
+import { useState, useCallback, forwardRef } from 'react';
 import { Mic, MicOff, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { useChatContext } from '@/hooks/useChatContext';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { cn } from '@/lib/utils';
 
-export function FloatingVoiceButton() {
+export const FloatingVoiceButton = forwardRef<HTMLButtonElement>(function FloatingVoiceButton(_props, ref) {
   const { sendMessage, pageContext, openChat } = useChatContext();
   const voiceInput = useVoiceInput();
   const [showPanel, setShowPanel] = useState(false);
@@ -118,6 +118,7 @@ export function FloatingVoiceButton() {
   // Floating button when not recording
   return (
     <Button
+      ref={ref}
       onClick={handleVoiceStart}
       size="lg"
       variant="outline"
@@ -126,4 +127,4 @@ export function FloatingVoiceButton() {
       <Mic className="h-6 w-6" />
     </Button>
   );
-}
+});
