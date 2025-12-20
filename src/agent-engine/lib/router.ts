@@ -173,6 +173,7 @@ export function getModelDisplayName(model: AIModel): string {
     'llama3.1:8b': 'Llama 3.1 8B',
     'llama3.1:70b': 'Llama 3.1 70B',
     'mistral:7b': 'Mistral 7B',
+    'moondream': 'Moondream Vision',
     'google/gemini-2.5-flash': 'Gemini 2.5 Flash',
     'google/gemini-2.5-pro': 'Gemini 2.5 Pro',
     'openai/gpt-5-mini': 'GPT-5 Mini',
