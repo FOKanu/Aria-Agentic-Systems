@@ -10,6 +10,7 @@ import { TopBar } from '@/components/TopBar';
 import { CommandPalette } from '@/components/CommandPalette';
 import { OnboardingDialog } from '@/components/OnboardingDialog';
 import { FloatingChatPanel } from '@/components/chat/FloatingChatPanel';
+import { FloatingVoiceButton } from '@/components/chat/FloatingVoiceButton';
 import { ChatProvider, useChatContext } from '@/hooks/useChatContext';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
@@ -568,8 +569,13 @@ const Index = () => {
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
 
-        {/* Floating Chat Panel - Available on all pages except chat */}
-        {activeTab !== 'chat' && <FloatingChatPanel />}
+        {/* Floating Voice & Chat Buttons - Available on all pages except chat */}
+        {activeTab !== 'chat' && (
+          <>
+            <FloatingVoiceButton />
+            <FloatingChatPanel />
+          </>
+        )}
       </div>
     </ChatProvider>
   );
