@@ -1,5 +1,6 @@
 /**
  * Route Configuration - Centralized route definitions
+ * Uses lazy imports from feature modules
  */
 import { lazy } from 'react';
 import type { TabId } from '@/core/types';
@@ -11,30 +12,34 @@ export interface RouteConfig {
   category: string;
 }
 
-// Lazy-loaded page components (handling different export styles)
+// Lazy-loaded page components from feature modules
 export const LazyPages = {
   // Main pages (Index is the main app shell)
   Index: lazy(() => import('@/pages/Index')),
   
-  // Chat (named export)
+  // Chat feature
   Chat: lazy(() => import('@/pages/ChatPage').then(m => ({ default: m.ChatPage }))),
   
-  // Auth (named exports)
+  // Auth feature
   Auth: lazy(() => import('@/pages/AuthPage').then(m => ({ default: m.AuthPage }))),
   Login: lazy(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage }))),
   Signup: lazy(() => import('@/pages/SignupPage').then(m => ({ default: m.SignupPage }))),
   ForgotPassword: lazy(() => import('@/pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage }))),
   
-  // Admin (named exports)
+  // Calendar feature
   Calendar: lazy(() => import('@/pages/CalendarPage').then(m => ({ default: m.CalendarPage }))),
+  
+  // Contacts feature
   Contacts: lazy(() => import('@/pages/ContactsPage').then(m => ({ default: m.ContactsPage }))),
   Email: lazy(() => import('@/pages/EmailPage').then(m => ({ default: m.EmailPage }))),
-  Workflows: lazy(() => import('@/pages/WorkflowsPage').then(m => ({ default: m.WorkflowsPage }))),
   Phone: lazy(() => import('@/pages/PhonePage').then(m => ({ default: m.PhonePage }))),
+  
+  // Tasks feature
+  Workflows: lazy(() => import('@/pages/WorkflowsPage').then(m => ({ default: m.WorkflowsPage }))),
   Reservations: lazy(() => import('@/pages/ReservationsPage').then(m => ({ default: m.ReservationsPage }))),
   Tasks: lazy(() => import('@/pages/TasksPage').then(m => ({ default: m.TasksPage }))),
   
-  // Finance (named exports)
+  // Finance feature
   Invoices: lazy(() => import('@/pages/InvoicesPage').then(m => ({ default: m.InvoicesPage }))),
   Expenses: lazy(() => import('@/pages/ExpensesPage').then(m => ({ default: m.ExpensesPage }))),
   Budget: lazy(() => import('@/pages/BudgetPage').then(m => ({ default: m.BudgetPage }))),
@@ -42,7 +47,7 @@ export const LazyPages = {
   Payments: lazy(() => import('@/pages/PaymentsPage').then(m => ({ default: m.PaymentsPage }))),
   Tax: lazy(() => import('@/pages/TaxPage').then(m => ({ default: m.TaxPage }))),
   
-  // DevOps (default exports)
+  // DevOps feature
   CICDPipelines: lazy(() => import('@/pages/devops/CICDPipelinesPage')),
   CodeReview: lazy(() => import('@/pages/devops/CodeReviewPage')),
   Deployment: lazy(() => import('@/pages/devops/DeploymentPage')),
@@ -50,7 +55,7 @@ export const LazyPages = {
   SecurityScanning: lazy(() => import('@/pages/devops/SecurityScanningPage')),
   LogAnalysis: lazy(() => import('@/pages/devops/LogAnalysisPage')),
   
-  // Legal (default exports)
+  // Legal feature
   Contracts: lazy(() => import('@/pages/legal/ContractsPage')),
   DocumentReview: lazy(() => import('@/pages/legal/DocumentReviewPage')),
   Compliance: lazy(() => import('@/pages/legal/CompliancePage')),
@@ -58,13 +63,13 @@ export const LazyPages = {
   IPManagement: lazy(() => import('@/pages/legal/IPManagementPage')),
   CaseResearch: lazy(() => import('@/pages/legal/CaseResearchPage')),
   
-  // Monitoring (named exports)
+  // Monitoring feature
   ActivityStream: lazy(() => import('@/pages/monitoring/ActivityStreamPage').then(m => ({ default: m.ActivityStreamPage }))),
   AlertsControls: lazy(() => import('@/pages/monitoring/AlertsControlsPage').then(m => ({ default: m.AlertsControlsPage }))),
   ExecutionTrace: lazy(() => import('@/pages/monitoring/ExecutionTracePage').then(m => ({ default: m.ExecutionTracePage }))),
   ToolMonitor: lazy(() => import('@/pages/monitoring/ToolMonitorPage').then(m => ({ default: m.ToolMonitorPage }))),
   
-  // Other (default export)
+  // 404
   NotFound: lazy(() => import('@/pages/NotFound')),
 };
 
