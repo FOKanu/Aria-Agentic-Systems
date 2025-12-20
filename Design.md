@@ -48,7 +48,7 @@
 
 ## Project Vision
 
-ARIA is My beloved project, a sophisticated multi-agent AI command center designed to orchestrate multiple AI agents for research, development, and automation tasks. The system emphasizes **local-first AI processing** with cloud fallback, ensuring privacy, speed, and cost efficiency.
+ARIA is my beloved project, a sophisticated multi-agent AI command center designed to orchestrate multiple AI agents for research, development, and automation tasks. The system emphasizes **local-first AI processing** with cloud fallback, ensuring privacy, speed, and cost efficiency.
 
 ### Core Philosophy
 - **Local-First AI:** 95% of workloads handled by local models (Ollama/Docker)
@@ -742,7 +742,7 @@ CREATE TABLE conversations (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- messages  
+-- messages
 CREATE TABLE messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
@@ -1766,7 +1766,7 @@ src/
 
 ### Contact & Support
 
-**Project Creator:** Francis Okorie Iyeke-Kanu  
+**Project Creator:** Francis Okorie Iyeke-Kanu
 **Email:** francis.okorie.Ik@gmail.com
 
 ### Version History

@@ -10,6 +10,7 @@ import { ChatMessage, ChatStatus, ChatAgent, ChatAttachment, AgentPreset, CHAT_A
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/hooks/use-toast';
+import { AIService } from '@/lib/ai';
 
 // Author: Francis Okorie Iyeke-Kanu
 export function ChatPage() {
@@ -41,10 +42,10 @@ export function ChatPage() {
     setStatus('thinking');
 
     // System message showing task delegation
-    const attachmentText = attachments && attachments.length > 0 
-      ? ` with ${attachments.length} file(s)` 
+    const attachmentText = attachments && attachments.length > 0
+      ? ` with ${attachments.length} file(s)`
       : '';
-    
+
     if (selectedAgentIds.length > 1) {
       addMessage({
         content: `Task delegated to ${selectedAgentIds.length} agents${attachmentText}`,
@@ -109,6 +110,7 @@ export function ChatPage() {
     setStatus('idle');
   }, [selectedAgentIds, addMessage, tts]);
 
+  // Modified to use real AI
   const handleSendMessage = useCallback(async (content: string, attachments?: ChatAttachment[], mentionedAgentIds?: string[]) => {
     // If agents were @mentioned, add them to selected agents
     if (mentionedAgentIds && mentionedAgentIds.length > 0) {
@@ -117,7 +119,8 @@ export function ChatPage() {
         return [...prev, ...newIds];
       });
     }
-    
+
+    // Add user message
     addMessage({
       content,
       sender: 'user',
@@ -125,8 +128,58 @@ export function ChatPage() {
       attachments,
     });
 
-    await simulateAgentResponse(content, attachments);
-  }, [addMessage, simulateAgentResponse]);
+    setStatus('thinking');
+
+    try {
+      // Determine persona
+      const respondingAgent = selectedAgents.length > 0 ? selectedAgents[0] : CHAT_AGENTS.find(a => a.role === 'planner') || CHAT_AGENTS[0];
+
+      const systemPrompt = `You are ${respondingAgent.name}, a ${respondingAgent.title}.
+      Role: ${respondingAgent.role}.
+      Capabilities: ${respondingAgent.capabilities.join(', ')}.
+
+      Respond to the user's request. Be concise and helpful.`;
+
+      // Call AI
+      const response = await AIService.chat(content, systemPrompt);
+
+      setStatus('executing');
+
+      // Add AI response
+      addMessage({
+        content: response.content,
+        sender: 'agent',
+        type: 'text',
+        agentId: respondingAgent.id,
+        agentName: respondingAgent.name,
+        agentRole: respondingAgent.role,
+        agentAvatar: respondingAgent.avatar,
+        confidence: 0.95,
+      });
+
+      // TTS
+      if (tts.enabled) {
+        tts.speak(response.content);
+      }
+
+    } catch (error) {
+      console.error('AI Error:', error);
+      toast({
+        title: "AI Error",
+        description: "Failed to get response from local model. Ensure Ollama is running.",
+        variant: "destructive"
+      });
+
+      // Fallback response
+      addMessage({
+        content: "I'm having trouble connecting to my brain (Ollama). Please check if the local AI service is running.",
+        sender: 'system',
+        type: 'error',
+      });
+    } finally {
+      setStatus('idle');
+    }
+  }, [addMessage, selectedAgents, tts, toast]);
 
   const handleAddAgentFromMention = useCallback((agentId: string) => {
     setSelectedAgentIds(prev => {

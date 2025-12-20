@@ -1,26 +1,27 @@
 // Agent Engine Types
 
 export type AIProvider = 'local' | 'lovable-ai';
-export type AIModel = 
-  | 'llama3.1:8b' 
+export type AIModel =
+  | 'llama3.1:8b'
   | 'llama3.1:70b'
   | 'mistral:7b'
+  | 'moondream'
   | 'google/gemini-2.5-flash'
   | 'google/gemini-2.5-pro'
   | 'openai/gpt-5-mini'
   | 'openai/gpt-5';
 
 // String literal type for agent role IDs (for use as Record keys)
-export type AgentRoleId = 
-  | 'atlas' 
-  | 'nova' 
-  | 'sage' 
-  | 'echo' 
-  | 'pixel' 
-  | 'nexus' 
-  | 'cipher' 
-  | 'flux' 
-  | 'aria' 
+export type AgentRoleId =
+  | 'atlas'
+  | 'nova'
+  | 'sage'
+  | 'echo'
+  | 'pixel'
+  | 'nexus'
+  | 'cipher'
+  | 'flux'
+  | 'aria'
   | 'orion';
 
 export interface RoutingDecision {
@@ -133,7 +134,7 @@ export interface TaskComplexityAnalysis {
 export interface AIRequestPayload {
   messages: Array<{
     role: 'user' | 'assistant' | 'system';
-    content: string;
+    content: string | Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }>;
   }>;
   model?: AIModel;
   stream?: boolean;
@@ -191,11 +192,11 @@ export interface AIStreamChunk {
 }
 
 // Error types
-export type AIErrorType = 
-  | 'rate_limit' 
-  | 'payment_required' 
-  | 'model_unavailable' 
-  | 'timeout' 
+export type AIErrorType =
+  | 'rate_limit'
+  | 'payment_required'
+  | 'model_unavailable'
+  | 'timeout'
   | 'network_error'
   | 'invalid_request'
   | 'context_too_long';
