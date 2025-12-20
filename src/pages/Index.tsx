@@ -9,6 +9,8 @@ import { AgentRail, Agent } from '@/components/AgentRail';
 import { TopBar } from '@/components/TopBar';
 import { CommandPalette } from '@/components/CommandPalette';
 import { OnboardingDialog } from '@/components/OnboardingDialog';
+import { FloatingChatPanel } from '@/components/chat/FloatingChatPanel';
+import { ChatProvider, useChatContext } from '@/hooks/useChatContext';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
@@ -445,7 +447,58 @@ const Index = () => {
   // Chat page has its own full-screen layout
   if (activeTab === 'chat' && isAuthenticated) {
     return (
+      <ChatProvider>
+        <div className="min-h-screen bg-background">
+          {/* Global Command Palette */}
+          <CommandPalette
+            onNavigate={handleTabChange}
+            onSelectAgent={handleSelectAgentAndViewDetails}
+            onPauseAgent={handlePauseAgent}
+            onResumeAgent={handleResumeAgent}
+            onStopAgent={handleStopAgent}
+            onViewProfile={handleViewProfile}
+          />
+
+          {/* Left Agent Rail - Desktop */}
+          <div className="hidden lg:block">
+            <AgentRail
+              agents={agents}
+              visibleAgentIds={visibleAgentIds}
+              selectedAgentId={selectedAgentId}
+              onSelectAgent={handleSelectAgentAndViewDetails}
+              onOpenFleetCommand={handleOpenFleetCommand}
+              onCreateAgent={handleCreateAgent}
+              onNavigate={(tab) => handleTabChange(tab as TabId)}
+              onRemoveFromPanel={handleRemoveFromPanel}
+              onAddToPanel={handleAddToPanel}
+              onPauseAgent={handlePauseAgent}
+              onResumeAgent={handleResumeAgent}
+              onStopAgent={handleStopAgent}
+              onModifyTask={handleModifyTask}
+              onReorderAgents={handleReorderAgents}
+            />
+          </div>
+
+          <div className="lg:pl-20">
+            <ChatPage />
+          </div>
+
+          {/* Bottom Nav - Mobile */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+            <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+          </div>
+        </div>
+      </ChatProvider>
+    );
+  }
+
+  return (
+    <ChatProvider>
+      <PageContextSetter activeTab={activeTab} />
       <div className="min-h-screen bg-background">
+        {/* Onboarding Dialog */}
+        <OnboardingDialog />
+
         {/* Global Command Palette */}
         <CommandPalette
           onNavigate={handleTabChange}
@@ -476,93 +529,99 @@ const Index = () => {
           />
         </div>
 
-        <div className="lg:pl-20">
-          <ChatPage />
+        {/* Top Bar - Desktop */}
+        <div className="hidden lg:block">
+          <TopBar
+            fleetStatus={fleetStatus}
+            activeAgents={activeAgentsCount}
+            totalAgents={agents.length}
+            user={user || undefined}
+            onViewProfile={handleViewProfile}
+            onLogout={handleLogout}
+            activeTab={activeTab}
+            viewMode={viewMode}
+            agentName={selectedAgent?.name}
+            onNavigate={handleTabChange}
+            onBackToMain={handleBackFromDetails}
+          />
         </div>
 
+        {/* Mobile Status Bar */}
+        <div className="lg:hidden">
+          <StatusBar
+            state={agentState}
+            activeTaskTime={taskTime}
+            autonomyLevel={autonomyLevel}
+            onStop={handleStop}
+          />
+        </div>
+        
+        {/* Main Content */}
+        <main className="pt-14 pb-20 px-4 lg:pl-24 lg:pr-4 lg:pt-20 lg:pb-4">
+          <div className="max-w-6xl mx-auto">
+            {renderPage()}
+          </div>
+        </main>
+        
         {/* Bottom Nav - Mobile */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+        <div className="lg:hidden">
           <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         </div>
-      </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Onboarding Dialog */}
-      <OnboardingDialog />
-
-      {/* Global Command Palette */}
-      <CommandPalette
-        onNavigate={handleTabChange}
-        onSelectAgent={handleSelectAgentAndViewDetails}
-        onPauseAgent={handlePauseAgent}
-        onResumeAgent={handleResumeAgent}
-        onStopAgent={handleStopAgent}
-        onViewProfile={handleViewProfile}
-      />
-
-      {/* Left Agent Rail - Desktop */}
-      <div className="hidden lg:block">
-        <AgentRail
-          agents={agents}
-          visibleAgentIds={visibleAgentIds}
-          selectedAgentId={selectedAgentId}
-          onSelectAgent={handleSelectAgentAndViewDetails}
-          onOpenFleetCommand={handleOpenFleetCommand}
-          onCreateAgent={handleCreateAgent}
-          onNavigate={(tab) => handleTabChange(tab as TabId)}
-          onRemoveFromPanel={handleRemoveFromPanel}
-          onAddToPanel={handleAddToPanel}
-          onPauseAgent={handlePauseAgent}
-          onResumeAgent={handleResumeAgent}
-          onStopAgent={handleStopAgent}
-          onModifyTask={handleModifyTask}
-          onReorderAgents={handleReorderAgents}
-        />
+        {/* Floating Chat Panel - Available on all pages except chat */}
+        {activeTab !== 'chat' && <FloatingChatPanel />}
       </div>
-
-      {/* Top Bar - Desktop */}
-      <div className="hidden lg:block">
-        <TopBar
-          fleetStatus={fleetStatus}
-          activeAgents={activeAgentsCount}
-          totalAgents={agents.length}
-          user={user || undefined}
-          onViewProfile={handleViewProfile}
-          onLogout={handleLogout}
-          activeTab={activeTab}
-          viewMode={viewMode}
-          agentName={selectedAgent?.name}
-          onNavigate={handleTabChange}
-          onBackToMain={handleBackFromDetails}
-        />
-      </div>
-
-      {/* Mobile Status Bar */}
-      <div className="lg:hidden">
-        <StatusBar
-          state={agentState}
-          activeTaskTime={taskTime}
-          autonomyLevel={autonomyLevel}
-          onStop={handleStop}
-        />
-      </div>
-      
-      {/* Main Content */}
-      <main className="pt-14 pb-20 px-4 lg:pl-24 lg:pr-4 lg:pt-20 lg:pb-4">
-        <div className="max-w-6xl mx-auto">
-          {renderPage()}
-        </div>
-      </main>
-      
-      {/* Bottom Nav - Mobile */}
-      <div className="lg:hidden">
-        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-      </div>
-    </div>
+    </ChatProvider>
   );
 };
+
+// Component to set page context based on active tab
+function PageContextSetter({ activeTab }: { activeTab: TabId }) {
+  const { setPageContext } = useChatContext();
+  
+  useEffect(() => {
+    const pageContextMap: Record<string, { name: string; category?: string }> = {
+      'home': { name: 'Home', category: 'general' },
+      'dashboard': { name: 'Dashboard', category: 'general' },
+      'tasks': { name: 'Tasks', category: 'productivity' },
+      'monitoring': { name: 'Monitoring', category: 'system' },
+      'memory': { name: 'Memory', category: 'system' },
+      'settings': { name: 'Settings', category: 'system' },
+      'agents': { name: 'Agents', category: 'system' },
+      'analytics': { name: 'Analytics', category: 'data' },
+      'files': { name: 'Files', category: 'productivity' },
+      'calendar': { name: 'Calendar', category: 'productivity' },
+      'contacts': { name: 'Contacts', category: 'productivity' },
+      'email': { name: 'Email', category: 'communication' },
+      'workflows': { name: 'Workflows', category: 'automation' },
+      'phone': { name: 'Phone', category: 'communication' },
+      'reservations': { name: 'Reservations', category: 'scheduling' },
+      'invoices': { name: 'Invoices', category: 'finance' },
+      'expenses': { name: 'Expenses', category: 'finance' },
+      'budget': { name: 'Budget', category: 'finance' },
+      'reports': { name: 'Financial Reports', category: 'finance' },
+      'payments': { name: 'Payments', category: 'finance' },
+      'tax': { name: 'Tax', category: 'finance' },
+      'documents': { name: 'Documents', category: 'productivity' },
+      'devops-pipelines': { name: 'CI/CD Pipelines', category: 'devops' },
+      'devops-code-review': { name: 'Code Review', category: 'devops' },
+      'devops-deployment': { name: 'Deployment', category: 'devops' },
+      'devops-infrastructure': { name: 'Infrastructure', category: 'devops' },
+      'devops-security': { name: 'Security Scanning', category: 'devops' },
+      'devops-logs': { name: 'Log Analysis', category: 'devops' },
+    };
+    
+    const context = pageContextMap[activeTab];
+    if (context) {
+      setPageContext({
+        pageId: activeTab,
+        pageName: context.name,
+        pageCategory: context.category,
+      });
+    }
+  }, [activeTab, setPageContext]);
+  
+  return null;
+}
 
 export default Index;
