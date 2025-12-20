@@ -1,3 +1,4 @@
+// Contacts Page - Author: Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Users, Plus, Search, Mail, Phone, Building2, Star, MoreVertical, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ const categoryColors = {
   team: 'bg-cyan-500/20 text-cyan-400',
 };
 
+/* Created by Francis Okorie Iyeke-Kanu */
 export function ContactsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

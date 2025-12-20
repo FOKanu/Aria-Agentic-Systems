@@ -1,9 +1,11 @@
+// Mock Data - Developed by Francis Okorie Iyeke-Kanu
 import { AgentState, Task, VisionData, MemoryEntry, ToolUsage, AnalyzedFile, AgentEvent, AutonomyLevel } from '@/types/agent';
 
 export const mockAgentState: AgentState = 'executing';
 
 export const mockAutonomyLevel: AutonomyLevel = 'assisted';
 
+/* Francis Okorie Iyeke-Kanu - Active Task Mock */
 export const mockActiveTask: Task = {
   id: 'task-001',
   name: 'Process Q4 Sales Report',
@@ -56,6 +58,7 @@ export const mockActiveTask: Task = {
   ],
 };
 
+// Author: Francis Okorie Iyeke-Kanu
 export const mockTasks: Task[] = [
   mockActiveTask,
   {
@@ -113,6 +116,7 @@ export const mockTasks: Task[] = [
   },
 ];
 
+// Francis Okorie Iyeke-Kanu - Vision Data
 export const mockVisionData: VisionData = {
   screenshot: undefined,
   ocrText: 'Task Manager\nActive Tasks: 3\nCompleted: 12\n[New Task] [Refresh] [Export]',

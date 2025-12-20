@@ -1,3 +1,4 @@
+// Reservations Page - © Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Bookmark, Plus, Search, Calendar, MapPin, Clock, Users, Star, Filter, MoreVertical, Plane, Hotel, Utensils, Car, Ticket, Bot, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,3 +1,4 @@
+// Theme Hook by Francis Okorie Iyeke-Kanu
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';
@@ -17,6 +18,7 @@ function getSystemTheme(): 'dark' | 'light' {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+/* Francis Okorie Iyeke-Kanu - Theme Provider */
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'dark';
@@ -75,6 +77,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Author: Francis Okorie Iyeke-Kanu
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (!context) {

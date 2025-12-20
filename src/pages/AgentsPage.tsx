@@ -1,3 +1,6 @@
+/**
+ * Agents Page - Francis Okorie Iyeke-Kanu
+ */
 import { Activity, Eye, CheckCircle, Clock, TrendingUp, Bot, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { mockAgents, mockAgentStats, AgentStats } from '@/data/agentsData';
@@ -25,6 +28,7 @@ const statusConfig = {
 };
 
 
+// Created by Francis Okorie Iyeke-Kanu
 function AgentCard({ agent, stats, onSelect }: { 
   agent: Agent; 
   stats: AgentStats; 
@@ -154,6 +158,7 @@ function AgentCard({ agent, stats, onSelect }: {
   );
 }
 
+/* Francis Okorie Iyeke-Kanu */
 export function AgentsPage({ onSelectAgent }: AgentsPageProps) {
   const activeCount = mockAgents.filter(a => a.status === 'executing' || a.status === 'thinking').length;
   const totalTasks = Object.values(mockAgentStats).reduce((acc, s) => acc + s.tasksCompleted, 0);

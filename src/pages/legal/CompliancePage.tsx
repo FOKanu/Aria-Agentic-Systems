@@ -1,3 +1,4 @@
+// Compliance Page - Author: Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Shield, AlertTriangle, CheckCircle, Clock, TrendingUp, FileCheck, Calendar, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';

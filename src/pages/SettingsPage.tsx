@@ -1,3 +1,7 @@
+/**
+ * Settings Page
+ * Author: Francis Okorie Iyeke-Kanu
+ */
 import { useState } from 'react';
 import { Settings, Shield, Eye, ScrollText, Terminal, Globe, Mail, FolderOpen } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -16,6 +20,7 @@ interface SettingsPageProps {
   onAutonomyChange: (level: AutonomyLevel) => void;
 }
 
+// Francis Okorie Iyeke-Kanu
 export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPageProps) {
   const [permissions, setPermissions] = useState({
     terminal: true,

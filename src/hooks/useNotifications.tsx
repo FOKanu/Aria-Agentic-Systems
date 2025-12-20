@@ -1,3 +1,4 @@
+// Notifications Hook - Created by Francis Okorie Iyeke-Kanu
 import { useState, createContext, useContext, useCallback, ReactNode } from 'react';
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
@@ -27,6 +28,7 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+/* Francis Okorie Iyeke-Kanu - Notification Provider */
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([
     // Sample notifications
@@ -108,6 +110,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// © Francis Okorie Iyeke-Kanu
 export function useNotifications() {
   const context = useContext(NotificationContext);
   if (!context) {

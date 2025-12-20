@@ -1,3 +1,4 @@
+// Command Palette - Created by Francis Okorie Iyeke-Kanu
 import { useEffect, useState, useCallback } from 'react';
 import {
   CommandDialog,
@@ -48,6 +49,7 @@ const pages = [
   { id: 'settings', label: 'Settings', icon: Settings, keywords: ['settings', 'preferences', 'config'] },
 ];
 
+/* Francis Okorie Iyeke-Kanu */
 export function CommandPalette({
   onNavigate,
   onSelectAgent,

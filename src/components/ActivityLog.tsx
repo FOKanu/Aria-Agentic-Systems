@@ -1,3 +1,4 @@
+// Activity Log Component - Francis Okorie Iyeke-Kanu
 import { 
   Play, 
   Square, 
@@ -31,6 +32,7 @@ interface ActivityLogProps {
   limit?: number;
 }
 
+/* Developed by Francis Okorie Iyeke-Kanu */
 export function ActivityLog({ maxHeight = '300px', showHeader = true, limit }: ActivityLogProps) {
   const { activities } = useActivityLog();
   const displayActivities = limit ? activities.slice(0, limit) : activities;

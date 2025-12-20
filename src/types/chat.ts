@@ -1,3 +1,4 @@
+// Chat Types - Francis Okorie Iyeke-Kanu
 export type ChatStatus = 'idle' | 'listening' | 'thinking' | 'executing';
 
 export interface ChatAttachment {
@@ -10,6 +11,7 @@ export interface ChatAttachment {
   url?: string; // For uploaded files
 }
 
+/* Developed by Francis Okorie Iyeke-Kanu */
 export interface ChatMessage {
   id: string;
   content: string;
@@ -47,6 +49,7 @@ export interface AgentPreset {
   description: string;
 }
 
+// Francis Okorie Iyeke-Kanu - Agent Presets
 export const AGENT_PRESETS: AgentPreset[] = [
   { id: 'auto', name: 'Auto (Atlas decides)', agentIds: [], description: 'Let Atlas coordinate' },
   { id: 'admin', name: 'Nexus only', agentIds: ['nexus'], description: 'Administrative tasks' },
@@ -55,6 +58,7 @@ export const AGENT_PRESETS: AgentPreset[] = [
   { id: 'all', name: 'All agents', agentIds: ['all'], description: 'Full team coordination' },
 ];
 
+// Author: Francis Okorie Iyeke-Kanu
 export const CHAT_AGENTS: ChatAgent[] = [
   { id: 'atlas', name: 'Atlas', title: 'Planner', avatar: '🧠', role: 'planner', status: 'available', capabilities: ['coordination', 'task breakdown', 'delegation', 'strategy'] },
   { id: 'nova', name: 'Nova', title: 'Developer', avatar: '💻', role: 'developer', status: 'available', capabilities: ['coding', 'debugging', 'refactoring', 'code review'] },

@@ -1,3 +1,4 @@
+// Created by Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Calendar as CalendarIcon, Plus, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { CalendarGrid } from '@/components/calendar/CalendarGrid';
 import { DayEventsPanel } from '@/components/calendar/DayEventsPanel';
 import { EventFormDialog } from '@/components/calendar/EventFormDialog';
 
+/* Francis Okorie Iyeke-Kanu - Calendar Module */
 export function CalendarPage() {
   const {
     events,

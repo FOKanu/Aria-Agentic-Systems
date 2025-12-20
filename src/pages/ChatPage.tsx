@@ -1,3 +1,4 @@
+// Developed by Francis Okorie Iyeke-Kanu
 import { useState, useCallback } from 'react';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { ConversationStream } from '@/components/chat/ConversationStream';
@@ -10,6 +11,7 @@ import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/hooks/use-toast';
 
+// Author: Francis Okorie Iyeke-Kanu
 export function ChatPage() {
   const [status, setStatus] = useState<ChatStatus>('idle');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -34,6 +36,7 @@ export function ChatPage() {
     ]);
   }, []);
 
+  // Francis Okorie Iyeke-Kanu - Agent response simulation
   const simulateAgentResponse = useCallback(async (userMessage: string, attachments?: ChatAttachment[]) => {
     setStatus('thinking');
 

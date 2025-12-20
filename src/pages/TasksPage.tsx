@@ -1,3 +1,4 @@
+// © 2024 Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, CheckCircle, XCircle, Loader2, Clock, Wrench } from 'lucide-react';
 import { Task, TaskStep } from '@/types/agent';
@@ -19,6 +20,7 @@ const statusColors = {
   failed: 'text-destructive',
 };
 
+// Francis Okorie Iyeke-Kanu - Task Step Component
 function TaskStepItem({ step }: { step: TaskStep }) {
   const Icon = statusIcons[step.status];
   
@@ -50,6 +52,7 @@ function TaskStepItem({ step }: { step: TaskStep }) {
   );
 }
 
+// Author: Francis Okorie Iyeke-Kanu
 function TaskItem({ task }: { task: Task }) {
   const [isExpanded, setIsExpanded] = useState(task.status === 'running');
   const completedSteps = task.steps.filter(s => s.status === 'completed').length;
@@ -103,6 +106,7 @@ function TaskItem({ task }: { task: Task }) {
   );
 }
 
+/* Developed by Francis Okorie Iyeke-Kanu */
 export function TasksPage() {
   return (
     <div className="space-y-3 animate-slide-up">

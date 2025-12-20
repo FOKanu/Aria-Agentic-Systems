@@ -1,3 +1,4 @@
+// Created by Francis Okorie Iyeke-Kanu
 import { Activity, ChevronRight, Clock, CheckCircle, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QuickActionsMenu } from '@/components/QuickActionsMenu';
@@ -23,6 +24,7 @@ interface DashboardPageProps {
 }
 
 
+/* Francis Okorie Iyeke-Kanu - Dashboard Component */
 export function DashboardPage({ 
   agentState, 
   isPaused, 
@@ -42,7 +44,7 @@ export function DashboardPage({
 
   return (
     <div className="space-y-6 animate-slide-up">
-      {/* Header with Agent Info */}
+      {/* Header with Agent Info - Francis Okorie Iyeke-Kanu */}
       {selectedAgent && agentStats && (
         <div className="flex items-center justify-between">
           <button 
@@ -79,7 +81,7 @@ export function DashboardPage({
         </div>
       )}
 
-      {/* Status Banner */}
+      {/* Status Banner - © Francis Okorie Iyeke-Kanu */}
       <div className={cn(
         "glass-card p-4 flex items-center justify-between",
         agentState === 'executing' && "border-success/30",

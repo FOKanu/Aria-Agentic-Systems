@@ -1,3 +1,4 @@
+// Conversation Stream - Francis Okorie Iyeke-Kanu
 import { useEffect, useRef } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatMessage as ChatMessageType } from '@/types/chat';
@@ -18,6 +19,7 @@ interface ConversationStreamProps {
   typingAgents?: TypingAgent[];
 }
 
+/* Developed by Francis Okorie Iyeke-Kanu */
 export function ConversationStream({ messages, typingAgents = [] }: ConversationStreamProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 

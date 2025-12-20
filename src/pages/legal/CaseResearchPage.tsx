@@ -1,3 +1,4 @@
+// Case Research Page - Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
 import { Search, BookOpen, Scale, FileText, Bookmark, Clock, ExternalLink, Sparkles, Filter, Download, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';

@@ -1,3 +1,4 @@
+// Authentication Hook - Francis Okorie Iyeke-Kanu
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -15,6 +16,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/* Created by Francis Okorie Iyeke-Kanu */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -39,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Francis Okorie Iyeke-Kanu - Sign up handler
   const signUp = async (email: string, password: string, name: string) => {
     try {
       const { error } = await supabase.auth.signUp({
@@ -145,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// © Francis Okorie Iyeke-Kanu
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

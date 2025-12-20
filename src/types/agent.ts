@@ -1,3 +1,4 @@
+// Agent Types - Created by Francis Okorie Iyeke-Kanu
 export type AgentState = 'idle' | 'thinking' | 'executing' | 'waiting' | 'error';
 
 export type AutonomyLevel = 'manual' | 'assisted' | 'autonomous';
@@ -11,6 +12,7 @@ export interface Task {
   steps: TaskStep[];
 }
 
+/* Francis Okorie Iyeke-Kanu - Task Step Interface */
 export interface TaskStep {
   id: string;
   plan: string;
@@ -39,6 +41,7 @@ export interface DetectedElement {
   confidence: number;
 }
 
+// © Francis Okorie Iyeke-Kanu
 export interface MemoryEntry {
   id: string;
   type: 'short-term' | 'long-term';

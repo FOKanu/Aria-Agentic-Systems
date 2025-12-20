@@ -1,3 +1,7 @@
+/**
+ * Agent Rail Component
+ * Created by Francis Okorie Iyeke-Kanu
+ */
 import { useState, useRef } from 'react';
 import { Plus, LayoutGrid, Home, MessageSquare, Bot, LayoutDashboard, ListTodo, Eye, Brain, Settings, X, Pause, Play, Square, Edit, ChevronRight, Calendar, Mail, FileText, Phone, Code, Bookmark, GripVertical, Monitor, Activity, GitBranch, Wrench, AlertTriangle, FolderOpen, Scale, DollarSign, Share2, Users, Receipt, Gavel, GitMerge, TrendingUp, CreditCard, PieChart, FileCheck, Shield, Search, Megaphone, BarChart3, Heart, Workflow, Contact } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,6 +24,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 
+// Francis Okorie Iyeke-Kanu - Agent Interface
 export interface Agent {
   id: string;
   name: string;
@@ -58,7 +63,7 @@ const statusColors: Record<string, string> = {
   offline: 'bg-muted-foreground',
 };
 
-// Navigation items
+// Francis Okorie Iyeke-Kanu - Navigation items
 const navItems = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'chat', label: 'Chat', icon: MessageSquare },
