@@ -340,50 +340,50 @@ ARIA organizes agent capabilities into structured categories for efficient task 
 
 ## System Components
 
-### Frontend Components
+### Codebase Architecture
 
 ```
 src/
-├── components/
-│   ├── chat/                    # Chat interface components
-│   │   ├── ChatHeader.tsx       # Conversation header with agent info
-│   │   ├── ChatInputBar.tsx     # Message input with mentions
-│   │   ├── ChatMessage.tsx      # Individual message rendering
-│   │   ├── ConversationStream.tsx # Real-time message stream
-│   │   ├── AgentMentionPopover.tsx # @mention autocomplete
-│   │   ├── AgentSelectorModal.tsx  # Agent selection UI
-│   │   ├── ApprovalInline.tsx   # Tool approval interface
-│   │   ├── MessageTemplates.tsx # Quick message templates
-│   │   ├── QuickActions.tsx     # Common action buttons
-│   │   └── TypingIndicator.tsx  # Agent typing animation
-│   │
-│   ├── ui/                      # Shadcn UI components
-│   │   └── [50+ components]     # Button, Card, Dialog, etc.
-│   │
-│   ├── AgentRail.tsx            # Agent sidebar navigation
-│   ├── AgentProfile.tsx         # Agent details display
-│   ├── AgentCreationWizard.tsx  # Custom agent creator
-│   ├── TopBar.tsx               # Main navigation bar
-│   ├── BottomNav.tsx            # Mobile navigation
-│   ├── StatusBar.tsx            # System status display
-│   ├── EventsFeed.tsx           # Activity event stream
-│   ├── ActivityLog.tsx          # Detailed activity history
-│   ├── MatrixRain.tsx           # Visual background effect
-│   └── [20+ more components]
+├── core/                        # Shared resources & utilities
+│   ├── hooks/                   # Re-exports useAuth, useToast, useIsMobile
+│   │   └── index.ts
+│   ├── providers/               # Shared context providers
+│   │   ├── lovableCloud.ts
+│   │   └── types.ts
+│   ├── types/                   # Unified type system
+│   │   ├── ai.types.ts          # AI-related types
+│   │   ├── agent.types.ts       # Agent definitions
+│   │   ├── chat.types.ts        # Chat message types
+│   │   ├── common.types.ts      # Shared common types
+│   │   ├── database.ts          # Database table types
+│   │   └── index.ts             # Barrel exports
+│   ├── utils/                   # Shared utilities
+│   │   └── index.ts             # cn, formatDate, generateId
+│   └── index.ts                 # Public exports
 │
-├── pages/
-│   ├── Index.tsx                # Landing/home page
-│   ├── DashboardPage.tsx        # Main dashboard
-│   ├── ChatPage.tsx             # Chat interface
-│   ├── AgentsPage.tsx           # Agent management
-│   ├── AgentDetailsPage.tsx     # Individual agent view
-│   ├── TasksPage.tsx            # Task management
-│   ├── FilesPage.tsx            # File browser
-│   ├── MemoryPage.tsx           # Agent memory viewer
-│   ├── AnalyticsPage.tsx        # Usage analytics
-│   ├── MonitoringPage.tsx       # System monitoring
-│   ├── SettingsPage.tsx         # User settings
-│   └── [5+ more pages]
+├── shell/                       # App chrome & navigation
+│   ├── providers/
+│   │   └── AppProviders.tsx     # All context providers wrapped
+│   ├── routes/
+│   │   ├── AppRoutes.tsx        # Centralized routing
+│   │   ├── LoadingFallback.tsx  # Suspense fallback
+│   │   └── routes.config.ts     # Lazy pages & route config
+│   └── index.ts                 # Public exports
+│
+├── features/                    # Feature modules (public API pattern)
+│   ├── chat/                    # Chat feature
+│   ├── agents/                  # Agent management
+│   ├── dashboard/               # Dashboard & analytics
+│   ├── auth/                    # Authentication
+│   ├── files/                   # File management
+│   ├── tasks/                   # Task management
+│   ├── calendar/                # Calendar & scheduling
+│   ├── contacts/                # Contact management
+│   ├── finance/                 # Budget, expenses, invoices
+│   ├── devops/                  # CI/CD, deployments
+│   ├── legal/                   # Contracts, compliance
+│   ├── monitoring/              # Alerts, logs, traces
+│   └── index.ts                 # Barrel exports
 │
 ├── agent-engine/                # AI processing core
 │   ├── services/
@@ -398,25 +398,81 @@ src/
 │   └── types/
 │       └── index.ts             # TypeScript definitions
 │
-├── file-management/             # File handling system
+├── components/                  # Shared UI components (migrating to features)
+│   ├── chat/                    # Chat-specific components
+│   ├── ui/                      # shadcn/ui primitives (40+)
+│   ├── calendar/                # Calendar components
+│   ├── settings/                # Settings components
+│   └── ...                      # Other shared components
+│
+├── file-management/             # File handling (to become features/files)
 │   ├── components/              # File UI components
 │   ├── hooks/                   # File management hooks
 │   ├── lib/                     # File utilities
 │   └── types/                   # File type definitions
 │
-├── hooks/                       # Shared React hooks
-│   ├── useTheme.tsx             # Theme management
-│   ├── useNotifications.tsx     # Notification system
-│   ├── useFavorites.tsx         # Favorite items
-│   ├── useActivityLog.tsx       # Activity tracking
-│   ├── useKeyboardShortcuts.ts  # Keyboard navigation
-│   ├── useVoiceInput.ts         # Voice recognition
-│   ├── useTextToSpeech.ts       # TTS output
-│   └── [5+ more hooks]
+├── pages/                       # Page components (distributing to features)
+│   ├── devops/                  # DevOps sub-pages
+│   ├── legal/                   # Legal sub-pages
+│   ├── monitoring/              # Monitoring sub-pages
+│   └── ...                      # Other pages
 │
-└── data/
-    ├── agentsData.ts            # Agent definitions
-    └── mockData.ts              # Development data
+├── hooks/                       # Legacy hooks (core re-exports)
+├── types/                       # Legacy types (core/types unified)
+├── data/                        # Mock & static data
+├── lib/                         # Shared libraries
+├── integrations/                # External integrations (Supabase)
+│
+├── App.tsx                      # Uses shell/AppProviders & AppRoutes
+├── App.css                      # Global styles
+├── index.css                    # Tailwind & CSS variables
+└── main.tsx                     # Entry point
+```
+
+### Feature Module Convention
+
+Each feature module follows this structure:
+
+```
+src/features/{feature-name}/
+├── components/        # Feature-specific UI components
+├── hooks/            # Feature-specific React hooks
+├── types/            # Feature-specific TypeScript types
+├── utils/            # Feature-specific utility functions
+├── pages/            # Page components (if applicable)
+└── index.ts          # Public API exports
+```
+
+**Import Convention:**
+```typescript
+// ✅ Correct - import from public API
+import { ChatPage, useChatContext } from '@/features/chat';
+
+// ❌ Avoid - importing internal modules directly
+import { ChatPage } from '@/features/chat/pages/ChatPage';
+```
+
+### Legacy Components (Being Migrated)
+
+```
+src/components/
+├── chat/                        # Chat interface components
+│   ├── ChatHeader.tsx           # Conversation header
+│   ├── ChatInputBar.tsx         # Message input with mentions
+│   ├── ChatMessage.tsx          # Individual message rendering
+│   ├── ConversationStream.tsx   # Real-time message stream
+│   ├── AgentMentionPopover.tsx  # @mention autocomplete
+│   ├── FloatingChatPanel.tsx    # Global chat overlay
+│   └── ...
+│
+├── ui/                          # shadcn/ui primitives
+│   └── [40+ components]         # Button, Card, Dialog, etc.
+│
+├── AgentRail.tsx                # Agent sidebar navigation
+├── AgentProfile.tsx             # Agent details display
+├── TopBar.tsx                   # Main navigation bar
+├── BottomNav.tsx                # Mobile navigation
+└── [20+ more components]
 ```
 
 ### Agent Engine Architecture

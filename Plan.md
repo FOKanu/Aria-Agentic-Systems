@@ -39,6 +39,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Phase | Name | Description |
 |-------|------|-------------|
 | 1-5 | Core Infrastructure | UI components, navigation, agent system |
+| 6 | Codebase Architecture | core/, shell/, features/ modules established |
 | 7 | Database Integration | Supabase tables, RLS policies, enums |
 | 8 | Authentication | Login, signup, password recovery |
 
@@ -46,7 +47,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 
 | Phase | Name | Progress | Next Steps |
 |-------|------|----------|------------|
-| 6 | Chat Edge Function | 60% | Create edge function, SSE streaming |
+| 6a | Chat Edge Function | 60% | Create edge function, SSE streaming |
 | 9 | Capability Pages | 30% | DevOps complete, Legal/Finance pending |
 | 10 | Provider Configuration | 40% | Settings UI, multi-provider support |
 
@@ -54,6 +55,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 
 | Phase | Name | Dependencies |
 |-------|------|--------------|
+| 6b | Migrate Imports | Use feature module public APIs |
 | 11 | Agent Memory & Context | Phase 7 ✅ |
 | 12 | Voice Integration | ElevenLabs API |
 | 13 | Local Model Integration | Ollama setup |
@@ -330,7 +332,15 @@ Week 6: Security + Testing
 
 ## Recent Accomplishments
 
-### December 20, 2025
+### December 20, 2025 (Phase 6 - Codebase Architecture)
+- ✅ Created `src/core/` module with hooks, types, utils, providers
+- ✅ Created `src/shell/` module with AppProviders, AppRoutes, routes.config
+- ✅ Created `src/features/` with 12 feature modules (chat, agents, dashboard, auth, files, tasks, calendar, contacts, finance, devops, legal, monitoring)
+- ✅ Established public API pattern with index.ts barrel exports
+- ✅ Unified type system in core/types/
+- ✅ Centralized routing configuration
+
+### December 20, 2025 (Earlier)
 - ✅ Global floating chat panel across all pages
 - ✅ Page context injection into chat
 - ✅ Floating voice input button with recording panel
@@ -343,6 +353,54 @@ Week 6: Security + Testing
 - ✅ Authentication system
 - ✅ Provider configuration table
 - ✅ Agent memory schema
+
+---
+
+## Codebase Structure
+
+```
+src/
+├── core/                      # Shared resources & utilities
+│   ├── hooks/                 # Re-exports useAuth, useToast, useIsMobile
+│   ├── providers/             # Shared context providers
+│   ├── types/                 # Unified type system
+│   ├── utils/                 # Shared utilities
+│   └── index.ts               # Public exports
+│
+├── shell/                     # App chrome & navigation
+│   ├── providers/
+│   │   └── AppProviders.tsx   # All context providers wrapped
+│   ├── routes/
+│   │   ├── AppRoutes.tsx      # Centralized routing
+│   │   ├── LoadingFallback.tsx
+│   │   └── routes.config.ts   # Lazy pages & route config
+│   └── index.ts
+│
+├── features/                  # Feature modules (public API pattern)
+│   ├── chat/                  # Chat feature
+│   ├── agents/                # Agent management
+│   ├── dashboard/             # Dashboard & analytics
+│   ├── auth/                  # Authentication
+│   ├── files/                 # File management
+│   ├── tasks/                 # Task management
+│   ├── calendar/              # Calendar & scheduling
+│   ├── contacts/              # Contact management
+│   ├── finance/               # Budget, expenses, invoices
+│   ├── devops/                # CI/CD, deployments
+│   ├── legal/                 # Contracts, compliance
+│   ├── monitoring/            # Alerts, logs, traces
+│   └── index.ts               # Barrel exports
+│
+├── agent-engine/              # AI routing & model services
+├── components/                # Shared UI components (migrating to features)
+├── file-management/           # File system (to become features/files)
+├── pages/                     # Page components (distributing to features)
+├── hooks/                     # Legacy hooks (core re-exports)
+├── types/                     # Legacy types (core/types unified)
+│
+├── App.tsx                    # Uses shell/AppProviders & AppRoutes
+└── main.tsx                   # Entry point
+```
 
 ---
 
