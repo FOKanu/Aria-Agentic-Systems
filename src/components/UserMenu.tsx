@@ -21,8 +21,8 @@ export function UserMenu({ user, onViewProfile, onLogout }: UserMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-secondary/50 transition-colors">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/30 flex items-center justify-center text-lg">
-            {user.avatar}
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 border border-primary/30 flex items-center justify-center">
+            <User className="w-4 h-4 text-primary" />
           </div>
           <div className="hidden lg:block text-left">
             <p className="text-sm font-medium leading-tight">{user.name}</p>
@@ -33,8 +33,8 @@ export function UserMenu({ user, onViewProfile, onLogout }: UserMenuProps) {
       <DropdownMenuContent align="end" className="w-56 bg-card border-border z-50">
         <DropdownMenuLabel className="font-display">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center text-xl">
-              {user.avatar}
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary/30 to-accent/30 flex items-center justify-center">
+              <User className="w-5 h-5 text-primary" />
             </div>
             <div>
               <p className="font-semibold">{user.name}</p>
