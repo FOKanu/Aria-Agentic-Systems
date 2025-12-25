@@ -63,9 +63,16 @@ export function useCalendarEvents() {
   const fetchEvents = useCallback(async (startDate?: Date, endDate?: Date) => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // In Demo Mode, don't clear events if no user found, just fetch potentially existing local ones?
+      // Actually, for consistency, let's allow fetching to fail gracefully or return empty
+      // but if we are in demo mode, we might want to return some mock events for visualization?
       if (!user) {
-        setEvents([]);
+        // Optional: Add some mock data for demo purposes if list is empty
+        if (events.length === 0) {
+           // We could seed some data here, but for now let's just keep what's in state
+           // or return empty. User can create new demo events.
+        }
+        setLoading(false);
         return;
       }
 
@@ -101,18 +108,15 @@ export function useCalendarEvents() {
 
   const createEvent = async (eventData: CreateEventData): Promise<CalendarEvent | null> => {
     try {
+      // In demo mode, we might not have a user, but we should check auth context first
+      // This is a temporary fix to allow demo usage without hard auth check
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: 'Sign in required',
-          description: 'Please sign in to create events',
-          variant: 'destructive',
-        });
-        return null;
-      }
+
+      // If no user is logged in (Demo Mode), create a mock user ID for local state
+      const userId = user?.id || 'demo-user-id';
 
       const insertData = {
-        user_id: user.id,
+        user_id: userId,
         title: eventData.title,
         description: eventData.description || null,
         location: eventData.location || null,
@@ -130,25 +134,49 @@ export function useCalendarEvents() {
         reminders: (eventData.reminders || []) as Json,
       };
 
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .insert(insertData)
-        .select()
-        .single();
+      // Only attempt database insert if we have a real user
+      if (user) {
+        const { data, error } = await supabase
+          .from('calendar_events')
+          .insert(insertData)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) throw error;
+        const newEvent = data as CalendarEvent;
+        setEvents(prev => [...prev, newEvent].sort((a, b) =>
+          new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+        ));
 
-      const newEvent = data as CalendarEvent;
-      setEvents(prev => [...prev, newEvent].sort((a, b) =>
-        new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-      ));
+        toast({
+          title: 'Event created',
+          description: `"${eventData.title}" has been added to your calendar`,
+        });
 
-      toast({
-        title: 'Event created',
-        description: `"${eventData.title}" has been added to your calendar`,
-      });
+        return newEvent;
+      } else {
+        // Demo Mode: Simulate successful creation
+        const mockEvent: CalendarEvent = {
+          ...insertData,
+          id: `temp-${Date.now()}`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          metadata: {},
+          reminders: insertData.reminders,
+          attendees: insertData.attendees
+        } as CalendarEvent;
 
-      return newEvent;
+        setEvents(prev => [...prev, mockEvent].sort((a, b) =>
+          new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+        ));
+
+        toast({
+          title: 'Demo Event created',
+          description: `"${eventData.title}" added (Demo Mode - not saved to DB)`,
+        });
+
+        return mockEvent;
+      }
     } catch (error) {
       console.error('Error creating event:', error);
       toast({
@@ -179,24 +207,43 @@ export function useCalendarEvents() {
       if (eventData.attendees !== undefined) updateData.attendees = eventData.attendees as Json;
       if (eventData.reminders !== undefined) updateData.reminders = eventData.reminders as Json;
 
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .update(updateData)
-        .eq('id', eventData.id)
-        .select()
-        .single();
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (error) throw error;
+      if (user) {
+        const { data, error } = await supabase
+          .from('calendar_events')
+          .update(updateData)
+          .eq('id', eventData.id)
+          .select()
+          .single();
 
-      const updatedEvent = data as CalendarEvent;
-      setEvents(prev => prev.map(e => e.id === eventData.id ? updatedEvent : e));
+        if (error) throw error;
 
-      toast({
-        title: 'Event updated',
-        description: 'Your changes have been saved',
-      });
+        const updatedEvent = data as CalendarEvent;
+        setEvents(prev => prev.map(e => e.id === eventData.id ? updatedEvent : e));
 
-      return updatedEvent;
+        toast({
+          title: 'Event updated',
+          description: 'Your changes have been saved',
+        });
+
+        return updatedEvent;
+      } else {
+        // Demo Mode: Simulate update
+        setEvents(prev => prev.map(e => {
+          if (e.id === eventData.id) {
+            return { ...e, ...updateData } as CalendarEvent;
+          }
+          return e;
+        }));
+
+        toast({
+          title: 'Demo Event updated',
+          description: 'Changes applied (Demo Mode - not saved to DB)',
+        });
+
+        return events.find(e => e.id === eventData.id) || null;
+      }
     } catch (error) {
       console.error('Error updating event:', error);
       toast({
@@ -210,13 +257,18 @@ export function useCalendarEvents() {
 
   const deleteEvent = async (eventId: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('calendar_events')
-        .delete()
-        .eq('id', eventId);
+      const { data: { user } } = await supabase.auth.getUser();
 
-      if (error) throw error;
+      if (user) {
+        const { error } = await supabase
+          .from('calendar_events')
+          .delete()
+          .eq('id', eventId);
 
+        if (error) throw error;
+      }
+
+      // Both Demo and Real mode update local state
       setEvents(prev => prev.filter(e => e.id !== eventId));
 
       toast({
