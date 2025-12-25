@@ -75,7 +75,7 @@ export function EventFormDialog({
   const [status, setStatus] = useState<'confirmed' | 'tentative' | 'cancelled'>(
     event?.status || 'confirmed'
   );
-  const [assignedAgent, setAssignedAgent] = useState(event?.assigned_agent || '');
+  const [assignedAgent, setAssignedAgent] = useState(event?.assigned_agent || 'none');
   const [instructions, setInstructions] = useState(event?.instructions || '');
   const [autoStart, setAutoStart] = useState(event?.auto_start || false);
   const [saving, setSaving] = useState(false);
@@ -96,7 +96,7 @@ export function EventFormDialog({
         all_day: allDay,
         color,
         status,
-        assigned_agent: assignedAgent || undefined,
+        assigned_agent: assignedAgent !== 'none' ? assignedAgent : undefined,
         instructions: instructions.trim() || undefined,
         auto_start: autoStart,
       });
@@ -265,7 +265,7 @@ export function EventFormDialog({
                   <SelectValue placeholder="Select an agent" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {AGENTS.map(agent => (
                     <SelectItem key={agent.id} value={agent.id}>
                       {agent.name} - {agent.title}
@@ -308,7 +308,7 @@ export function EventFormDialog({
               <Switch 
                 checked={autoStart} 
                 onCheckedChange={setAutoStart}
-                disabled={!assignedAgent}
+                disabled={assignedAgent === 'none'}
               />
             </div>
           </div>
