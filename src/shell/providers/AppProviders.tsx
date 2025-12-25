@@ -15,11 +15,19 @@ import { ChatProvider } from '@/hooks/useChatContext';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
+import { useEventMonitor } from '@/hooks/useEventMonitor';
 
 const queryClient = new QueryClient();
 
 interface AppProvidersProps {
   children: ReactNode;
+}
+
+// Separate component to use hooks inside providers
+function AppContent({ children }: { children: ReactNode }) {
+  // Initialize Global Event Monitor
+  useEventMonitor();
+  return <>{children}</>;
 }
 
 export function AppProviders({ children }: AppProvidersProps) {
@@ -35,7 +43,9 @@ export function AppProviders({ children }: AppProvidersProps) {
                     <ChatProvider>
                       <TooltipProvider>
                         <BrowserRouter>
-                          {children}
+                          <AppContent>
+                            {children}
+                          </AppContent>
                           <Toaster />
                           <Sonner />
                         </BrowserRouter>
