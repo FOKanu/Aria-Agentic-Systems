@@ -96,6 +96,7 @@ export type Database = {
           all_day: boolean | null
           assigned_agent: string | null
           attendees: Json | null
+          auto_start: boolean | null
           color: string | null
           created_at: string
           description: string | null
@@ -105,9 +106,11 @@ export type Database = {
             | Database["public"]["Enums"]["storage_provider"]
             | null
           id: string
+          instructions: string | null
           location: string | null
           metadata: Json | null
           recurrence_rule: string | null
+          related_task_id: string | null
           reminders: Json | null
           start_time: string
           status: string | null
@@ -115,11 +118,13 @@ export type Database = {
           updated_at: string
           user_id: string
           visibility: string | null
+          workflow_id: string | null
         }
         Insert: {
           all_day?: boolean | null
           assigned_agent?: string | null
           attendees?: Json | null
+          auto_start?: boolean | null
           color?: string | null
           created_at?: string
           description?: string | null
@@ -129,9 +134,11 @@ export type Database = {
             | Database["public"]["Enums"]["storage_provider"]
             | null
           id?: string
+          instructions?: string | null
           location?: string | null
           metadata?: Json | null
           recurrence_rule?: string | null
+          related_task_id?: string | null
           reminders?: Json | null
           start_time: string
           status?: string | null
@@ -139,11 +146,13 @@ export type Database = {
           updated_at?: string
           user_id: string
           visibility?: string | null
+          workflow_id?: string | null
         }
         Update: {
           all_day?: boolean | null
           assigned_agent?: string | null
           attendees?: Json | null
+          auto_start?: boolean | null
           color?: string | null
           created_at?: string
           description?: string | null
@@ -153,9 +162,11 @@ export type Database = {
             | Database["public"]["Enums"]["storage_provider"]
             | null
           id?: string
+          instructions?: string | null
           location?: string | null
           metadata?: Json | null
           recurrence_rule?: string | null
+          related_task_id?: string | null
           reminders?: Json | null
           start_time?: string
           status?: string | null
@@ -163,8 +174,17 @@ export type Database = {
           updated_at?: string
           user_id?: string
           visibility?: string | null
+          workflow_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_related_task_id_fkey"
+            columns: ["related_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contacts: {
         Row: {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format, addHours } from 'date-fns';
-import { X, Clock, MapPin, Users, Bot, Palette } from 'lucide-react';
+import { Clock, MapPin, Bot, Palette, Zap, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 import { AGENTS } from '@/data/agentsData';
 import type { CreateEventData, CalendarEvent } from '@/hooks/useCalendarEvents';
 
@@ -75,6 +76,8 @@ export function EventFormDialog({
     event?.status || 'confirmed'
   );
   const [assignedAgent, setAssignedAgent] = useState(event?.assigned_agent || '');
+  const [instructions, setInstructions] = useState(event?.instructions || '');
+  const [autoStart, setAutoStart] = useState(event?.auto_start || false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -94,6 +97,8 @@ export function EventFormDialog({
         color,
         status,
         assigned_agent: assignedAgent || undefined,
+        instructions: instructions.trim() || undefined,
+        auto_start: autoStart,
       });
       onOpenChange(false);
     } finally {
@@ -114,7 +119,7 @@ export function EventFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Event' : 'New Event'}</DialogTitle>
         </DialogHeader>
@@ -240,25 +245,72 @@ export function EventFormDialog({
             </div>
           </div>
 
-          {/* Assign Agent */}
-          <div className="space-y-1.5">
-            <Label className="flex items-center gap-2">
-              <Bot className="w-4 h-4" />
-              Assign Agent
-            </Label>
-            <Select value={assignedAgent} onValueChange={setAssignedAgent}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select an agent" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">None</SelectItem>
-                {AGENTS.map(agent => (
-                  <SelectItem key={agent.id} value={agent.id}>
-                    {agent.name} - {agent.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Separator className="my-4" />
+
+          {/* Automation Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Zap className="w-4 h-4 text-amber-500" />
+              Automation
+            </h3>
+
+            {/* Assign Agent */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-2">
+                <Bot className="w-4 h-4" />
+                Assign Agent
+              </Label>
+              <Select value={assignedAgent} onValueChange={setAssignedAgent}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an agent" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">None</SelectItem>
+                  {AGENTS.map(agent => (
+                    <SelectItem key={agent.id} value={agent.id}>
+                      {agent.name} - {agent.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Agent Instructions */}
+            <div className="space-y-1.5">
+              <Label htmlFor="instructions" className="flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Agent Instructions
+              </Label>
+              <Textarea
+                id="instructions"
+                value={instructions}
+                onChange={e => setInstructions(e.target.value)}
+                placeholder="Enter detailed instructions for the agent (e.g., 'Draft the Q3 financial report using the data from the Finance module...')"
+                rows={4}
+                className="text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Provide specific instructions or prompts for the assigned agent to execute.
+              </p>
+            </div>
+
+            {/* Auto-Execute Toggle */}
+            <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/30">
+              <div className="space-y-0.5">
+                <Label className="flex items-center gap-2 cursor-pointer">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  Auto-Execute
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Agent will automatically start the task at the scheduled time
+                </p>
+              </div>
+              <Switch 
+                checked={autoStart} 
+                onCheckedChange={setAutoStart}
+                disabled={!assignedAgent}
+              />
+            </div>
           </div>
 
           {/* Actions */}
