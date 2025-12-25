@@ -63,6 +63,8 @@ export function useCalendarEvents() {
   const fetchEvents = useCallback(async (startDate?: Date, endDate?: Date) => {
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+
       // In Demo Mode, don't clear events if no user found, just fetch potentially existing local ones?
       // Actually, for consistency, let's allow fetching to fail gracefully or return empty
       // but if we are in demo mode, we might want to return some mock events for visualization?
