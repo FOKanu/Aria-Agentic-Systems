@@ -21,6 +21,10 @@ export interface CalendarEvent {
   attendees: Json;
   assigned_agent?: string;
   external_id?: string;
+  instructions?: string;
+  workflow_id?: string;
+  related_task_id?: string;
+  auto_start?: boolean;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -36,6 +40,10 @@ export interface CreateEventData {
   color?: string;
   status?: 'confirmed' | 'tentative' | 'cancelled';
   assigned_agent?: string;
+  instructions?: string;
+  workflow_id?: string;
+  related_task_id?: string;
+  auto_start?: boolean;
   attendees?: Json;
   reminders?: Json;
 }
@@ -73,7 +81,7 @@ export function useCalendarEvents() {
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      
+
       setEvents((data || []) as CalendarEvent[]);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -114,6 +122,10 @@ export function useCalendarEvents() {
         color: eventData.color || '#3b82f6',
         status: eventData.status || 'confirmed',
         assigned_agent: eventData.assigned_agent || null,
+        instructions: eventData.instructions || null,
+        workflow_id: eventData.workflow_id || null,
+        related_task_id: eventData.related_task_id || null,
+        auto_start: eventData.auto_start ?? false,
         attendees: (eventData.attendees || []) as Json,
         reminders: (eventData.reminders || []) as Json,
       };
@@ -127,7 +139,7 @@ export function useCalendarEvents() {
       if (error) throw error;
 
       const newEvent = data as CalendarEvent;
-      setEvents(prev => [...prev, newEvent].sort((a, b) => 
+      setEvents(prev => [...prev, newEvent].sort((a, b) =>
         new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
       ));
 
@@ -160,6 +172,10 @@ export function useCalendarEvents() {
       if (eventData.color !== undefined) updateData.color = eventData.color;
       if (eventData.status !== undefined) updateData.status = eventData.status;
       if (eventData.assigned_agent !== undefined) updateData.assigned_agent = eventData.assigned_agent;
+      if (eventData.instructions !== undefined) updateData.instructions = eventData.instructions;
+      if (eventData.workflow_id !== undefined) updateData.workflow_id = eventData.workflow_id;
+      if (eventData.related_task_id !== undefined) updateData.related_task_id = eventData.related_task_id;
+      if (eventData.auto_start !== undefined) updateData.auto_start = eventData.auto_start;
       if (eventData.attendees !== undefined) updateData.attendees = eventData.attendees as Json;
       if (eventData.reminders !== undefined) updateData.reminders = eventData.reminders as Json;
 
