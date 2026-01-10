@@ -421,6 +421,221 @@ export type Database = {
           },
         ]
       }
+      email_accounts: {
+        Row: {
+          api_key_secret_name: string | null
+          assigned_agent_id: string | null
+          auto_reply_enabled: boolean | null
+          auto_reply_template: string | null
+          created_at: string | null
+          display_name: string | null
+          email_address: string
+          id: string
+          imap_host: string | null
+          imap_port: number | null
+          is_active: boolean | null
+          is_primary: boolean | null
+          last_synced_at: string | null
+          oauth_token_encrypted: string | null
+          provider: Database["public"]["Enums"]["email_provider"]
+          refresh_token_encrypted: string | null
+          signature: string | null
+          smtp_host: string | null
+          smtp_port: number | null
+          smtp_username: string | null
+          sync_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          api_key_secret_name?: string | null
+          assigned_agent_id?: string | null
+          auto_reply_enabled?: boolean | null
+          auto_reply_template?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email_address: string
+          id?: string
+          imap_host?: string | null
+          imap_port?: number | null
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_synced_at?: string | null
+          oauth_token_encrypted?: string | null
+          provider: Database["public"]["Enums"]["email_provider"]
+          refresh_token_encrypted?: string | null
+          signature?: string | null
+          smtp_host?: string | null
+          smtp_port?: number | null
+          smtp_username?: string | null
+          sync_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          api_key_secret_name?: string | null
+          assigned_agent_id?: string | null
+          auto_reply_enabled?: boolean | null
+          auto_reply_template?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          email_address?: string
+          id?: string
+          imap_host?: string | null
+          imap_port?: number | null
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          last_synced_at?: string | null
+          oauth_token_encrypted?: string | null
+          provider?: Database["public"]["Enums"]["email_provider"]
+          refresh_token_encrypted?: string | null
+          signature?: string | null
+          smtp_host?: string | null
+          smtp_port?: number | null
+          smtp_username?: string | null
+          sync_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_automation_rules: {
+        Row: {
+          action_config: Json | null
+          action_type: Database["public"]["Enums"]["email_action_type"]
+          assigned_agent_id: string | null
+          created_at: string | null
+          email_account_id: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          last_executed_at: string | null
+          name: string
+          priority: number | null
+          trigger_config: Json | null
+          trigger_type: Database["public"]["Enums"]["email_trigger_type"]
+          trigger_value: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_config?: Json | null
+          action_type: Database["public"]["Enums"]["email_action_type"]
+          assigned_agent_id?: string | null
+          created_at?: string | null
+          email_account_id?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name: string
+          priority?: number | null
+          trigger_config?: Json | null
+          trigger_type: Database["public"]["Enums"]["email_trigger_type"]
+          trigger_value?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_config?: Json | null
+          action_type?: Database["public"]["Enums"]["email_action_type"]
+          assigned_agent_id?: string | null
+          created_at?: string | null
+          email_account_id?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_executed_at?: string | null
+          name?: string
+          priority?: number | null
+          trigger_config?: Json | null
+          trigger_type?: Database["public"]["Enums"]["email_trigger_type"]
+          trigger_value?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_automation_rules_email_account_id_fkey"
+            columns: ["email_account_id"]
+            isOneToOne: false
+            referencedRelation: "email_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_configurations: {
+        Row: {
+          account_sid: string | null
+          api_key_secret_name: string | null
+          assigned_agent_id: string | null
+          auth_token_encrypted: string | null
+          created_at: string | null
+          display_name: string | null
+          escalation_rules: Json | null
+          id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          phone_number: string
+          provider: Database["public"]["Enums"]["phone_provider"]
+          updated_at: string | null
+          user_id: string
+          voice_model: string | null
+          voicemail_enabled: boolean | null
+          voicemail_greeting: string | null
+          voicemail_transcription_enabled: boolean | null
+          working_days: number[] | null
+          working_hours_end: string | null
+          working_hours_start: string | null
+        }
+        Insert: {
+          account_sid?: string | null
+          api_key_secret_name?: string | null
+          assigned_agent_id?: string | null
+          auth_token_encrypted?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          escalation_rules?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          phone_number: string
+          provider: Database["public"]["Enums"]["phone_provider"]
+          updated_at?: string | null
+          user_id: string
+          voice_model?: string | null
+          voicemail_enabled?: boolean | null
+          voicemail_greeting?: string | null
+          voicemail_transcription_enabled?: boolean | null
+          working_days?: number[] | null
+          working_hours_end?: string | null
+          working_hours_start?: string | null
+        }
+        Update: {
+          account_sid?: string | null
+          api_key_secret_name?: string | null
+          assigned_agent_id?: string | null
+          auth_token_encrypted?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          escalation_rules?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          phone_number?: string
+          provider?: Database["public"]["Enums"]["phone_provider"]
+          updated_at?: string | null
+          user_id?: string
+          voice_model?: string | null
+          voicemail_enabled?: boolean | null
+          voicemail_greeting?: string | null
+          voicemail_transcription_enabled?: boolean | null
+          working_days?: number[] | null
+          working_hours_end?: string | null
+          working_hours_start?: string | null
+        }
+        Relationships: []
+      }
       provider_config: {
         Row: {
           api_key_secret_name: string | null
@@ -696,6 +911,20 @@ export type Database = {
         | "video"
         | "audio"
         | "other"
+      email_action_type:
+        | "auto_reply"
+        | "forward_to_agent"
+        | "label"
+        | "archive"
+        | "create_task"
+      email_provider:
+        | "gmail"
+        | "outlook"
+        | "imap"
+        | "resend"
+        | "sendgrid"
+        | "smtp"
+      email_trigger_type: "keyword" | "sender" | "time_based" | "all_incoming"
       memory_scope: "global" | "agent" | "task" | "session" | "conversation"
       memory_type:
         | "fact"
@@ -704,6 +933,7 @@ export type Database = {
         | "instruction"
         | "learned"
         | "summary"
+      phone_provider: "twilio" | "vapi" | "vonage" | "custom"
       storage_provider:
         | "lovable_cloud"
         | "local_storage"
@@ -880,6 +1110,22 @@ export const Constants = {
         "audio",
         "other",
       ],
+      email_action_type: [
+        "auto_reply",
+        "forward_to_agent",
+        "label",
+        "archive",
+        "create_task",
+      ],
+      email_provider: [
+        "gmail",
+        "outlook",
+        "imap",
+        "resend",
+        "sendgrid",
+        "smtp",
+      ],
+      email_trigger_type: ["keyword", "sender", "time_based", "all_incoming"],
       memory_scope: ["global", "agent", "task", "session", "conversation"],
       memory_type: [
         "fact",
@@ -889,6 +1135,7 @@ export const Constants = {
         "learned",
         "summary",
       ],
+      phone_provider: ["twilio", "vapi", "vonage", "custom"],
       storage_provider: [
         "lovable_cloud",
         "local_storage",
