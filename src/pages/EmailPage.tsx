@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Mail, Inbox, Send, Archive, Trash2, Star, Search, Plus, Paperclip, Clock, MailOpen } from 'lucide-react';
+import { Mail, Inbox, Send, Archive, Trash2, Star, Search, Plus, Paperclip, Clock, MailOpen, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
+import { EmailSettingsPanel } from '@/components/email/EmailSettingsPanel';
 
 interface Email {
   id: string;
@@ -39,6 +41,7 @@ export function EmailPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFolder, setActiveFolder] = useState('inbox');
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [activeTab, setActiveTab] = useState('mail');
 
   const filteredEmails = mockEmails.filter(email => {
     const matchesFolder = email.folder === activeFolder;
@@ -67,114 +70,134 @@ export function EmailPage() {
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-6">
-        {/* Sidebar */}
-        <div className="space-y-2">
-          {folders.map(folder => {
-            const Icon = folder.icon;
-            return (
-              <button
-                key={folder.id}
-                onClick={() => setActiveFolder(folder.id)}
-                className={cn(
-                  "w-full flex items-center justify-between p-3 rounded-lg transition-all text-sm",
-                  activeFolder === folder.id
-                    ? "bg-primary/10 text-primary"
-                    : "hover:bg-secondary text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="w-4 h-4" />
-                  <span>{folder.label}</span>
-                </div>
-                {folder.count > 0 && (
-                  <Badge variant="secondary" className="text-xs">
-                    {folder.count}
-                  </Badge>
-                )}
-              </button>
-            );
-          })}
-        </div>
+      {/* Main Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="mail" className="gap-2">
+            <Mail className="w-4 h-4" />
+            Mail
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="gap-2">
+            <Settings className="w-4 h-4" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Email List */}
-        <div className="lg:col-span-3 space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search emails..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          {/* Email Items */}
-          <div className="space-y-2">
-            {filteredEmails.map(email => (
-              <Card 
-                key={email.id} 
-                className={cn(
-                  "cursor-pointer transition-all hover:border-primary/50",
-                  !email.isRead && "bg-primary/5 border-primary/20",
-                  selectedEmail?.id === email.id && "border-primary"
-                )}
-                onClick={() => setSelectedEmail(email)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="text-lg">{email.from.avatar}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className={cn("font-medium truncate", !email.isRead && "font-semibold")}>
-                            {email.from.name}
-                          </span>
-                          {email.isStarred && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
-                          {email.hasAttachment && <Paperclip className="w-4 h-4 text-muted-foreground" />}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock className="w-3 h-3" />
-                          {email.date}
-                        </div>
-                      </div>
-                      <h4 className={cn("text-sm truncate mb-1", !email.isRead && "font-medium")}>
-                        {email.subject}
-                      </h4>
-                      <p className="text-xs text-muted-foreground line-clamp-1">
-                        {email.preview}
-                      </p>
-                      {email.labels && email.labels.length > 0 && (
-                        <div className="flex gap-1 mt-2">
-                          {email.labels.map(label => (
-                            <Badge key={label} variant="outline" className="text-xs capitalize">
-                              {label}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    {!email.isRead && (
-                      <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+        <TabsContent value="mail" className="mt-4">
+          <div className="grid lg:grid-cols-4 gap-6">
+            {/* Sidebar */}
+            <div className="space-y-2">
+              {folders.map(folder => {
+                const Icon = folder.icon;
+                return (
+                  <button
+                    key={folder.id}
+                    onClick={() => setActiveFolder(folder.id)}
+                    className={cn(
+                      "w-full flex items-center justify-between p-3 rounded-lg transition-all text-sm",
+                      activeFolder === folder.id
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-secondary text-muted-foreground hover:text-foreground"
                     )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {filteredEmails.length === 0 && (
-            <div className="text-center py-12">
-              <MailOpen className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-              <h3 className="font-medium">No emails found</h3>
-              <p className="text-sm text-muted-foreground">Your {activeFolder} is empty</p>
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-4 h-4" />
+                      <span>{folder.label}</span>
+                    </div>
+                    {folder.count > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {folder.count}
+                      </Badge>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          )}
-        </div>
-      </div>
+
+            {/* Email List */}
+            <div className="lg:col-span-3 space-y-4">
+              {/* Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search emails..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* Email Items */}
+              <div className="space-y-2">
+                {filteredEmails.map(email => (
+                  <Card 
+                    key={email.id} 
+                    className={cn(
+                      "cursor-pointer transition-all hover:border-primary/50",
+                      !email.isRead && "bg-primary/5 border-primary/20",
+                      selectedEmail?.id === email.id && "border-primary"
+                    )}
+                    onClick={() => setSelectedEmail(email)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-start gap-3">
+                        <Avatar className="w-10 h-10">
+                          <AvatarFallback className="text-lg">{email.from.avatar}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className={cn("font-medium truncate", !email.isRead && "font-semibold")}>
+                                {email.from.name}
+                              </span>
+                              {email.isStarred && <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />}
+                              {email.hasAttachment && <Paperclip className="w-4 h-4 text-muted-foreground" />}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {email.date}
+                            </div>
+                          </div>
+                          <h4 className={cn("text-sm truncate mb-1", !email.isRead && "font-medium")}>
+                            {email.subject}
+                          </h4>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {email.preview}
+                          </p>
+                          {email.labels && email.labels.length > 0 && (
+                            <div className="flex gap-1 mt-2">
+                              {email.labels.map(label => (
+                                <Badge key={label} variant="outline" className="text-xs capitalize">
+                                  {label}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {!email.isRead && (
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {filteredEmails.length === 0 && (
+                <div className="text-center py-12">
+                  <MailOpen className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
+                  <h3 className="font-medium">No emails found</h3>
+                  <p className="text-sm text-muted-foreground">Your {activeFolder} is empty</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-4">
+          <EmailSettingsPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
