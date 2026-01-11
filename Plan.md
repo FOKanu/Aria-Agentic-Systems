@@ -2,8 +2,8 @@
 
 **Project Creator:** Francis Okorie Iyeke-Kanu
 **Contact:** francis.okorie.Ik@gmail.com
-**Version:** 0.2.1-alpha
-**Last Updated:** December 20, 2025
+**Version:** 0.2.2-beta
+**Last Updated:** December 25, 2025
 
 ---
 
@@ -29,6 +29,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 - **Local-First AI:** 95% local processing, 5% cloud fallback
 - **Privacy-Centric:** Sensitive data processed locally
 - **Cross-Platform:** Web-first, mobile-responsive design
+- **Active Agentic Runtime:** Bridge gap between Web UI and Local System (Terminal/Files)
 
 ---
 
@@ -40,16 +41,18 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 |-------|------|-------------|
 | 1-5 | Core Infrastructure | UI components, navigation, agent system |
 | 6 | Codebase Architecture | core/, shell/, features/ modules established |
+| 6a | Hybrid AI Strategy | Local-first routing with Supabase Edge Function fallback |
 | 7 | Database Integration | Supabase tables, RLS policies, enums |
 | 8 | Authentication | Login, signup, password recovery |
+| 17 | Calendar Automation | Workflow engine, event monitoring, persistence |
 
 ### 🟡 In Progress
 
 | Phase | Name | Progress | Next Steps |
 |-------|------|----------|------------|
-| 6a | Chat Edge Function | 60% | Create edge function, SSE streaming |
 | 9 | Capability Pages | 30% | DevOps complete, Legal/Finance pending |
 | 10 | Provider Configuration | 40% | Settings UI, multi-provider support |
+| 16 | Local Agent Runtime | 0% | Create Python Sidecar (Server) |
 
 ### 🔵 Ready to Start
 
@@ -58,21 +61,10 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | 6b | Migrate Imports | Use feature module public APIs |
 | 11 | Agent Memory & Context | Phase 7 ✅ |
 | 12 | Voice Integration | ElevenLabs API |
-| 13 | Local Model Integration | Ollama setup |
 
 ---
 
 ## Phase Breakdown
-**Goal:** Replace mock responses with real AI
-
-| Task | Status | Details |
-|------|--------|---------|
-| Create `supabase/functions/chat/index.ts` | 🔴 | SSE streaming with Lovable AI Gateway |
-| Agent role injection | 🔴 | System prompts based on selected agent(s) |
-| Page context integration | 🔴 | Include current page data in prompts |
-| Error handling | 🔴 | 429 rate limits, 402 payment, network failures |
-| Token management | 🔴 | Track usage, implement context window limits |
-| Update ChatPage.tsx | 🔴 | Connect to real AI endpoint |
 
 ### Phase 9: Capability Pages
 **Priority:** High
@@ -80,7 +72,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 **Build Order:** Optimized for dependencies
 
 #### Build Order
-1. **Admin Hub** (foundation) → Calendar, Contacts, Email, Tasks
+1. **Admin Hub** (foundation) → Calendar (✅), Contacts, Email, Tasks
 2. **Finance Module** → Invoices, Expenses, Budget, Reports
 3. **Legal Module** → Contracts, NDA Generator, Compliance
 4. **Social Media** → Scheduler, Analytics, Content Generation
@@ -88,7 +80,7 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 #### Admin Hub
 | Page | Status | Agent | Effort |
 |------|--------|-------|--------|
-| Calendar Management | 🟡 Basic | Secretary | 1 day |
+| Calendar Management | ✅ Done | Secretary | Completed |
 | Email Automation | 🟡 Basic | Secretary | 2 days |
 | Reservations & Booking | 🔴 Not Started | Secretary | 2 days |
 | Contact Management | 🟡 Basic | Secretary | 1 day |
@@ -104,35 +96,17 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Payment Processing | 🔴 Not Started | Accountant | 1 day |
 | Tax Preparation | 🔴 Not Started | Accountant | 1 day |
 
-#### Legal Module
-| Page | Status | Agent | Effort |
-|------|--------|-------|--------|
-| Contract Drafting | 🔴 Not Started | Lawyer | 2 days |
-| Document Review | 🔴 Not Started | Lawyer | 2 days |
-| Compliance Monitoring | 🔴 Not Started | Lawyer | 1 day |
-| NDA Generator | 🔴 Not Started | Lawyer | 1 day |
-| IP Management | 🔴 Not Started | Lawyer | 1 day |
-| Case Research | 🔴 Not Started | Lawyer | 1 day |
+### Phase 16: Local Agent Runtime (The "Hands")
+**Priority:** Critical (for active agent features)
+**Effort:** 1 week
 
-#### DevOps Module
-| Page | Status | Agent | Effort |
-|------|--------|-------|--------|
-| CI/CD Pipelines | ✅ Basic UI | DevOps | Enhancement |
-| Code Review | ✅ Basic UI | DevOps | Enhancement |
-| Deployment Automation | ✅ Basic UI | DevOps | Enhancement |
-| Infrastructure Monitoring | ✅ Basic UI | DevOps | Enhancement |
-| Security Scanning | ✅ Basic UI | DevOps | Enhancement |
-| Log Analysis | ✅ Basic UI | DevOps | Enhancement |
-
-#### Social Media Module
-| Page | Status | Agent | Effort |
-|------|--------|-------|--------|
-| Content Scheduling | 🔴 Not Started | Social Media | 2 days |
-| Post Generation | 🔴 Not Started | Social Media | 2 days |
-| Analytics Dashboard | 🔴 Not Started | Social Media | 2 days |
-| Community Management | 🔴 Not Started | Social Media | 1 day |
-| Influencer Outreach | 🔴 Not Started | Social Media | 1 day |
-| Trend Monitoring | 🔴 Not Started | Social Media | 1 day |
+| Task | Status | Details |
+|------|--------|---------|
+| Sidecar Setup | 🔴 | Python FastAPI server scaffold |
+| Command Executor | 🔴 | `subprocess.run` with sandbox validation |
+| Filesystem API | 🔴 | Read/Write/List endpoints |
+| Frontend Bridge | 🔴 | `runtimeBridge.ts` client service |
+| Terminal UI | 🔴 | Live stream component for stdout |
 
 ### Phase 10: Provider Configuration
 **Priority:** Medium
@@ -160,69 +134,20 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 | Memory summarization | 🔴 | Compress long conversations |
 | Cross-agent memory | 🔴 | Shared knowledge between agents |
 
-### Phase 12: Voice Integration
-**Priority:** Medium
-**Effort:** 3-4 days
-
-| Task | Status | Details |
-|------|--------|---------|
-| ElevenLabs STT | 🔴 | Real transcription via `scribe_v2_realtime` |
-| ElevenLabs TTS | 🔴 | Voice responses from agents |
-| Voice activity detection | 🔴 | Smart silence handling |
-| Edge function for tokens | 🔴 | Secure token generation |
-| Audio visualization | 🟡 | Waveform animation (basic implemented) |
-
-### Phase 13: Local Model Integration
-**Priority:** Low (Post-MVP)
-**Effort:** 5-7 days
-
-| Task | Status | Details |
-|------|--------|---------|
-| Ollama setup guide | 🔴 | Docker/native installation docs |
-| Local model detection | 🔴 | Check for available local models |
-| Model routing | 🔴 | Route requests based on task type |
-| Offline mode | 🔴 | Full functionality without internet |
-| Model management UI | 🔴 | Download/update models |
-
-### Phase 14: Security Hardening
-**Priority:** High (Pre-Production)
-**Effort:** 3-4 days
-
-| Task | Status | Details |
-|------|--------|---------|
-| RLS audit | 🔴 | Review all table policies |
-| Input sanitization | 🔴 | Prevent XSS/injection attacks |
-| Rate limiting | 🔴 | Protect API endpoints |
-| Auth hardening | 🔴 | Session management, 2FA |
-| Security headers | 🔴 | CSP, HSTS, etc. |
-
-### Phase 15: Performance Optimization
-**Priority:** Medium (Pre-Production)
-**Effort:** 2-3 days
-
-| Task | Status | Details |
-|------|--------|---------|
-| Code splitting | 🔴 | Lazy load capability pages |
-| Bundle optimization | 🔴 | Tree shaking, minification |
-| Caching strategy | 🔴 | Service worker, API caching |
-| Image optimization | 🔴 | WebP, lazy loading |
-| Database indexing | 🔴 | Query performance |
-
 ---
 
 ## Critical Path to MVP
 
 ```
-Week 1: Phase 6 (Chat) → Real AI responses
-        └── Edge function + SSE streaming
-        └── Agent role injection
-        └── Error handling (429/402)
+Week 1: Phase 16 (Local Runtime) → Give Agents "Hands"
+        └── Python Sidecar Server
+        └── Terminal/File API
+        └── Frontend Integration
 
-Week 2-3: Phase 9 (Admin Hub + Finance)
-        └── Calendar CRUD
-        └── Contacts CRUD
+Week 2-3: Phase 9 (Finance + Legal)
         └── Invoice generation
         └── Expense tracking
+        └── Contract drafting
 
 Week 4: Phase 11 (Memory)
         └── useAgentMemory hook
@@ -257,6 +182,7 @@ Week 6: Security + Testing
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
+| Runtime Architecture | Sidecar (Python) | Bypasses browser sandbox safely |
 | AI Gateway | Lovable AI | Pre-configured, no API key needed |
 | Database | Supabase (Lovable Cloud) | Native integration, RLS support |
 | UI Framework | React + Tailwind + shadcn | Modern, maintainable |
@@ -270,7 +196,9 @@ Week 6: Security + Testing
 - [x] Core UI and navigation
 - [x] Database schema
 - [x] Authentication system
-- [ ] Chat with real AI responses
+- [x] Chat with real AI responses (Hybrid: Cloud + Local)
+- [x] Calendar Automation (v0.3.0)
+- [ ] Local Agent Runtime (Sidecar)
 - [ ] All capability page UIs
 - [ ] Basic CRUD for tasks, contacts, documents
 - [ ] File upload/download
@@ -282,8 +210,8 @@ Week 6: Security + Testing
 - [ ] Multi-provider storage
 
 ### v1.2.0 - Target: March 2025
-- [ ] Local model integration (Ollama)
-- [ ] Offline mode
+- [ ] Advanced Local model management UI
+- [ ] Offline mode enhancements
 - [ ] Advanced workflow automation
 - [ ] API integrations (calendar, email)
 
@@ -292,19 +220,20 @@ Week 6: Security + Testing
 ## Technical Debt
 
 ### High Priority
-1. **Mock Responses:** Replace mock chat responses with real AI
-2. **Voice Transcription:** Currently mock, needs ElevenLabs integration
-3. **File Upload:** UI exists, backend integration pending
+1.  **Local Runtime:** Missing entirely; required for terminal/file features.
+2.  **Voice Transcription:** Currently mock, needs ElevenLabs integration.
+3.  **File Upload:** UI exists, backend integration pending.
+4.  **Feature Hydration:** Connect Finance/Legal UIs to real database tables.
 
 ### Medium Priority
-1. **Error Boundaries:** Add React error boundaries to all pages
-2. **Loading States:** Skeleton components need refinement
-3. **Form Validation:** Some forms lack Zod validation
+1. **Error Boundaries:** Add React error boundaries to all pages.
+2. **Loading States:** Skeleton components need refinement.
+3. **Form Validation:** Some forms lack Zod validation.
 
 ### Low Priority
-1. **Animation Performance:** Some animations cause reflows
-2. **Bundle Size:** Consider code splitting for large pages
-3. **Accessibility:** ARIA labels incomplete in some components
+1. **Animation Performance:** Some animations cause reflows.
+2. **Bundle Size:** Consider code splitting for large pages.
+3. **Accessibility:** ARIA labels incomplete in some components.
 
 ---
 
@@ -313,6 +242,7 @@ Week 6: Security + Testing
 ### High Risk
 | Risk | Impact | Mitigation |
 |------|--------|------------|
+| Security (Local Runtime) | Malicious command execution | Strict allowlists, confirmation gates |
 | API Rate Limits | Service disruption | Implement retry logic, caching |
 | Local Model Performance | Poor UX on low-end devices | Graceful degradation to cloud |
 
@@ -332,76 +262,17 @@ Week 6: Security + Testing
 
 ## Recent Accomplishments
 
-### December 20, 2025 (Phase 6 - Codebase Architecture)
-- ✅ Created `src/core/` module with hooks, types, utils, providers
-- ✅ Created `src/shell/` module with AppProviders, AppRoutes, routes.config
-- ✅ Created `src/features/` with 12 feature modules (chat, agents, dashboard, auth, files, tasks, calendar, contacts, finance, devops, legal, monitoring)
-- ✅ Established public API pattern with index.ts barrel exports
-- ✅ Unified type system in core/types/
-- ✅ Centralized routing configuration
+### December 25, 2025 (Calendar Automation)
+- ✅ Implemented `useEventMonitor` for background task execution.
+- ✅ Added `instructions`, `workflow_id`, and `auto_start` to Calendar Schema.
+- ✅ Enabled "Demo Mode" with local storage persistence.
+- ✅ Updated `Design.md` and `Access Features.md` with Local Runtime architecture.
 
-### December 20, 2025 (Earlier)
-- ✅ Global floating chat panel across all pages
-- ✅ Page context injection into chat
-- ✅ Floating voice input button with recording panel
-- ✅ DevOps module routing fixed
-- ✅ AgentRail navigation corrections
-- ✅ Comprehensive documentation (Config.md, Plan.md, Cost_Analysis.md)
-
-### December 17-19, 2025
-- ✅ Database schema and migrations
-- ✅ Authentication system
-- ✅ Provider configuration table
-- ✅ Agent memory schema
+### December 21, 2025 (Hybrid AI Strategy)
+- ✅ Implemented **Supabase Edge Function** for chat (Gemini 1.5 Flash).
+- ✅ Updated `AIService` to act as "Traffic Cop" (Local First -> Cloud Fallback).
+- ✅ Unified streaming architecture for seamless UI experience.
 
 ---
 
-## Codebase Structure
-
-```
-src/
-├── core/                      # Shared resources & utilities
-│   ├── hooks/                 # Re-exports useAuth, useToast, useIsMobile
-│   ├── providers/             # Shared context providers
-│   ├── types/                 # Unified type system
-│   ├── utils/                 # Shared utilities
-│   └── index.ts               # Public exports
-│
-├── shell/                     # App chrome & navigation
-│   ├── providers/
-│   │   └── AppProviders.tsx   # All context providers wrapped
-│   ├── routes/
-│   │   ├── AppRoutes.tsx      # Centralized routing
-│   │   ├── LoadingFallback.tsx
-│   │   └── routes.config.ts   # Lazy pages & route config
-│   └── index.ts
-│
-├── features/                  # Feature modules (public API pattern)
-│   ├── chat/                  # Chat feature
-│   ├── agents/                # Agent management
-│   ├── dashboard/             # Dashboard & analytics
-│   ├── auth/                  # Authentication
-│   ├── files/                 # File management
-│   ├── tasks/                 # Task management
-│   ├── calendar/              # Calendar & scheduling
-│   ├── contacts/              # Contact management
-│   ├── finance/               # Budget, expenses, invoices
-│   ├── devops/                # CI/CD, deployments
-│   ├── legal/                 # Contracts, compliance
-│   ├── monitoring/            # Alerts, logs, traces
-│   └── index.ts               # Barrel exports
-│
-├── agent-engine/              # AI routing & model services
-├── components/                # Shared UI components (migrating to features)
-├── file-management/           # File system (to become features/files)
-├── pages/                     # Page components (distributing to features)
-├── hooks/                     # Legacy hooks (core re-exports)
-├── types/                     # Legacy types (core/types unified)
-│
-├── App.tsx                    # Uses shell/AppProviders & AppRoutes
-└── main.tsx                   # Entry point
-```
-
----
-
-*Plan last updated: December 20, 2025*
+*Plan last updated: December 25, 2025*

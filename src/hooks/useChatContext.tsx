@@ -3,7 +3,8 @@ import React, { createContext, useContext, useState, useCallback, ReactNode, use
 import { ChatMessage, ChatStatus, ChatAttachment, CHAT_AGENTS } from '@/types/chat';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/hooks/use-toast';
-import { streamChat, ChatMessage as StreamChatMessage } from '@/lib/chatStream';
+import { AIService } from '@/lib/ai';
+import { ChatMessage as StreamChatMessage } from '@/lib/chatStream';
 
 export interface PageContext {
   pageId: string;
@@ -58,7 +59,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setMessages((prev) => {
       const last = prev[prev.length - 1];
       if (last?.sender === 'agent') {
-        return prev.map((m, i) => 
+        return prev.map((m, i) =>
           i === prev.length - 1 ? { ...m, content } : m
         );
       }
@@ -111,41 +112,42 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         role: m.sender === 'user' ? 'user' as const : 'assistant' as const,
         content: m.content,
       }));
-    
+
     // Add current message
     apiMessages.push({ role: 'user', content });
 
     try {
-      await streamChat({
-        messages: apiMessages,
-        context: pageContext ? {
+      await AIService.streamChat(
+        content,
+        undefined, // System prompt (managed by edge function or context)
+        pageContext ? {
           pageName: pageContext.pageName,
           pageCategory: pageContext.pageCategory,
           contextData: pageContext.contextData,
         } : undefined,
-        onDelta: (delta) => {
+        (delta) => {
           if (status !== 'executing') {
             setStatus('executing');
           }
           streamingContentRef.current += delta;
           updateLastAssistantMessage(streamingContentRef.current);
         },
-        onDone: () => {
+        () => {
           setStatus('idle');
           if (tts.enabled && streamingContentRef.current) {
             tts.speak(streamingContentRef.current);
           }
         },
-        onError: (error) => {
+        (error) => {
           console.error('Chat error:', error);
           toast({
             title: "Chat Error",
-            description: error.message,
+            description: error instanceof Error ? error.message : "Unknown error",
             variant: "destructive",
           });
           setStatus('idle');
-        },
-      });
+        }
+      );
     } catch (error) {
       console.error('Chat error:', error);
       toast({

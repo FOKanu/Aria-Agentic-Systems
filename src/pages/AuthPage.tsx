@@ -29,13 +29,13 @@ export function AuthPage({ onLogin }: AuthPageProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     // Basic validation
     if (!email || !password) {
       setError('Please fill in all fields');
       return;
     }
-    
+
     if (mode === 'signup' && !name) {
       setError('Please enter your name');
       return;
@@ -47,10 +47,10 @@ export function AuthPage({ onLogin }: AuthPageProps) {
     }
 
     setIsLoading(true);
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     // Mock successful login/signup
     const mockUser: MockUser = {
       id: `user-${Date.now()}`,
@@ -60,7 +60,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
       role: 'operator',
       createdAt: new Date(),
     };
-    
+
     setIsLoading(false);
     onLogin(mockUser);
   };
@@ -87,8 +87,8 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               onClick={() => setMode('login')}
               className={cn(
                 "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
-                mode === 'login' 
-                  ? "bg-primary text-primary-foreground" 
+                mode === 'login'
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -98,8 +98,8 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               onClick={() => setMode('signup')}
               className={cn(
                 "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
-                mode === 'signup' 
-                  ? "bg-primary text-primary-foreground" 
+                mode === 'signup'
+                  ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -165,9 +165,9 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               </p>
             )}
 
-            <Button 
-              type="submit" 
-              className="w-full gap-2" 
+            <Button
+              type="submit"
+              className="w-full gap-2"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -190,15 +190,15 @@ export function AuthPage({ onLogin }: AuthPageProps) {
             </div>
           </div>
 
-          <Button 
-            type="button" 
+          <Button
+            type="button"
             variant="outline"
-            className="w-full gap-2" 
+            className="w-full gap-2"
             onClick={() => {
               const mockUser: MockUser = {
                 id: 'demo-user-001',
                 email: 'commander@fleet.ai',
-                name: 'Demo Commander',
+                name: 'Francis',
                 avatar: '🚀',
                 role: 'operator',
                 createdAt: new Date(),

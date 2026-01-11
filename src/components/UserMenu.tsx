@@ -25,7 +25,7 @@ export function UserMenu({ user, onViewProfile, onLogout }: UserMenuProps) {
             <User className="w-4 h-4 text-primary" />
           </div>
           <div className="hidden lg:block text-left">
-            <p className="text-sm font-medium leading-tight">{user.name}</p>
+            <p className="text-sm font-medium leading-tight">Hello {user.name}</p>
             <p className="text-[10px] text-muted-foreground leading-tight">{user.email}</p>
           </div>
         </button>
@@ -43,17 +43,17 @@ export function UserMenu({ user, onViewProfile, onLogout }: UserMenuProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         <DropdownMenuItem onClick={onViewProfile} className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
           <span>View Profile</span>
           <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
-          onClick={onLogout} 
+
+        <DropdownMenuItem
+          onClick={onLogout}
           className="cursor-pointer text-destructive focus:text-destructive"
         >
           <LogOut className="mr-2 h-4 w-4" />

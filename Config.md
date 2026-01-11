@@ -1,8 +1,8 @@
 # ARIA - Configuration Guide
 
-**Project Creator:** Francis Okorie Iyeke-Kanu  
-**Contact:** francis.okorie.Ik@gmail.com  
-**Version:** 0.2.0-alpha  
+**Project Creator:** Francis Okorie Iyeke-Kanu
+**Contact:** francis.okorie.Ik@gmail.com
+**Version:** 0.2.0-alpha
 **Last Updated:** December 20, 2025
 
 ---
@@ -112,20 +112,36 @@ All routes except auth pages require authentication via `useAuth` hook.
 
 | Model | Use Case | Context |
 |-------|----------|---------|
-| `google/gemini-2.5-flash` | Default, balanced | 1M tokens |
-| `google/gemini-2.5-pro` | Complex reasoning | 1M tokens |
-| `openai/gpt-5` | High accuracy | Large |
-| `openai/gpt-5-mini` | Cost-effective | Medium |
-| `openai/gpt-5-nano` | Fast, simple tasks | Smaller |
+| `google/gemini-1.5-flash` | Default, fast & reliable | 1M tokens |
+| `google/gemini-1.5-pro` | Complex reasoning | 2M tokens |
+| `openai/gpt-4o` | High accuracy | 128k tokens |
 
 ### Gateway Configuration
 - **Endpoint:** `https://ai.gateway.lovable.dev/v1/chat/completions`
-- **Auth:** LOVABLE_API_KEY (auto-configured)
-- **Streaming:** SSE supported
+- **Auth:** `LOVABLE_API_KEY` (Managed via Supabase Secrets)
+- **Streaming:** SSE supported (text/event-stream)
+
+### Deploying the Edge Function
+To enable the Cloud Brain, deploy the Supabase Edge Function:
+
+```bash
+# Login to Supabase CLI
+npx supabase login
+
+# Deploy the 'chat' function
+npx supabase functions deploy chat --no-verify-jwt
+
+# Set the Lovable API Key secret
+npx supabase secrets set LOVABLE_API_KEY=your_key_here
+```
 
 ---
 
-## Local Model Setup (Future)
+## Local Model Setup (Privacy & Free Tier)
+
+The application implements a **Hybrid AI Strategy**:
+1.  **Local First:** Checks if Ollama is running at `localhost:11434`.
+2.  **Cloud Fallback:** If Local is offline, seamlessly switches to Supabase Edge Function (Gemini).
 
 ### Ollama Configuration
 
@@ -138,7 +154,7 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    
+
 volumes:
   ollama_data:
 ```
@@ -153,14 +169,15 @@ volumes:
 | `codellama:34b` | 19GB | Code generation |
 | `phi3:3.8b` | 2.2GB | Quick classification |
 
-### Task Routing Logic
+### Task Routing Logic (Implemented)
 
-```
-Complexity Score < 0.6 → Local Model
-Complexity Score >= 0.6 → Lovable AI
-Vision Required → Lovable AI (Gemini)
-Local Unavailable → Lovable AI
-```
+The `AIService` (`src/lib/ai.ts`) handles routing automatically:
+
+1.  **Health Check:** Pings `http://localhost:11434/models`
+2.  **IF Alive:** Routes request to Local Ollama (Llama 3)
+3.  **IF Dead:** Routes request to Supabase Edge Function (`/functions/v1/chat`)
+
+This ensures **Zero Setup** for new users (Cloud works instantly) while preserving **Privacy** for power users (Local takes priority).
 
 ---
 

@@ -74,7 +74,19 @@ src/
 └── integrations/   # External integrations (Supabase)
 ```
 
-See `Design.md` for detailed architecture documentation.
+## Hybrid AI Architecture
+
+ARIA implements a robust **Hybrid AI Strategy** to balance privacy, cost, and accessibility:
+
+1.  **Local First (Privacy Mode):**
+    *   The app first attempts to connect to a local Ollama instance (`localhost:11434`).
+    *   If available, all chat traffic stays on your machine.
+    *   **Benefit:** 100% Privacy, Free, Offline capable.
+
+2.  **Cloud Fallback (Zero Setup):**
+    *   If Local AI is offline (default for new users), the app seamlessly switches to the **Supabase Edge Function**.
+    *   This function routes requests to **Gemini 1.5 Flash** (via Lovable Gateway).
+    *   **Benefit:** Works instantly without Docker/Ollama setup.
 
 ## How can I deploy this project?
 
