@@ -1,20 +1,20 @@
 // Contracts Page - Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { FileText, Plus, Search, Filter, Download, Send, Clock, CheckCircle, AlertTriangle, MoreVertical } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Download, Send, Clock, CheckCircle, AlertTriangle, MoreVertical, Edit, Trash2, Copy, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ContractWizard, ContractDraft } from '@/components/legal';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { toast } from 'sonner';
 
 interface Contract {
   id: string;
   title: string;
-  type: 'service' | 'employment' | 'nda' | 'license' | 'partnership';
+  type: 'service' | 'employment' | 'nda' | 'license' | 'partnership' | 'consulting';
   status: 'draft' | 'pending' | 'active' | 'expired' | 'terminated';
   parties: string[];
   value?: number;
@@ -22,6 +22,7 @@ interface Contract {
   endDate?: string;
   lastModified: string;
   assignedAgent?: string;
+  jurisdiction?: string;
 }
 
 const mockContracts: Contract[] = [
@@ -36,6 +37,7 @@ const mockContracts: Contract[] = [
     endDate: '2024-12-31',
     lastModified: '2024-12-15',
     assignedAgent: 'Aria',
+    jurisdiction: 'Delaware, USA',
   },
   {
     id: '2',
@@ -46,6 +48,7 @@ const mockContracts: Contract[] = [
     startDate: '2024-12-20',
     lastModified: '2024-12-18',
     assignedAgent: 'Sage',
+    jurisdiction: 'California, USA',
   },
   {
     id: '3',
@@ -57,6 +60,7 @@ const mockContracts: Contract[] = [
     startDate: '2024-06-01',
     endDate: '2027-05-31',
     lastModified: '2024-06-01',
+    jurisdiction: 'New York, USA',
   },
   {
     id: '4',
@@ -79,10 +83,11 @@ const contractTemplates = [
 ];
 
 export default function ContractsPage() {
-  const [contracts] = useState<Contract[]>(mockContracts);
+  const [contracts, setContracts] = useState<Contract[]>(mockContracts);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
   const getStatusColor = (status: Contract['status']) => {
     switch (status) {
@@ -118,6 +123,42 @@ export default function ContractsPage() {
     totalValue: contracts.reduce((sum, c) => sum + (c.value || 0), 0),
   };
 
+  const handleWizardComplete = (draft: ContractDraft) => {
+    const newContract: Contract = {
+      id: draft.id,
+      title: draft.title,
+      type: draft.type as Contract['type'],
+      status: 'draft',
+      parties: [draft.party1, draft.party2],
+      value: draft.value,
+      startDate: draft.startDate,
+      endDate: draft.endDate,
+      lastModified: new Date().toISOString().split('T')[0],
+      assignedAgent: draft.selectedAgents[0] ? draft.selectedAgents[0].charAt(0).toUpperCase() + draft.selectedAgents[0].slice(1) : undefined,
+      jurisdiction: draft.jurisdiction,
+    };
+    setContracts(prev => [newContract, ...prev]);
+    setWizardOpen(false);
+  };
+
+  const handleDelete = (id: string) => {
+    setContracts(prev => prev.filter(c => c.id !== id));
+    setDeleteConfirm({ open: false, id: null });
+    toast.success('Contract deleted');
+  };
+
+  const handleDuplicate = (contract: Contract) => {
+    const duplicate: Contract = {
+      ...contract,
+      id: crypto.randomUUID(),
+      title: `${contract.title} (Copy)`,
+      status: 'draft',
+      lastModified: new Date().toISOString().split('T')[0],
+    };
+    setContracts(prev => [duplicate, ...prev]);
+    toast.success('Contract duplicated');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -126,87 +167,10 @@ export default function ContractsPage() {
           <h1 className="text-2xl font-bold font-display text-foreground">Contract Management</h1>
           <p className="text-muted-foreground text-sm">Generate, track, and manage all your contracts</p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              New Contract
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create New Contract</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Contract Title</Label>
-                  <Input placeholder="Enter contract title" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Template</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select template" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {contractTemplates.map(template => (
-                        <SelectItem key={template.id} value={template.id}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Party 1</Label>
-                  <Input placeholder="First party name" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Party 2</Label>
-                  <Input placeholder="Second party name" />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Start Date</Label>
-                  <Input type="date" />
-                </div>
-                <div className="space-y-2">
-                  <Label>End Date</Label>
-                  <Input type="date" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Contract Value</Label>
-                  <Input type="number" placeholder="0.00" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Special Terms</Label>
-                <Textarea placeholder="Enter any special terms or conditions..." rows={3} />
-              </div>
-              <div className="space-y-2">
-                <Label>Assign Agent</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select agent" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="aria">Aria (Communications)</SelectItem>
-                    <SelectItem value="sage">Sage (Researcher)</SelectItem>
-                    <SelectItem value="atlas">Atlas (Planner)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                <Button onClick={() => setIsCreateOpen(false)}>Generate Contract</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button className="gap-2" onClick={() => setWizardOpen(true)}>
+          <Plus className="h-4 w-4" />
+          New Contract
+        </Button>
       </div>
 
       {/* Stats */}
@@ -293,64 +257,101 @@ export default function ContractsPage() {
 
       {/* Contract List */}
       <div className="space-y-3">
-        {filteredContracts.map(contract => (
-          <Card key={contract.id} className="bg-card/50 border-border/50 hover:bg-card/80 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-foreground">{contract.title}</h3>
-                      <Badge variant="outline" className={getStatusColor(contract.status)}>
-                        {getStatusIcon(contract.status)}
-                        <span className="ml-1 capitalize">{contract.status}</span>
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {contract.parties.join(' ↔ ')}
-                    </p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <span>Started: {new Date(contract.startDate).toLocaleDateString()}</span>
-                      {contract.endDate && (
-                        <span>Ends: {new Date(contract.endDate).toLocaleDateString()}</span>
-                      )}
-                      {contract.value && (
-                        <span className="text-primary font-medium">${contract.value.toLocaleString()}</span>
-                      )}
-                      {contract.assignedAgent && (
-                        <Badge variant="secondary" className="text-xs">{contract.assignedAgent}</Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <FileText className="h-4 w-4 mr-2" />
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Download className="h-4 w-4 mr-2" />
-                      Download PDF
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Send className="h-4 w-4 mr-2" />
-                      Send for Signature
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+        {filteredContracts.length === 0 ? (
+          <Card className="bg-card/50">
+            <CardContent className="p-8 text-center">
+              <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="font-semibold mb-2">No contracts found</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {searchQuery ? 'Try a different search term' : 'Create your first contract to get started'}
+              </p>
+              {!searchQuery && (
+                <Button onClick={() => setWizardOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Contract
+                </Button>
+              )}
             </CardContent>
           </Card>
-        ))}
+        ) : (
+          filteredContracts.map(contract => (
+            <Card key={contract.id} className="bg-card/50 border-border/50 hover:bg-card/80 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-semibold text-foreground">{contract.title}</h3>
+                        <Badge variant="outline" className={getStatusColor(contract.status)}>
+                          {getStatusIcon(contract.status)}
+                          <span className="ml-1 capitalize">{contract.status}</span>
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {contract.parties.join(' ↔ ')}
+                      </p>
+                      <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
+                        <span>Started: {new Date(contract.startDate).toLocaleDateString()}</span>
+                        {contract.endDate && (
+                          <span>Ends: {new Date(contract.endDate).toLocaleDateString()}</span>
+                        )}
+                        {contract.value && (
+                          <span className="text-primary font-medium">${contract.value.toLocaleString()}</span>
+                        )}
+                        {contract.jurisdiction && (
+                          <Badge variant="secondary" className="text-xs">{contract.jurisdiction}</Badge>
+                        )}
+                        {contract.assignedAgent && (
+                          <Badge variant="outline" className="text-xs">{contract.assignedAgent}</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDuplicate(contract)}>
+                        <Copy className="h-4 w-4 mr-2" />
+                        Duplicate
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download PDF
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Send className="h-4 w-4 mr-2" />
+                        Send for Signature
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => setDeleteConfirm({ open: true, id: contract.id })}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       {/* Templates Section */}
@@ -365,6 +366,7 @@ export default function ContractsPage() {
                 key={template.id}
                 variant="outline"
                 className="h-auto py-4 flex-col gap-2"
+                onClick={() => setWizardOpen(true)}
               >
                 <FileText className="h-6 w-6 text-primary" />
                 <span className="text-sm font-medium">{template.name}</span>
@@ -373,6 +375,24 @@ export default function ContractsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Contract Wizard */}
+      <ContractWizard
+        open={wizardOpen}
+        onOpenChange={setWizardOpen}
+        onComplete={handleWizardComplete}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm({ open, id: null })}
+        title="Delete Contract"
+        description="Are you sure you want to delete this contract? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => deleteConfirm.id && handleDelete(deleteConfirm.id)}
+      />
     </div>
   );
 }
