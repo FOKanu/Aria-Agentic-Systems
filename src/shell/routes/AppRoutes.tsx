@@ -29,6 +29,8 @@ export function AppRoutes() {
         <Route path="/devops/logs" element={<LazyPages.LogAnalysis />} />
         
         {/* Legal routes */}
+        <Route path="/legal" element={<LazyPages.LegalOverview />} />
+        <Route path="/legal/overview" element={<LazyPages.LegalOverview />} />
         <Route path="/legal/contracts" element={<LazyPages.Contracts />} />
         <Route path="/legal/document-review" element={<LazyPages.DocumentReview />} />
         <Route path="/legal/compliance" element={<LazyPages.Compliance />} />

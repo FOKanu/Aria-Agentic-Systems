@@ -1,14 +1,18 @@
 // Invoices Page - Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { Receipt, Plus, Search, Filter, Download, Send, Calendar, DollarSign, Clock, CheckCircle, AlertCircle, XCircle, MoreVertical, Bot, Eye, FileText, TrendingUp } from 'lucide-react';
+import { Receipt, Plus, Search, Filter, Download, Send, Calendar, DollarSign, Clock, CheckCircle, AlertCircle, XCircle, MoreVertical, Bot, Eye, FileText, TrendingUp, Edit, Trash2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { InvoiceFormDialog, InvoiceFormData } from '@/components/finance';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Invoice {
   id: string;
@@ -25,7 +29,7 @@ interface Invoice {
   notes?: string;
 }
 
-const mockInvoices: Invoice[] = [
+const initialInvoices: Invoice[] = [
   { id: '1', invoiceNumber: 'INV-2024-001', client: 'Acme Corp', amount: 5000, currency: 'USD', status: 'paid', issueDate: new Date(Date.now() - 604800000), dueDate: new Date(Date.now() - 86400000), paidDate: new Date(Date.now() - 172800000), items: [{ description: 'Consulting Services', quantity: 10, rate: 500 }], agent: 'Aria' },
   { id: '2', invoiceNumber: 'INV-2024-002', client: 'TechStart Inc', amount: 2500, currency: 'USD', status: 'sent', issueDate: new Date(), dueDate: new Date(Date.now() + 1209600000), items: [{ description: 'Development Work', quantity: 25, rate: 100 }], agent: 'Aria' },
   { id: '3', invoiceNumber: 'INV-2024-003', client: 'Global Services', amount: 8750, currency: 'USD', status: 'overdue', issueDate: new Date(Date.now() - 2592000000), dueDate: new Date(Date.now() - 604800000), items: [{ description: 'Annual Support', quantity: 1, rate: 8750 }] },
@@ -50,10 +54,14 @@ const statusColors = {
 };
 
 export function InvoicesPage() {
+  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
-  const filteredInvoices = mockInvoices.filter(inv => {
+  const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = inv.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase());
     if (activeTab === 'all') return matchesSearch;
@@ -61,14 +69,84 @@ export function InvoicesPage() {
   });
 
   const stats = {
-    total: mockInvoices.reduce((sum, inv) => sum + inv.amount, 0),
-    paid: mockInvoices.filter(i => i.status === 'paid').reduce((sum, inv) => sum + inv.amount, 0),
-    pending: mockInvoices.filter(i => i.status === 'sent').reduce((sum, inv) => sum + inv.amount, 0),
-    overdue: mockInvoices.filter(i => i.status === 'overdue').reduce((sum, inv) => sum + inv.amount, 0),
+    total: invoices.reduce((sum, inv) => sum + inv.amount, 0),
+    paid: invoices.filter(i => i.status === 'paid').reduce((sum, inv) => sum + inv.amount, 0),
+    pending: invoices.filter(i => i.status === 'sent').reduce((sum, inv) => sum + inv.amount, 0),
+    overdue: invoices.filter(i => i.status === 'overdue').reduce((sum, inv) => sum + inv.amount, 0),
   };
 
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  };
+
+  const handleCreateNew = () => {
+    setEditingInvoice(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (invoice: Invoice) => {
+    setEditingInvoice(invoice);
+    setFormOpen(true);
+  };
+
+  const handleSave = (data: InvoiceFormData) => {
+    if (data.id) {
+      setInvoices(prev => prev.map(inv => 
+        inv.id === data.id ? {
+          ...inv,
+          client: data.client,
+          currency: data.currency,
+          dueDate: new Date(data.dueDate),
+          items: data.items,
+          amount: data.items.reduce((sum, item) => sum + item.quantity * item.rate, 0),
+          notes: data.notes,
+        } : inv
+      ));
+      toast.success('Invoice updated');
+    } else {
+      const newInvoice: Invoice = {
+        id: crypto.randomUUID(),
+        invoiceNumber: `INV-2024-${String(invoices.length + 1).padStart(3, '0')}`,
+        client: data.client,
+        amount: data.items.reduce((sum, item) => sum + item.quantity * item.rate, 0),
+        currency: data.currency,
+        status: 'draft',
+        issueDate: new Date(),
+        dueDate: new Date(data.dueDate),
+        items: data.items,
+        notes: data.notes,
+      };
+      setInvoices(prev => [newInvoice, ...prev]);
+      toast.success('Invoice created');
+    }
+    setEditingInvoice(null);
+  };
+
+  const handleDelete = (id: string) => {
+    setInvoices(prev => prev.filter(inv => inv.id !== id));
+    setDeleteConfirm({ open: false, id: null });
+    toast.success('Invoice deleted');
+  };
+
+  const handleSendInvoice = (invoice: Invoice) => {
+    setInvoices(prev => prev.map(inv => 
+      inv.id === invoice.id ? { ...inv, status: 'sent' as const } : inv
+    ));
+    toast.success(`Invoice sent to ${invoice.client}`);
+  };
+
+  const handleDuplicate = (invoice: Invoice) => {
+    const duplicate: Invoice = {
+      ...invoice,
+      id: crypto.randomUUID(),
+      invoiceNumber: `INV-2024-${String(invoices.length + 1).padStart(3, '0')}`,
+      status: 'draft',
+      issueDate: new Date(),
+      dueDate: new Date(Date.now() + 2592000000),
+      paidDate: undefined,
+    };
+    setInvoices(prev => [duplicate, ...prev]);
+    toast.success('Invoice duplicated');
   };
 
   return (
@@ -84,7 +162,7 @@ export function InvoicesPage() {
             <p className="text-sm text-muted-foreground">Create & send professional invoices</p>
           </div>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={handleCreateNew}>
           <Plus className="w-4 h-4" />
           Create Invoice
         </Button>
@@ -176,6 +254,10 @@ export function InvoicesPage() {
                   <div className="p-8 text-center text-muted-foreground">
                     <Receipt className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p>No invoices found</p>
+                    <Button variant="outline" className="mt-4" onClick={handleCreateNew}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Your First Invoice
+                    </Button>
                   </div>
                 ) : (
                   filteredInvoices.map(invoice => {
@@ -223,12 +305,45 @@ export function InvoicesPage() {
                             <Button variant="ghost" size="icon" className="h-8 w-8">
                               <Eye className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <Send className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
+                            {invoice.status === 'draft' && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => handleSendInvoice(invoice)}
+                              >
+                                <Send className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreVertical className="w-4 h-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleEdit(invoice)}>
+                                  <Edit className="w-4 h-4 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDuplicate(invoice)}>
+                                  <Copy className="w-4 h-4 mr-2" />
+                                  Duplicate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                  <Download className="w-4 h-4 mr-2" />
+                                  Download PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem 
+                                  onClick={() => setDeleteConfirm({ open: true, id: invoice.id })}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       </div>
@@ -240,6 +355,32 @@ export function InvoicesPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Form Dialog */}
+      <InvoiceFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        invoice={editingInvoice ? {
+          id: editingInvoice.id,
+          client: editingInvoice.client,
+          currency: editingInvoice.currency,
+          dueDate: editingInvoice.dueDate.toISOString().split('T')[0],
+          items: editingInvoice.items,
+          notes: editingInvoice.notes,
+        } : null}
+        onSave={handleSave}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm({ open, id: null })}
+        title="Delete Invoice"
+        description="Are you sure you want to delete this invoice? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => deleteConfirm.id && handleDelete(deleteConfirm.id)}
+      />
     </div>
   );
 }

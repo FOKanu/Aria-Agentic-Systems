@@ -1,14 +1,18 @@
 // Payments Page - Author: Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { DollarSign, Search, Filter, Send, Clock, CheckCircle, AlertCircle, XCircle, Plus, Calendar, User, MoreVertical, ArrowDownLeft, ArrowUpRight, Bot, RefreshCw } from 'lucide-react';
+import { DollarSign, Search, Filter, Send, Clock, CheckCircle, AlertCircle, XCircle, Plus, Calendar, User, MoreVertical, ArrowDownLeft, ArrowUpRight, Bot, RefreshCw, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { PaymentFormDialog, PaymentFormData } from '@/components/finance';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Payment {
   id: string;
@@ -24,7 +28,7 @@ interface Payment {
   agent?: string;
 }
 
-const mockPayments: Payment[] = [
+const initialPayments: Payment[] = [
   { id: '1', type: 'incoming', description: 'Invoice Payment', amount: 5000, currency: 'USD', status: 'completed', date: new Date(), counterparty: 'Acme Corp', method: 'Wire Transfer', reference: 'INV-2024-001' },
   { id: '2', type: 'outgoing', description: 'Supplier Payment', amount: 2500, currency: 'USD', status: 'pending', date: new Date(Date.now() + 86400000), counterparty: 'Tech Supplies Inc', method: 'ACH', agent: 'Echo' },
   { id: '3', type: 'incoming', description: 'Service Fee', amount: 1500, currency: 'USD', status: 'completed', date: new Date(Date.now() - 86400000), counterparty: 'Client XYZ', method: 'Credit Card' },
@@ -48,10 +52,14 @@ const statusColors = {
 };
 
 export function PaymentsPage() {
+  const [payments, setPayments] = useState<Payment[]>(initialPayments);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
-  const filteredPayments = mockPayments.filter(payment => {
+  const filteredPayments = payments.filter(payment => {
     const matchesSearch = payment.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       payment.counterparty.toLowerCase().includes(searchQuery.toLowerCase());
     if (activeTab === 'all') return matchesSearch;
@@ -61,14 +69,76 @@ export function PaymentsPage() {
   });
 
   const stats = {
-    incoming: mockPayments.filter(p => p.type === 'incoming' && p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
-    outgoing: mockPayments.filter(p => p.type === 'outgoing' && p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
-    pending: mockPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0),
-    scheduled: mockPayments.filter(p => p.status === 'scheduled').reduce((sum, p) => sum + p.amount, 0),
+    incoming: payments.filter(p => p.type === 'incoming' && p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
+    outgoing: payments.filter(p => p.type === 'outgoing' && p.status === 'completed').reduce((sum, p) => sum + p.amount, 0),
+    pending: payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0),
+    scheduled: payments.filter(p => p.status === 'scheduled').reduce((sum, p) => sum + p.amount, 0),
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  };
+
+  const handleCreateNew = () => {
+    setEditingPayment(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (payment: Payment) => {
+    setEditingPayment(payment);
+    setFormOpen(true);
+  };
+
+  const handleSave = (data: PaymentFormData) => {
+    if (data.id) {
+      setPayments(prev => prev.map(p => 
+        p.id === data.id ? {
+          ...p,
+          type: data.type,
+          description: data.description,
+          amount: data.amount,
+          currency: data.currency,
+          counterparty: data.counterparty,
+          method: data.method,
+          date: new Date(data.date),
+          reference: data.reference,
+        } : p
+      ));
+      toast.success('Payment updated');
+    } else {
+      const newPayment: Payment = {
+        id: crypto.randomUUID(),
+        type: data.type,
+        description: data.description,
+        amount: data.amount,
+        currency: data.currency,
+        status: 'pending',
+        date: new Date(data.date),
+        counterparty: data.counterparty,
+        method: data.method,
+        reference: data.reference,
+      };
+      setPayments(prev => [newPayment, ...prev]);
+      toast.success('Payment created');
+    }
+    setEditingPayment(null);
+  };
+
+  const handleDelete = (id: string) => {
+    setPayments(prev => prev.filter(p => p.id !== id));
+    setDeleteConfirm({ open: false, id: null });
+    toast.success('Payment deleted');
+  };
+
+  const handleSendReminder = () => {
+    toast.success('Payment reminder sent');
+  };
+
+  const handleRetry = (id: string) => {
+    setPayments(prev => prev.map(p => 
+      p.id === id ? { ...p, status: 'pending' as const } : p
+    ));
+    toast.success('Payment retry initiated');
   };
 
   return (
@@ -85,11 +155,11 @@ export function PaymentsPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleSendReminder}>
             <Send className="w-4 h-4" />
             Send Reminder
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleCreateNew}>
             <Plus className="w-4 h-4" />
             New Payment
           </Button>
@@ -181,6 +251,10 @@ export function PaymentsPage() {
                   <div className="p-8 text-center text-muted-foreground">
                     <DollarSign className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p>No payments found</p>
+                    <Button variant="outline" className="mt-4" onClick={handleCreateNew}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Your First Payment
+                    </Button>
                   </div>
                 ) : (
                   filteredPayments.map(payment => {
@@ -237,9 +311,33 @@ export function PaymentsPage() {
                               </p>
                             )}
                           </div>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {payment.status === 'failed' && (
+                                <DropdownMenuItem onClick={() => handleRetry(payment.id)}>
+                                  <RefreshCw className="w-4 h-4 mr-2" />
+                                  Retry Payment
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem onClick={() => handleEdit(payment)}>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => setDeleteConfirm({ open: true, id: payment.id })}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     );
@@ -250,6 +348,35 @@ export function PaymentsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Form Dialog */}
+      <PaymentFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        payment={editingPayment ? {
+          id: editingPayment.id,
+          type: editingPayment.type,
+          description: editingPayment.description,
+          amount: editingPayment.amount,
+          currency: editingPayment.currency,
+          counterparty: editingPayment.counterparty,
+          method: editingPayment.method,
+          date: editingPayment.date.toISOString().split('T')[0],
+          reference: editingPayment.reference,
+        } : null}
+        onSave={handleSave}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm({ open, id: null })}
+        title="Delete Payment"
+        description="Are you sure you want to delete this payment record? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => deleteConfirm.id && handleDelete(deleteConfirm.id)}
+      />
     </div>
   );
 }
