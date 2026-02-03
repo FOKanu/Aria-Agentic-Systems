@@ -3,8 +3,10 @@
  * Created by Francis Okorie Iyeke-Kanu
  */
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { StatusBar } from '@/components/StatusBar';
 import { BottomNav, TabId } from '@/components/BottomNav';
+import { FloatingModuleNav } from '@/components/FloatingModuleNav';
 import { AgentRail, Agent } from '@/components/AgentRail';
 import { TopBar } from '@/components/TopBar';
 import { CommandPalette } from '@/components/CommandPalette';
@@ -573,6 +575,7 @@ const Index = () => {
         {activeTab !== 'chat' && (
           <>
             <FloatingVoiceButton />
+            <FloatingModuleNav activeTab={activeTab} onNavigate={handleTabChange} />
             <FloatingChatPanel />
           </>
         )}
