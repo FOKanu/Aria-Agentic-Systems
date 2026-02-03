@@ -38,6 +38,9 @@ export function AppRoutes() {
         <Route path="/legal/ip-management" element={<LazyPages.IPManagement />} />
         <Route path="/legal/case-research" element={<LazyPages.CaseResearch />} />
         
+        {/* Admin routes */}
+        <Route path="/admin/job-applications" element={<LazyPages.JobApplications />} />
+        
         {/* Monitoring routes */}
         <Route path="/monitoring/activity" element={<LazyPages.ActivityStream />} />
         <Route path="/monitoring/alerts" element={<LazyPages.AlertsControls />} />

@@ -64,6 +64,9 @@ export const LazyPages = {
   IPManagement: lazy(() => import('@/pages/legal/IPManagementPage')),
   CaseResearch: lazy(() => import('@/pages/legal/CaseResearchPage')),
   
+  // Admin feature
+  JobApplications: lazy(() => import('@/pages/admin/JobApplicationsPage')),
+  
   // Monitoring feature
   ActivityStream: lazy(() => import('@/pages/monitoring/ActivityStreamPage').then(m => ({ default: m.ActivityStreamPage }))),
   AlertsControls: lazy(() => import('@/pages/monitoring/AlertsControlsPage').then(m => ({ default: m.AlertsControlsPage }))),
