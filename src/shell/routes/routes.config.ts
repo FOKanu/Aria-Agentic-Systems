@@ -56,6 +56,7 @@ export const LazyPages = {
   LogAnalysis: lazy(() => import('@/pages/devops/LogAnalysisPage')),
   
   // Legal feature
+  LegalOverview: lazy(() => import('@/pages/legal/LegalOverviewPage')),
   Contracts: lazy(() => import('@/pages/legal/ContractsPage')),
   DocumentReview: lazy(() => import('@/pages/legal/DocumentReviewPage')),
   Compliance: lazy(() => import('@/pages/legal/CompliancePage')),

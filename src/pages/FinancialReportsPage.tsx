@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { ExportReportDialog } from '@/components/finance';
 
 interface ReportMetric {
   label: string;
@@ -46,6 +47,7 @@ const cashFlowItems = [
 export function FinancialReportsPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [period, setPeriod] = useState('month');
+  const [exportOpen, setExportOpen] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
@@ -80,7 +82,7 @@ export function FinancialReportsPage() {
               <SelectItem value="year">This Year</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={() => setExportOpen(true)}>
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -268,6 +270,12 @@ export function FinancialReportsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Export Dialog */}
+      <ExportReportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+      />
     </div>
   );
 }

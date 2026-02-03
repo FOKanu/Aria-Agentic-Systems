@@ -1,6 +1,6 @@
 // Expenses Page - © Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { CreditCard, Plus, Search, Filter, Upload, Camera, Receipt, Tag, Calendar, DollarSign, TrendingUp, TrendingDown, PieChart, Bot, MoreVertical, FileText, CheckCircle } from 'lucide-react';
+import { CreditCard, Plus, Search, Filter, Upload, Camera, Receipt, Tag, Calendar, DollarSign, TrendingUp, TrendingDown, PieChart, Bot, MoreVertical, FileText, CheckCircle, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import { ExpenseFormDialog, ExpenseFormData } from '@/components/finance';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface Expense {
   id: string;
@@ -25,7 +29,7 @@ interface Expense {
   notes?: string;
 }
 
-const mockExpenses: Expense[] = [
+const initialExpenses: Expense[] = [
   { id: '1', description: 'Client Dinner', amount: 245.50, currency: 'USD', category: 'Meals', date: new Date(), vendor: 'Le Restaurant', status: 'approved', receipt: true, agent: 'Pixel' },
   { id: '2', description: 'Software License', amount: 99, currency: 'USD', category: 'Software', date: new Date(Date.now() - 86400000), vendor: 'Adobe', status: 'reimbursed', receipt: true },
   { id: '3', description: 'Office Supplies', amount: 67.30, currency: 'USD', category: 'Supplies', date: new Date(Date.now() - 172800000), vendor: 'Staples', status: 'pending', receipt: true, agent: 'Sage' },
@@ -49,22 +53,84 @@ const statusColors = {
 };
 
 export function ExpensesPage() {
+  const [expenses, setExpenses] = useState<Expense[]>(initialExpenses);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
-  const filteredExpenses = mockExpenses.filter(exp => {
+  const filteredExpenses = expenses.filter(exp => {
     const matchesSearch = exp.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       exp.vendor.toLowerCase().includes(searchQuery.toLowerCase());
     if (activeTab === 'all') return matchesSearch;
     return matchesSearch && exp.status === activeTab;
   });
 
-  const totalSpent = mockExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalSpent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const totalBudget = categories.reduce((sum, cat) => sum + cat.budget, 0);
-  const pendingAmount = mockExpenses.filter(e => e.status === 'pending').reduce((sum, exp) => sum + exp.amount, 0);
+  const pendingAmount = expenses.filter(e => e.status === 'pending').reduce((sum, exp) => sum + exp.amount, 0);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  };
+
+  const handleCreateNew = () => {
+    setEditingExpense(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (expense: Expense) => {
+    setEditingExpense(expense);
+    setFormOpen(true);
+  };
+
+  const handleSave = (data: ExpenseFormData) => {
+    if (data.id) {
+      setExpenses(prev => prev.map(exp => 
+        exp.id === data.id ? {
+          ...exp,
+          description: data.description,
+          amount: data.amount,
+          currency: data.currency,
+          category: data.category,
+          vendor: data.vendor,
+          date: new Date(data.date),
+          receipt: data.hasReceipt,
+          notes: data.notes,
+        } : exp
+      ));
+      toast.success('Expense updated');
+    } else {
+      const newExpense: Expense = {
+        id: crypto.randomUUID(),
+        description: data.description,
+        amount: data.amount,
+        currency: data.currency,
+        category: data.category,
+        vendor: data.vendor,
+        date: new Date(data.date),
+        status: 'pending',
+        receipt: data.hasReceipt,
+        notes: data.notes,
+      };
+      setExpenses(prev => [newExpense, ...prev]);
+      toast.success('Expense added');
+    }
+    setEditingExpense(null);
+  };
+
+  const handleDelete = (id: string) => {
+    setExpenses(prev => prev.filter(exp => exp.id !== id));
+    setDeleteConfirm({ open: false, id: null });
+    toast.success('Expense deleted');
+  };
+
+  const handleApprove = (id: string) => {
+    setExpenses(prev => prev.map(exp => 
+      exp.id === id ? { ...exp, status: 'approved' as const } : exp
+    ));
+    toast.success('Expense approved');
   };
 
   return (
@@ -85,7 +151,7 @@ export function ExpensesPage() {
             <Camera className="w-4 h-4" />
             Scan Receipt
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleCreateNew}>
             <Plus className="w-4 h-4" />
             Add Expense
           </Button>
@@ -205,6 +271,10 @@ export function ExpensesPage() {
                   <div className="p-8 text-center text-muted-foreground">
                     <CreditCard className="w-10 h-10 mx-auto mb-2 opacity-50" />
                     <p>No expenses found</p>
+                    <Button variant="outline" className="mt-4" onClick={handleCreateNew}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Your First Expense
+                    </Button>
                   </div>
                 ) : (
                   filteredExpenses.map(expense => (
@@ -245,9 +315,33 @@ export function ExpensesPage() {
                             )}
                           </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {expense.status === 'pending' && (
+                              <DropdownMenuItem onClick={() => handleApprove(expense.id)}>
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Approve
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem onClick={() => handleEdit(expense)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              onClick={() => setDeleteConfirm({ open: true, id: expense.id })}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   ))
@@ -257,6 +351,35 @@ export function ExpensesPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Form Dialog */}
+      <ExpenseFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        expense={editingExpense ? {
+          id: editingExpense.id,
+          description: editingExpense.description,
+          amount: editingExpense.amount,
+          currency: editingExpense.currency,
+          category: editingExpense.category,
+          vendor: editingExpense.vendor,
+          date: editingExpense.date.toISOString().split('T')[0],
+          hasReceipt: editingExpense.receipt || false,
+          notes: editingExpense.notes,
+        } : null}
+        onSave={handleSave}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm({ open, id: null })}
+        title="Delete Expense"
+        description="Are you sure you want to delete this expense? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => deleteConfirm.id && handleDelete(deleteConfirm.id)}
+      />
     </div>
   );
 }

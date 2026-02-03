@@ -1,11 +1,15 @@
 // Budget Page - Created by Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { PieChart, Plus, TrendingUp, TrendingDown, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Target, AlertTriangle, CheckCircle, BarChart3 } from 'lucide-react';
+import { PieChart, Plus, TrendingUp, TrendingDown, DollarSign, Calendar, ArrowUpRight, ArrowDownRight, Target, AlertTriangle, CheckCircle, BarChart3, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import { BudgetFormDialog, BudgetFormData } from '@/components/finance';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 interface BudgetCategory {
   id: string;
@@ -22,7 +26,7 @@ interface Forecast {
   actual?: number;
 }
 
-const budgetCategories: BudgetCategory[] = [
+const initialBudgets: BudgetCategory[] = [
   { id: '1', name: 'Operations', allocated: 50000, spent: 42500, color: 'bg-blue-500', icon: '⚙️' },
   { id: '2', name: 'Marketing', allocated: 25000, spent: 28000, color: 'bg-purple-500', icon: '📢' },
   { id: '3', name: 'Development', allocated: 75000, spent: 65000, color: 'bg-green-500', icon: '💻' },
@@ -42,12 +46,16 @@ const forecasts: Forecast[] = [
 ];
 
 export function BudgetPage() {
+  const [budgets, setBudgets] = useState<BudgetCategory[]>(initialBudgets);
   const [activeTab, setActiveTab] = useState('overview');
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<BudgetCategory | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
-  const totalAllocated = budgetCategories.reduce((sum, cat) => sum + cat.allocated, 0);
-  const totalSpent = budgetCategories.reduce((sum, cat) => sum + cat.spent, 0);
-  const overBudgetCategories = budgetCategories.filter(cat => cat.spent > cat.allocated);
-  const underBudgetCategories = budgetCategories.filter(cat => cat.spent <= cat.allocated * 0.8);
+  const totalAllocated = budgets.reduce((sum, cat) => sum + cat.allocated, 0);
+  const totalSpent = budgets.reduce((sum, cat) => sum + cat.spent, 0);
+  const overBudgetCategories = budgets.filter(cat => cat.spent > cat.allocated);
+  const underBudgetCategories = budgets.filter(cat => cat.spent <= cat.allocated * 0.8);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
@@ -58,6 +66,43 @@ export function BudgetPage() {
     if (ratio > 1) return 'text-destructive';
     if (ratio > 0.9) return 'text-warning';
     return 'text-success';
+  };
+
+  const handleCreateNew = () => {
+    setEditingBudget(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (budget: BudgetCategory) => {
+    setEditingBudget(budget);
+    setFormOpen(true);
+  };
+
+  const handleSave = (data: BudgetFormData) => {
+    if (data.id) {
+      setBudgets(prev => prev.map(b => 
+        b.id === data.id ? { ...b, name: data.name, allocated: data.allocated } : b
+      ));
+      toast.success('Budget updated');
+    } else {
+      const newBudget: BudgetCategory = {
+        id: crypto.randomUUID(),
+        name: data.name,
+        allocated: data.allocated,
+        spent: 0,
+        color: 'bg-primary',
+        icon: '📊',
+      };
+      setBudgets(prev => [...prev, newBudget]);
+      toast.success('Budget created');
+    }
+    setEditingBudget(null);
+  };
+
+  const handleDelete = (id: string) => {
+    setBudgets(prev => prev.filter(b => b.id !== id));
+    setDeleteConfirm({ open: false, id: null });
+    toast.success('Budget deleted');
   };
 
   return (
@@ -73,7 +118,7 @@ export function BudgetPage() {
             <p className="text-sm text-muted-foreground">Forecasting, allocations & projections</p>
           </div>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={handleCreateNew}>
           <Plus className="w-4 h-4" />
           New Budget
         </Button>
@@ -163,7 +208,7 @@ export function BudgetPage() {
 
           {/* Category Summary */}
           <div className="grid md:grid-cols-2 gap-4">
-            {budgetCategories.map(category => {
+            {budgets.map(category => {
               const percentage = (category.spent / category.allocated) * 100;
               const isOverBudget = category.spent > category.allocated;
               return (
@@ -191,6 +236,27 @@ export function BudgetPage() {
                           {formatCurrency(category.spent)} / {formatCurrency(category.allocated)}
                         </p>
                       </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(category)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => setDeleteConfirm({ open: true, id: category.id })}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                     <Progress 
                       value={Math.min(percentage, 100)} 
@@ -207,7 +273,7 @@ export function BudgetPage() {
           <Card>
             <CardContent className="pt-4">
               <div className="space-y-4">
-                {budgetCategories.map(category => {
+                {budgets.map(category => {
                   const percentage = (category.spent / category.allocated) * 100;
                   const isOverBudget = category.spent > category.allocated;
                   const variance = category.spent - category.allocated;
@@ -231,6 +297,27 @@ export function BudgetPage() {
                           </span>
                         </div>
                       </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleEdit(category)}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => setDeleteConfirm({ open: true, id: category.id })}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   );
                 })}
@@ -302,6 +389,32 @@ export function BudgetPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Form Dialog */}
+      <BudgetFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        budget={editingBudget ? {
+          id: editingBudget.id,
+          name: editingBudget.name,
+          category: editingBudget.name,
+          allocated: editingBudget.allocated,
+          period: 'monthly',
+          startDate: new Date().toISOString().split('T')[0],
+        } : null}
+        onSave={handleSave}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={deleteConfirm.open}
+        onOpenChange={(open) => setDeleteConfirm({ open, id: null })}
+        title="Delete Budget"
+        description="Are you sure you want to delete this budget? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => deleteConfirm.id && handleDelete(deleteConfirm.id)}
+      />
     </div>
   );
 }
