@@ -66,25 +66,36 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
   }, []);
 
   // Send a message
-  const sendMessage = useCallback(async (content: string, fileContext?: string) => {
-    // Create user message
-    const userMessage: ChatMessage = {
+  const sendMessage = useCallback(async (content: string, fileContext?: string, isInternal = false) => {
+    // Create user message (only if not an internal recursive call)
+    if (!isInternal) {
+      const userMessage: ChatMessage = {
+        id: `msg-${Date.now()}-user`,
+        role: 'user',
+        content,
+        timestamp: new Date().toISOString(),
+        agentId,
+      };
+
+      setMessages(prev => [...prev, userMessage]);
+      setError(null);
+    }
+
+    // Determine context for routing
+    const currentMessages = isInternal ? messages : [...messages, {
       id: `msg-${Date.now()}-user`,
-      role: 'user',
+      role: 'user' as const,
       content,
       timestamp: new Date().toISOString(),
       agentId,
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setError(null);
+    }];
 
     // Route the task
     const routing = routeTask(
       content,
       agentRole,
       !!fileContext,
-      messages.length,
+      currentMessages.length,
       preferLocal,
       isLocalAvailable
     );
@@ -96,8 +107,17 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
     // Prepare messages for API
     const apiMessages = [
       { role: 'system' as const, content: systemPrompt },
-      ...messages.map(m => ({ role: m.role, content: m.content })),
-      { role: 'user' as const, content },
+      ...currentMessages.map(m => {
+        if (m.role === 'tool') {
+          return { role: 'tool' as const, content: m.content, tool_call_id: m.toolCallId };
+        }
+        if (m.toolCalls) {
+          return { role: m.role, content: m.content, tool_calls: m.toolCalls };
+        }
+        return { role: m.role, content: m.content };
+      }),
+      // Only add user message if it's not internal (already in currentMessages)
+      ...(isInternal ? [] : [{ role: 'user' as const, content }]),
     ];
 
     // Start streaming state
@@ -112,16 +132,23 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
     });
 
     // Create abort controller
-    abortControllerRef.current = new AbortController();
+    if (!isInternal) {
+      abortControllerRef.current = new AbortController();
+    }
 
     try {
       let response: Response;
+
+      // Import tool definitions dynamically to avoid circular dependencies if any
+      const { getToolDefinitions, executeToolCall } = await import('../services/toolRegistry');
+      const tools = getToolDefinitions();
 
       if (routing.provider === 'local') {
         response = await callLocalModelStreaming({
           messages: apiMessages,
           model: routing.model,
           stream: true,
+          tools,
         }, {
           // Pass timeout/endpoint if needed, otherwise use default
         });
@@ -138,15 +165,16 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
             model: routing.model,
             agentRole,
             stream: true,
+            tools,
           }),
-          signal: abortControllerRef.current.signal,
+          signal: abortControllerRef.current?.signal,
         });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw {
             type: response.status === 429 ? 'rate_limit' :
-                  response.status === 402 ? 'payment_required' : 'invalid_request',
+              response.status === 402 ? 'payment_required' : 'invalid_request',
             message: errorData.error || `Request failed with status ${response.status}`,
             provider: routing.provider,
             retryable: response.status >= 500,
@@ -156,20 +184,27 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
 
       let fullContent = '';
       let tokenCount = 0;
+      let accumulatedToolCalls: any[] = [];
 
       // Process the stream
       await processStream(
         response,
-        (delta, content) => {
+        (delta, content, toolCalls) => {
           fullContent = content;
           tokenCount++;
+
+          if (toolCalls) {
+            accumulatedToolCalls = toolCalls;
+          }
+
           setStreaming(prev => ({
             ...prev,
             content,
             tokensReceived: tokenCount,
+            toolCalls: accumulatedToolCalls,
           }));
         },
-        () => {
+        async () => {
           // Stream complete
           const assistantMessage: ChatMessage = {
             id: `msg-${Date.now()}-assistant`,
@@ -182,9 +217,52 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
               model: routing.model,
               tokensUsed: tokenCount,
             },
+            toolCalls: accumulatedToolCalls.length > 0 ? accumulatedToolCalls : undefined,
           };
 
           setMessages(prev => [...prev, assistantMessage]);
+
+          // Handle Tool Calls (Recursion)
+          if (accumulatedToolCalls.length > 0) {
+            setStreaming(prev => ({ ...prev, content: 'Executing tools...' }));
+
+            const toolOutputs = [];
+
+            for (const toolCall of accumulatedToolCalls) {
+              try {
+                const args = JSON.parse(toolCall.function.arguments);
+                const result = await executeToolCall(toolCall.function.name, args);
+
+                toolOutputs.push({
+                  id: `msg-${Date.now()}-${toolCall.id}`,
+                  role: 'tool' as const,
+                  toolCallId: toolCall.id,
+                  content: JSON.stringify(result),
+                  timestamp: new Date().toISOString(),
+                  agentId,
+                });
+              } catch (err) {
+                toolOutputs.push({
+                  id: `msg-${Date.now()}-${toolCall.id}`,
+                  role: 'tool' as const,
+                  toolCallId: toolCall.id,
+                  content: JSON.stringify({ error: String(err) }),
+                  timestamp: new Date().toISOString(),
+                  agentId,
+                });
+              }
+            }
+
+            setMessages(prev => [...prev, ...toolOutputs]);
+
+            // Recursively call sendMessage to get the final answer
+            // We pass the last user content but with isInternal=true so we don't add a new user message
+            // The API payload construction above will handle including the history
+            const lastUserContent = messages.slice().reverse().find(m => m.role === 'user')?.content || '';
+            await sendMessage(lastUserContent, fileContext, true);
+            return;
+          }
+
           setStreaming({
             isStreaming: false,
             content: '',

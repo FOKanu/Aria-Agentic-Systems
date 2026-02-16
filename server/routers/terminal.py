@@ -134,3 +134,72 @@ async def execute_command(
             status_code=500,
             detail=f"Command execution failed: {str(e)}"
         )
+
+
+from fastapi.responses import StreamingResponse
+import asyncio
+
+@router.post("/stream", response_class=StreamingResponse)
+async def execute_command_stream(
+    request: ExecuteRequest,
+    token: str = Depends(verify_token)
+):
+    """
+    Execute a shell command and stream the output via SSE.
+    """
+    # Validate command (reuse existing logic)
+    is_safe, risk_level, reason = validate_command(request.command)
+    if not is_safe:
+        if requires_approval(request.command):
+            # For now, we block requiring approval in stream mode until UI supports it
+            raise HTTPException(status_code=400, detail="Command requires approval (not supported in stream mode yet)")
+        else:
+            raise HTTPException(status_code=400, detail=f"Command rejected: {reason}")
+
+    # Validate cwd
+    if request.cwd:
+        if not validate_path(request.cwd):
+            raise HTTPException(status_code=400, detail=f"Working directory outside workspace: {request.cwd}")
+        cwd = sanitize_path(request.cwd)
+    else:
+        cwd = str(get_workspace_root())
+
+    if not Path(cwd).exists():
+        raise HTTPException(status_code=400, detail=f"Working directory does not exist: {cwd}")
+
+    async def event_generator():
+        process = subprocess.Popen(
+            request.command,
+            shell=True,
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,  # Line buffered
+            universal_newlines=True
+        )
+
+        try:
+            # Stream stdout/stderr line by line
+            for line in iter(process.stdout.readline, ''):
+                if line:
+                    yield f"data: {line}\n\n"
+                    # Small delay to yield control back to event loop if needed
+                    await asyncio.sleep(0)
+
+            process.stdout.close()
+            return_code = process.wait()
+
+            if return_code != 0:
+                yield f"data: [EXIT] {return_code}\n\n"
+
+            yield "data: [DONE]\n\n"
+
+        except Exception as e:
+            yield f"data: [ERROR] {str(e)}\n\n"
+            try:
+                process.kill()
+            except:
+                pass
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

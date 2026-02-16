@@ -6,6 +6,8 @@
  * Handles all terminal and filesystem operations.
  */
 
+import { terminalSignals } from '@/lib/signals';
+
 const DEFAULT_BASE_URL = 'http://localhost:8000';
 const TOKEN_STORAGE_KEY = 'aria_runtime_token';
 
@@ -200,6 +202,92 @@ export class RuntimeClient {
         content,
       } as WriteFileRequest),
     });
+  }
+
+  /**
+   * Execute a shell command with streaming output
+   */
+  async executeCommandStream(
+    command: string,
+    cwd?: string,
+    timeout?: number
+  ): Promise<ExecuteCommandResponse> {
+    if (!this.token) {
+      throw new Error('No ARIA access token set. Please configure it in Settings.');
+    }
+
+    const start = Date.now();
+    terminalSignals.start.emit(command);
+
+    try {
+      const response = await fetch(`${this.baseUrl}/execute/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({
+          command,
+          cwd,
+          timeout,
+        } as ExecuteCommandRequest),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: response.statusText }));
+        throw new Error(error.detail || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      if (!response.body) throw new Error('Response body is null');
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let stdout = '';
+      let exitCode = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+
+            if (data.startsWith('[EXIT] ')) {
+              exitCode = parseInt(data.slice(7), 10);
+              continue;
+            }
+
+            if (data.startsWith('[ERROR] ')) {
+              terminalSignals.output.emit(`Error: ${data.slice(8)}\n`);
+              continue;
+            }
+
+            stdout += data;
+            terminalSignals.output.emit(data);
+          }
+        }
+      }
+
+      terminalSignals.end.emit(exitCode);
+
+      return {
+        stdout,
+        stderr: '', // Stderr is merged into stdout in streaming mode for now
+        exit_code: exitCode,
+        execution_time_ms: Date.now() - start,
+        requires_approval: false,
+      };
+
+    } catch (error) {
+      terminalSignals.output.emit(`\nExecution failed: ${error}\n`);
+      terminalSignals.end.emit(-1);
+      throw error;
+    }
   }
 
   /**

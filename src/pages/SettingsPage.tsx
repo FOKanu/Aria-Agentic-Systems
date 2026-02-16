@@ -8,34 +8,13 @@ import { Switch } from '@/components/ui/switch';
 import { AutonomyLevel } from '@/types/agent';
 import { cn } from '@/lib/utils';
 import { ProviderConfigSection } from '@/components/settings/ProviderConfigSection';
+import { RuntimeConfigSection } from '@/components/settings/RuntimeConfigSection';
 
-const autonomyLevels: { id: AutonomyLevel; label: string; description: string }[] = [
-  { id: 'manual', label: 'Manual', description: 'All actions require approval' },
-  { id: 'assisted', label: 'Assisted', description: 'Safe actions auto-approved' },
-  { id: 'autonomous', label: 'Autonomous', description: 'Full autonomy enabled' },
-];
-
-interface SettingsPageProps {
-  autonomyLevel: AutonomyLevel;
-  onAutonomyChange: (level: AutonomyLevel) => void;
-}
+// ... (existing constants)
 
 // Francis Okorie Iyeke-Kanu
 export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPageProps) {
-  const [permissions, setPermissions] = useState({
-    terminal: true,
-    browser: true,
-    email: false,
-    files: true,
-  });
-  
-  const [visionSettings, setVisionSettings] = useState({
-    autoCapture: true,
-    ocrEnabled: true,
-    elementDetection: true,
-  });
-
-  const [loggingLevel, setLoggingLevel] = useState<'minimal' | 'normal' | 'verbose'>('normal');
+  // ... (existing state)
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -43,6 +22,9 @@ export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPagePr
         <Settings className="w-5 h-5 text-primary" />
         <h2 className="text-lg font-semibold">Settings</h2>
       </div>
+
+      {/* Runtime Configuration */}
+      <RuntimeConfigSection />
 
       {/* Provider Configuration */}
       <ProviderConfigSection />
@@ -102,7 +84,7 @@ export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPagePr
                 </div>
                 <Switch
                   checked={permissions[tool.key as keyof typeof permissions]}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setPermissions(prev => ({ ...prev, [tool.key]: checked }))
                   }
                 />
@@ -131,7 +113,7 @@ export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPagePr
               </div>
               <Switch
                 checked={visionSettings[setting.key as keyof typeof visionSettings]}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setVisionSettings(prev => ({ ...prev, [setting.key]: checked }))
                 }
               />

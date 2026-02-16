@@ -80,12 +80,14 @@ export interface FileContext {
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: string;
   timestamp: string;
   agentId?: string;
   attachments?: MessageAttachment[];
   fileReferences?: string[]; // File IDs referenced
+  toolCalls?: AIToolCall[]; // For assistant messages
+  toolCallId?: string; // For tool messages
   metadata?: Record<string, unknown>;
 }
 
@@ -106,6 +108,7 @@ export interface StreamingState {
   error: string | null;
   startedAt?: string;
   tokensReceived: number;
+  toolCalls?: AIToolCall[];
 }
 
 export interface AgentSystemPrompt {
@@ -133,8 +136,10 @@ export interface TaskComplexityAnalysis {
 
 export interface AIRequestPayload {
   messages: Array<{
-    role: 'user' | 'assistant' | 'system';
+    role: 'user' | 'assistant' | 'system' | 'tool';
     content: string | Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }>;
+    tool_calls?: AIToolCall[];
+    tool_call_id?: string;
   }>;
   model?: AIModel;
   stream?: boolean;
