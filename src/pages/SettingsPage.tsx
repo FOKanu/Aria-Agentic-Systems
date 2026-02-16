@@ -1,7 +1,3 @@
-/**
- * Settings Page
- * Author: Francis Okorie Iyeke-Kanu
- */
 import { useState } from 'react';
 import { Settings, Shield, Eye, ScrollText, Terminal, Globe, Mail, FolderOpen } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -10,11 +6,32 @@ import { cn } from '@/lib/utils';
 import { ProviderConfigSection } from '@/components/settings/ProviderConfigSection';
 import { RuntimeConfigSection } from '@/components/settings/RuntimeConfigSection';
 
-// ... (existing constants)
+interface SettingsPageProps {
+  autonomyLevel: AutonomyLevel;
+  onAutonomyChange: (level: AutonomyLevel) => void;
+}
 
-// Francis Okorie Iyeke-Kanu
+const autonomyLevels: { id: AutonomyLevel; label: string; description: string }[] = [
+  { id: 'manual', label: 'Manual', description: 'All actions require explicit approval' },
+  { id: 'assisted', label: 'Assisted', description: 'AI suggests, you approve' },
+  { id: 'autonomous', label: 'Autonomous', description: 'AI acts independently within guardrails' },
+];
+
 export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPageProps) {
-  // ... (existing state)
+  const [permissions, setPermissions] = useState({
+    terminal: true,
+    browser: true,
+    email: false,
+    files: true,
+  });
+
+  const [visionSettings, setVisionSettings] = useState({
+    autoCapture: true,
+    ocrEnabled: true,
+    elementDetection: true,
+  });
+
+  const [loggingLevel, setLoggingLevel] = useState<'minimal' | 'normal' | 'verbose'>('normal');
 
   return (
     <div className="space-y-6 animate-slide-up">
@@ -23,10 +40,7 @@ export function SettingsPage({ autonomyLevel, onAutonomyChange }: SettingsPagePr
         <h2 className="text-lg font-semibold">Settings</h2>
       </div>
 
-      {/* Runtime Configuration */}
       <RuntimeConfigSection />
-
-      {/* Provider Configuration */}
       <ProviderConfigSection />
 
       {/* Autonomy Level */}
