@@ -1,7 +1,7 @@
 import { LayoutDashboard, ListTodo, Monitor, Brain, Settings, Bot, MessageSquare, Home, BarChart3, FolderOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type TabId = 'home' | 'dashboard' | 'tasks' | 'monitoring' | 'memory' | 'settings' | 'agents' | 'chat' | 'analytics' | 'files' | 'calendar' | 'contacts' | 'email' | 'workflows' | 'phone' | 'reservations' | 'invoices' | 'expenses' | 'budget' | 'reports' | 'payments' | 'tax' | 'documents' | 'devops-pipelines' | 'devops-code-review' | 'devops-deployment' | 'devops-infrastructure' | 'devops-security' | 'devops-logs';
+export type TabId = 'home' | 'dashboard' | 'tasks' | 'monitoring' | 'memory' | 'settings' | 'agents' | 'chat' | 'analytics' | 'files' | 'calendar' | 'contacts' | 'email' | 'workflows' | 'phone' | 'reservations' | 'invoices' | 'expenses' | 'budget' | 'reports' | 'payments' | 'tax' | 'documents' | 'devops-pipelines' | 'devops-code-review' | 'devops-deployment' | 'devops-infrastructure' | 'devops-security' | 'devops-logs' | 'legal' | 'contracts' | 'review' | 'compliance' | 'nda' | 'ip' | 'research' | 'social' | 'social-scheduling' | 'social-posts' | 'social-analytics' | 'social-community' | 'social-outreach' | 'social-trends';
 
 interface BottomNavProps {
   activeTab: TabId;

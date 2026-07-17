@@ -17,4 +17,5 @@ export * as contacts from './contacts';
 export * as finance from './finance';
 export * as devops from './devops';
 export * as legal from './legal';
+export * as social from './social';
 export * as monitoring from './monitoring';

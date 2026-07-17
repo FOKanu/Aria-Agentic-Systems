@@ -1,6 +1,6 @@
 // IP Management Page - Created by Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { Lightbulb, Plus, Search, Filter, Calendar, AlertTriangle, CheckCircle, Clock, FileText, Globe, Shield } from 'lucide-react';
+import { Lightbulb, Plus, Search, Filter, Calendar, AlertTriangle, CheckCircle, Clock, FileText, Globe, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { askAgent } from '@/lib/agentActions';
 
 interface IPAsset {
   id: string;
@@ -367,7 +368,18 @@ export default function IPManagementPage() {
                         </div>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">View Details</Button>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <Button variant="outline" size="sm">View Details</Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => askAgent('Sage', `Check renewal status and risk exposure for "${asset.name}" (${asset.type})`)}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Ask Sage
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

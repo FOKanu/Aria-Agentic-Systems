@@ -1,6 +1,6 @@
 // Compliance Page - Author: Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { Shield, AlertTriangle, CheckCircle, Clock, TrendingUp, FileCheck, Calendar, Settings, Plus, MoreVertical, Edit, Trash2, Eye, RefreshCw } from 'lucide-react';
+import { Shield, AlertTriangle, CheckCircle, Clock, TrendingUp, FileCheck, Calendar, Settings, Plus, MoreVertical, Edit, Trash2, Eye, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ComplianceTrafficLight, ComplianceStatus } from '@/components/legal';
+import { askAgent } from '@/lib/agentActions';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -324,6 +325,12 @@ export default function CompliancePage() {
                         <DropdownMenuItem>
                           <RefreshCw className="h-4 w-4 mr-2" />
                           Run Audit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => askAgent(req.assignedAgent || 'Cipher', `Close the gap on ${req.name} (${req.framework}), currently ${req.progress}% complete`)}
+                        >
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Ask {req.assignedAgent || 'Cipher'}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive">

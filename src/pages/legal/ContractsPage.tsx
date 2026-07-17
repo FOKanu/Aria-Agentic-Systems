@@ -1,6 +1,6 @@
 // Contracts Page - Francis Okorie Iyeke-Kanu
 import { useState } from 'react';
-import { FileText, Plus, Search, Filter, Download, Send, Clock, CheckCircle, AlertTriangle, MoreVertical, Edit, Trash2, Copy, Eye } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Download, Send, Clock, CheckCircle, AlertTriangle, MoreVertical, Edit, Trash2, Copy, Eye, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ContractWizard, ContractDraft } from '@/components/legal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { askAgent } from '@/lib/agentActions';
 import { toast } from 'sonner';
 
 interface Contract {
@@ -336,6 +337,12 @@ export default function ContractsPage() {
                       <DropdownMenuItem>
                         <Send className="h-4 w-4 mr-2" />
                         Send for Signature
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => askAgent(contract.assignedAgent || 'Aria', `Review "${contract.title}" and flag any risk before it moves to the next status`)}
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Ask {contract.assignedAgent || 'Aria'}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 

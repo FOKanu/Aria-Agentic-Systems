@@ -39,7 +39,16 @@ export function AppRoutes() {
           <Route path="/legal/nda-generator" element={<LazyPages.NDAGenerator />} />
           <Route path="/legal/ip-management" element={<LazyPages.IPManagement />} />
           <Route path="/legal/case-research" element={<LazyPages.CaseResearch />} />
-          
+
+          {/* Social Media routes */}
+          <Route path="/social" element={<LazyPages.SocialOverview />} />
+          <Route path="/social/scheduling" element={<LazyPages.SocialScheduling />} />
+          <Route path="/social/posts" element={<LazyPages.SocialPosts />} />
+          <Route path="/social/analytics" element={<LazyPages.SocialAnalytics />} />
+          <Route path="/social/community" element={<LazyPages.SocialCommunity />} />
+          <Route path="/social/outreach" element={<LazyPages.SocialOutreach />} />
+          <Route path="/social/trends" element={<LazyPages.SocialTrends />} />
+
           {/* Admin routes */}
           <Route path="/admin/job-applications" element={<LazyPages.JobApplications />} />
           

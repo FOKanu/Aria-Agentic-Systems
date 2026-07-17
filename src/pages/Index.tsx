@@ -14,6 +14,7 @@ import { OnboardingDialog } from '@/components/OnboardingDialog';
 import { FloatingChatPanel } from '@/components/chat/FloatingChatPanel';
 import { FloatingVoiceButton } from '@/components/chat/FloatingVoiceButton';
 import { ChatProvider, useChatContext } from '@/hooks/useChatContext';
+import { CapabilityNavContext } from '@/hooks/useCapabilityNav';
 import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { TasksPage } from '@/pages/TasksPage';
@@ -46,6 +47,22 @@ import DeploymentPage from '@/pages/devops/DeploymentPage';
 import InfrastructurePage from '@/pages/devops/InfrastructurePage';
 import SecurityScanningPage from '@/pages/devops/SecurityScanningPage';
 import LogAnalysisPage from '@/pages/devops/LogAnalysisPage';
+// Legal Module
+import LegalOverviewPage from '@/pages/legal/LegalOverviewPage';
+import ContractsPage from '@/pages/legal/ContractsPage';
+import DocumentReviewPage from '@/pages/legal/DocumentReviewPage';
+import CompliancePage from '@/pages/legal/CompliancePage';
+import NDAGeneratorPage from '@/pages/legal/NDAGeneratorPage';
+import IPManagementPage from '@/pages/legal/IPManagementPage';
+import CaseResearchPage from '@/pages/legal/CaseResearchPage';
+// Social Media Module
+import SocialOverviewPage from '@/pages/social/SocialOverviewPage';
+import ContentSchedulingPage from '@/pages/social/ContentSchedulingPage';
+import PostGenerationPage from '@/pages/social/PostGenerationPage';
+import SocialAnalyticsDashboardPage from '@/pages/social/AnalyticsDashboardPage';
+import CommunityManagementPage from '@/pages/social/CommunityManagementPage';
+import InfluencerOutreachPage from '@/pages/social/InfluencerOutreachPage';
+import TrendMonitoringPage from '@/pages/social/TrendMonitoringPage';
 import { AgentState, AutonomyLevel } from '@/types/agent';
 import { useToast } from '@/hooks/use-toast';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
@@ -442,6 +459,36 @@ const Index = () => {
         return <SecurityScanningPage />;
       case 'devops-logs':
         return <LogAnalysisPage />;
+      // Legal Module
+      case 'legal':
+        return <LegalOverviewPage />;
+      case 'contracts':
+        return <ContractsPage />;
+      case 'review':
+        return <DocumentReviewPage />;
+      case 'compliance':
+        return <CompliancePage />;
+      case 'nda':
+        return <NDAGeneratorPage />;
+      case 'ip':
+        return <IPManagementPage />;
+      case 'research':
+        return <CaseResearchPage />;
+      // Social Media Module
+      case 'social':
+        return <SocialOverviewPage />;
+      case 'social-scheduling':
+        return <ContentSchedulingPage />;
+      case 'social-posts':
+        return <PostGenerationPage />;
+      case 'social-analytics':
+        return <SocialAnalyticsDashboardPage />;
+      case 'social-community':
+        return <CommunityManagementPage />;
+      case 'social-outreach':
+        return <InfluencerOutreachPage />;
+      case 'social-trends':
+        return <TrendMonitoringPage />;
       default:
         return null;
     }
@@ -562,7 +609,12 @@ const Index = () => {
         {/* Main Content */}
         <main className="pt-14 pb-20 px-4 lg:pl-24 lg:pr-4 lg:pt-20 lg:pb-4">
           <div className="max-w-6xl mx-auto">
-            {renderPage()}
+            {/* Lets Legal/Social pages cross-link to sibling pages (e.g.
+                "Draft Contract" from Legal Overview) via tab switching
+                instead of a router navigation that would drop this shell. */}
+            <CapabilityNavContext.Provider value={handleTabChange}>
+              {renderPage()}
+            </CapabilityNavContext.Provider>
           </div>
         </main>
         
@@ -618,6 +670,20 @@ function PageContextSetter({ activeTab }: { activeTab: TabId }) {
       'devops-infrastructure': { name: 'Infrastructure', category: 'devops' },
       'devops-security': { name: 'Security Scanning', category: 'devops' },
       'devops-logs': { name: 'Log Analysis', category: 'devops' },
+      'legal': { name: 'Legal Overview', category: 'legal' },
+      'contracts': { name: 'Contract Drafting', category: 'legal' },
+      'review': { name: 'Document Review', category: 'legal' },
+      'compliance': { name: 'Compliance Monitoring', category: 'legal' },
+      'nda': { name: 'NDA Generator', category: 'legal' },
+      'ip': { name: 'IP Management', category: 'legal' },
+      'research': { name: 'Case Research', category: 'legal' },
+      'social': { name: 'Social Media Overview', category: 'social' },
+      'social-scheduling': { name: 'Content Scheduling', category: 'social' },
+      'social-posts': { name: 'Post Generation', category: 'social' },
+      'social-analytics': { name: 'Analytics Dashboard', category: 'social' },
+      'social-community': { name: 'Community Management', category: 'social' },
+      'social-outreach': { name: 'Influencer Outreach', category: 'social' },
+      'social-trends': { name: 'Trend Monitoring', category: 'social' },
     };
     
     const context = pageContextMap[activeTab];

@@ -78,7 +78,10 @@ const monitoringItems = [
   { id: 'monitoring', label: 'Monitoring Hub', icon: Monitor },
 ];
 
-// Agent capability categories with sub-items
+// Agent capability categories with sub-items.
+// All sub-item ids map to a TabId handled inside Index.tsx's renderPage()
+// switch, so navigating here keeps the AgentRail/TopBar/floating chat chrome
+// mounted instead of jumping to a bare standalone route.
 const capabilityCategories = [
   {
     id: 'admin',
@@ -137,12 +140,12 @@ const capabilityCategories = [
     label: 'Social Media',
     icon: Share2,
     subItems: [
-      { id: 'scheduling', label: 'Content Scheduling', icon: Calendar },
-      { id: 'posts', label: 'Post Generation', icon: Megaphone },
-      { id: 'analytics', label: 'Analytics Dashboard', icon: TrendingUp },
-      { id: 'community', label: 'Community Management', icon: Users },
-      { id: 'outreach', label: 'Influencer Outreach', icon: Heart },
-      { id: 'trends', label: 'Trend Monitoring', icon: BarChart3 },
+      { id: 'social-scheduling', label: 'Content Scheduling', icon: Calendar },
+      { id: 'social-posts', label: 'Post Generation', icon: Megaphone },
+      { id: 'social-analytics', label: 'Analytics Dashboard', icon: TrendingUp },
+      { id: 'social-community', label: 'Community Management', icon: Users },
+      { id: 'social-outreach', label: 'Influencer Outreach', icon: Heart },
+      { id: 'social-trends', label: 'Trend Monitoring', icon: BarChart3 },
     ],
   },
 ];

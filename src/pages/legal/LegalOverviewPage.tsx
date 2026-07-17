@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useNavigate } from 'react-router-dom';
+import { useCapabilityNav } from '@/hooks/useCapabilityNav';
 import { cn } from '@/lib/utils';
 
 interface LegalDraft {
@@ -45,7 +45,7 @@ const quickStats = {
 };
 
 export default function LegalOverviewPage() {
-  const navigate = useNavigate();
+  const nav = useCapabilityNav();
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -99,7 +99,7 @@ export default function LegalOverviewPage() {
                 <div 
                   key={draft.id} 
                   className="p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors cursor-pointer"
-                  onClick={() => navigate('/legal/contracts')}
+                  onClick={() => nav('contracts')}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
@@ -166,7 +166,7 @@ export default function LegalOverviewPage() {
             <Button 
               variant="outline" 
               className="h-24 flex-col gap-2 hover:bg-primary/10 hover:border-primary"
-              onClick={() => navigate('/legal/contracts')}
+              onClick={() => nav('contracts')}
             >
               <FileText className="w-6 h-6 text-primary" />
               <span className="text-sm">Draft Contract</span>
@@ -174,7 +174,7 @@ export default function LegalOverviewPage() {
             <Button 
               variant="outline" 
               className="h-24 flex-col gap-2 hover:bg-primary/10 hover:border-primary"
-              onClick={() => navigate('/legal/document-review')}
+              onClick={() => nav('review')}
             >
               <Search className="w-6 h-6 text-primary" />
               <span className="text-sm">Review Document</span>
@@ -182,7 +182,7 @@ export default function LegalOverviewPage() {
             <Button 
               variant="outline" 
               className="h-24 flex-col gap-2 hover:bg-primary/10 hover:border-primary"
-              onClick={() => navigate('/legal/nda-generator')}
+              onClick={() => nav('nda')}
             >
               <Shield className="w-6 h-6 text-primary" />
               <span className="text-sm">Generate NDA</span>
@@ -190,7 +190,7 @@ export default function LegalOverviewPage() {
             <Button 
               variant="outline" 
               className="h-24 flex-col gap-2 hover:bg-primary/10 hover:border-primary"
-              onClick={() => navigate('/legal/compliance')}
+              onClick={() => nav('compliance')}
             >
               <CheckCircle className="w-6 h-6 text-primary" />
               <span className="text-sm">Compliance Check</span>
@@ -240,16 +240,16 @@ export default function LegalOverviewPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {[
-                { label: 'Contract Library', path: '/legal/contracts', icon: BookOpen },
-                { label: 'Compliance Monitor', path: '/legal/compliance', icon: Shield },
-                { label: 'IP Registry', path: '/legal/ip-management', icon: Lightbulb },
-                { label: 'Case Research', path: '/legal/case-research', icon: Search },
+                { label: 'Contract Library', tabId: 'contracts', icon: BookOpen },
+                { label: 'Compliance Monitor', tabId: 'compliance', icon: Shield },
+                { label: 'IP Registry', tabId: 'ip', icon: Lightbulb },
+                { label: 'Case Research', tabId: 'research', icon: Search },
               ].map(item => (
-                <Button 
-                  key={item.path}
-                  variant="ghost" 
+                <Button
+                  key={item.tabId}
+                  variant="ghost"
                   className="w-full justify-between"
-                  onClick={() => navigate(item.path)}
+                  onClick={() => nav(item.tabId)}
                 >
                   <span className="flex items-center gap-2">
                     <item.icon className="w-4 h-4" />

@@ -41,13 +41,13 @@ const moduleConfigs: Record<string, ModuleConfig> = {
   legal: {
     basePath: '/legal',
     pages: [
-      { path: '/legal', label: 'Overview' },
-      { path: '/legal/contracts', label: 'Contracts' },
-      { path: '/legal/document-review', label: 'Document Review' },
-      { path: '/legal/compliance', label: 'Compliance' },
-      { path: '/legal/nda-generator', label: 'NDA Generator' },
-      { path: '/legal/ip-management', label: 'IP Management' },
-      { path: '/legal/case-research', label: 'Case Research' },
+      { path: '/legal', tabId: 'legal', label: 'Overview' },
+      { path: '/legal/contracts', tabId: 'contracts', label: 'Contracts' },
+      { path: '/legal/document-review', tabId: 'review', label: 'Document Review' },
+      { path: '/legal/compliance', tabId: 'compliance', label: 'Compliance' },
+      { path: '/legal/nda-generator', tabId: 'nda', label: 'NDA Generator' },
+      { path: '/legal/ip-management', tabId: 'ip', label: 'IP Management' },
+      { path: '/legal/case-research', tabId: 'research', label: 'Case Research' },
     ],
   },
   devops: {
@@ -69,6 +69,18 @@ const moduleConfigs: Record<string, ModuleConfig> = {
       { path: '/monitoring/alerts', label: 'Alerts' },
       { path: '/monitoring/execution', label: 'Execution Trace' },
       { path: '/monitoring/tools', label: 'Tool Monitor' },
+    ],
+  },
+  social: {
+    basePath: '/social',
+    pages: [
+      { path: '/social', tabId: 'social', label: 'Overview' },
+      { path: '/social/scheduling', tabId: 'social-scheduling', label: 'Content Scheduling' },
+      { path: '/social/posts', tabId: 'social-posts', label: 'Post Generation' },
+      { path: '/social/analytics', tabId: 'social-analytics', label: 'Analytics Dashboard' },
+      { path: '/social/community', tabId: 'social-community', label: 'Community Management' },
+      { path: '/social/outreach', tabId: 'social-outreach', label: 'Influencer Outreach' },
+      { path: '/social/trends', tabId: 'social-trends', label: 'Trend Monitoring' },
     ],
   },
 };
@@ -108,6 +120,14 @@ function detectModuleFromPath(pathname: string): { module: ModuleConfig; current
     if (idx !== -1) return { module, currentIndex: idx };
   }
 
+  // Check social
+  if (pathname.startsWith('/social')) {
+    const module = moduleConfigs.social;
+    const idx = module.pages.findIndex(p => p.path === pathname);
+    if (idx !== -1) return { module, currentIndex: idx };
+    if (pathname === '/social') return { module, currentIndex: 0 };
+  }
+
   return null;
 }
 
@@ -140,6 +160,22 @@ function detectModuleFromTab(tabId: string): { module: ModuleConfig; currentInde
   if (tabId === 'monitoring') {
     const module = moduleConfigs.monitoring;
     return { module, currentIndex: 0 };
+  }
+
+  // Legal tabs
+  const legalTabs = ['legal', 'contracts', 'review', 'compliance', 'nda', 'ip', 'research'];
+  if (legalTabs.includes(tabId)) {
+    const module = moduleConfigs.legal;
+    const idx = module.pages.findIndex(p => p.tabId === tabId);
+    if (idx !== -1) return { module, currentIndex: idx };
+  }
+
+  // Social tabs
+  const socialTabs = ['social', 'social-scheduling', 'social-posts', 'social-analytics', 'social-community', 'social-outreach', 'social-trends'];
+  if (socialTabs.includes(tabId)) {
+    const module = moduleConfigs.social;
+    const idx = module.pages.findIndex(p => p.tabId === tabId);
+    if (idx !== -1) return { module, currentIndex: idx };
   }
 
   return null;

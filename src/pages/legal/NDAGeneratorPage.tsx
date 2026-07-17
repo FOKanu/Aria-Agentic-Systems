@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { askAgent } from '@/lib/agentActions';
 import { toast } from 'sonner';
 
 interface NDATemplate {
@@ -314,6 +315,14 @@ ${formData.disclosingParty || '[Disclosing Party]'}                    ${formDat
                     <Button variant="outline" size="sm">
                       <Download className="h-4 w-4 mr-2" />
                       Download
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => askAgent('Aria', `Review this NDA (${formData.disclosingParty || 'disclosing party'} / ${formData.receivingParty || 'receiving party'}) before it goes out for signature`)}
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Ask Aria
                     </Button>
                     <Button size="sm">
                       <Send className="h-4 w-4 mr-2" />

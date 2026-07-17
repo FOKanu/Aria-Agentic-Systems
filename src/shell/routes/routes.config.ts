@@ -63,7 +63,16 @@ export const LazyPages = {
   NDAGenerator: lazy(() => import('@/pages/legal/NDAGeneratorPage')),
   IPManagement: lazy(() => import('@/pages/legal/IPManagementPage')),
   CaseResearch: lazy(() => import('@/pages/legal/CaseResearchPage')),
-  
+
+  // Social Media feature
+  SocialOverview: lazy(() => import('@/pages/social/SocialOverviewPage')),
+  SocialScheduling: lazy(() => import('@/pages/social/ContentSchedulingPage')),
+  SocialPosts: lazy(() => import('@/pages/social/PostGenerationPage')),
+  SocialAnalytics: lazy(() => import('@/pages/social/AnalyticsDashboardPage')),
+  SocialCommunity: lazy(() => import('@/pages/social/CommunityManagementPage')),
+  SocialOutreach: lazy(() => import('@/pages/social/InfluencerOutreachPage')),
+  SocialTrends: lazy(() => import('@/pages/social/TrendMonitoringPage')),
+
   // Admin feature
   JobApplications: lazy(() => import('@/pages/admin/JobApplicationsPage')),
   
@@ -107,4 +116,18 @@ export const PAGE_CONTEXT_MAP: Record<string, { name: string; category?: string 
   'devops-infrastructure': { name: 'Infrastructure', category: 'devops' },
   'devops-security': { name: 'Security Scanning', category: 'devops' },
   'devops-logs': { name: 'Log Analysis', category: 'devops' },
+  'legal': { name: 'Legal Overview', category: 'legal' },
+  'contracts': { name: 'Contract Drafting', category: 'legal' },
+  'review': { name: 'Document Review', category: 'legal' },
+  'compliance': { name: 'Compliance Monitoring', category: 'legal' },
+  'nda': { name: 'NDA Generator', category: 'legal' },
+  'ip': { name: 'IP Management', category: 'legal' },
+  'research': { name: 'Case Research', category: 'legal' },
+  'social': { name: 'Social Media Overview', category: 'social' },
+  'social-scheduling': { name: 'Content Scheduling', category: 'social' },
+  'social-posts': { name: 'Post Generation', category: 'social' },
+  'social-analytics': { name: 'Analytics Dashboard', category: 'social' },
+  'social-community': { name: 'Community Management', category: 'social' },
+  'social-outreach': { name: 'Influencer Outreach', category: 'social' },
+  'social-trends': { name: 'Trend Monitoring', category: 'social' },
 };

@@ -47,6 +47,20 @@ const tabLabels: Record<TabId, string> = {
   'devops-infrastructure': 'Infrastructure',
   'devops-security': 'Security Scanning',
   'devops-logs': 'Log Analysis',
+  legal: 'Legal Overview',
+  contracts: 'Contract Drafting',
+  review: 'Document Review',
+  compliance: 'Compliance Monitoring',
+  nda: 'NDA Generator',
+  ip: 'IP Management',
+  research: 'Case Research',
+  social: 'Social Media Overview',
+  'social-scheduling': 'Content Scheduling',
+  'social-posts': 'Post Generation',
+  'social-analytics': 'Analytics Dashboard',
+  'social-community': 'Community Management',
+  'social-outreach': 'Influencer Outreach',
+  'social-trends': 'Trend Monitoring',
 };
 
 export function AppBreadcrumb({

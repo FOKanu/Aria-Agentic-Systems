@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { askAgent } from '@/lib/agentActions';
 import { toast } from 'sonner';
 
 interface CaseResult {
@@ -307,10 +308,20 @@ export default function CaseResearchPage() {
                   <CardTitle className="text-lg">
                     Search Results ({results.length} cases)
                   </CardTitle>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Export
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Download className="h-4 w-4" />
+                      Export
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => askAgent('Sage', `Go deeper on "${searchQuery}" and flag the strongest precedents`)}
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      Ask Sage
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>

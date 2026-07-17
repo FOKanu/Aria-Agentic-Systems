@@ -34,7 +34,21 @@ export type TabId =
   | 'devops-deployment'
   | 'devops-infrastructure'
   | 'devops-security'
-  | 'devops-logs';
+  | 'devops-logs'
+  | 'legal'
+  | 'contracts'
+  | 'review'
+  | 'compliance'
+  | 'nda'
+  | 'ip'
+  | 'research'
+  | 'social'
+  | 'social-scheduling'
+  | 'social-posts'
+  | 'social-analytics'
+  | 'social-community'
+  | 'social-outreach'
+  | 'social-trends';
 
 // User types
 export interface User {
