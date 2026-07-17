@@ -2,8 +2,8 @@
 
 **Project Creator:** Francis Okorie Iyeke-Kanu
 **Contact:** francis.okorie.Ik@gmail.com
-**Version:** 0.2.2-beta
-**Last Updated:** December 25, 2025
+**Version:** 0.2.3-beta
+**Last Updated:** July 17, 2026
 
 ---
 
@@ -41,25 +41,28 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 |-------|------|-------------|
 | 1-5 | Core Infrastructure | UI components, navigation, agent system |
 | 6 | Codebase Architecture | core/, shell/, features/ modules established |
-| 6a | Hybrid AI Strategy | Local-first routing with Supabase Edge Function fallback |
+| 6a | Hybrid AI Strategy | Local-first Ollama + Supabase/Gemini fallback |
+| 6c | Remote Ollama wiring | SSH-tunneled Ollama (`qwen3:8b` default) via `VITE_LOCAL_MODEL_*` |
 | 7 | Database Integration | Supabase tables, RLS policies, enums |
 | 8 | Authentication | Login, signup, password recovery |
+| 16a | Sidecar + Bridge | Python runtime, `runtimeBridge`, Settings pairing (built) |
 | 17 | Calendar Automation | Workflow engine, event monitoring, persistence |
 
 ### 🟡 In Progress
 
 | Phase | Name | Progress | Next Steps |
 |-------|------|----------|------------|
-| 9 | Capability Pages | 30% | DevOps complete, Legal/Finance pending |
+| 9 | Capability Pages | 30% | Wire to agent loop after Phase 18 MVP |
 | 10 | Provider Configuration | 40% | Settings UI, multi-provider support |
-| 16 | Local Agent Runtime | 0% | Create Python Sidecar (Server) |
+| 16 | Local Agent Runtime | 80% built / 0% chat-wired | CORS `:8080`; HITL stream path |
+| **18** | **Agent Layer Integration** | **0%** | **Unify Chat → `useAIChat` → tools → sidecar** |
 
 ### 🔵 Ready to Start
 
 | Phase | Name | Dependencies |
 |-------|------|--------------|
 | 6b | Migrate Imports | Use feature module public APIs |
-| 11 | Agent Memory & Context | Phase 7 ✅ |
+| 11 | Agent Memory in loop | Phase 7 ✅; after Phase 18 Sprints 1–3 |
 | 12 | Voice Integration | ElevenLabs API |
 
 ---
@@ -98,15 +101,37 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 
 ### Phase 16: Local Agent Runtime (The "Hands")
 **Priority:** Critical (for active agent features)
-**Effort:** 1 week
+**Effort:** Remaining ~2–3 days (wiring), not greenfield
 
 | Task | Status | Details |
 |------|--------|---------|
-| Sidecar Setup | 🔴 | Python FastAPI server scaffold |
-| Command Executor | 🔴 | `subprocess.run` with sandbox validation |
-| Filesystem API | 🔴 | Read/Write/List endpoints |
-| Frontend Bridge | 🔴 | `runtimeBridge.ts` client service |
-| Terminal UI | 🔴 | Live stream component for stdout |
+| Sidecar Setup | ✅ | Python FastAPI server under `server/` |
+| Command Executor | ✅ | `/execute` + stream with validation |
+| Filesystem API | ✅ | Read/Write/List endpoints |
+| Frontend Bridge | ✅ | `runtimeBridge.ts` + Settings pairing |
+| Terminal UI | 🟡 | Component exists; needs live agent events |
+| CORS for `:8080` | 🔴 | Currently oriented to `:5173` |
+| Chat → tools wiring | 🔴 | See Phase 18 |
+
+### Phase 18: Agent Layer Integration (Control Center)
+**Priority:** Critical — **next MVP blocker**
+**Effort:** 1–2 weeks
+**Docs:** `Todo_list.md`, `Implementation_Plan_Runtime_Memory.md` Part 3
+
+| Sprint | Focus | Status |
+|--------|-------|--------|
+| 1 | Chat/Floating → `useAIChat`; CORS | 🔴 |
+| 2 | Pass `tools` to Ollama; smoke `fs_list` | 🔴 |
+| 3 | HITL approvals + Terminal | 🔴 |
+| 4 | Settings policy enforcement | 🔴 |
+| 5 | Monitoring / Home / Agents live events | 🔴 |
+| 6 | Memory inject/save in loop | 🔴 |
+| 7 | Workflows trigger agent jobs | 🔴 |
+| 8 | Optional Hermes/OpenClaw peer (later) | ⏸ Deferred |
+
+**MVP (“agents can act”):** chat → allowlisted tool via sidecar → risky cmds approve/reject → monitoring shows real I/O → clear degrade if runtime/Ollama down.
+
+**Non-goal:** Do not adopt Hermes/OpenClaw *instead of* Phase 18; evaluate only after MVP.
 
 ### Phase 10: Provider Configuration
 **Priority:** Medium
@@ -139,31 +164,20 @@ ARIA (AI Research & Intelligence Assistant) is a multi-agent AI command center d
 ## Critical Path to MVP
 
 ```
-Week 1: Phase 16 (Local Runtime) → Give Agents "Hands"
-        └── Python Sidecar Server
-        └── Terminal/File API
-        └── Frontend Integration
+Now:   Phase 18 (Agent Layer) → Agents can ACT
+       └── Sprint 1: Chat → useAIChat + CORS :8080
+       └── Sprint 2: Tools in Ollama requests
+       └── Sprint 3: HITL + Terminal + runtime gate
+       └── MVP checklist: file/cmd via chat, approvals, monitoring
 
-Week 2-3: Phase 9 (Finance + Legal)
-        └── Invoice generation
-        └── Expense tracking
-        └── Contract drafting
-
-Week 4: Phase 11 (Memory)
-        └── useAgentMemory hook
-        └── Context retrieval
-        └── Memory persistence
-
-Week 5: Phase 12 (Voice)
-        └── ElevenLabs STT integration
-        └── ElevenLabs TTS integration
-        └── Full voice conversation loop
-
-Week 6: Security + Testing
-        └── RLS policy audit
-        └── End-to-end testing
-        └── Bug fixes
+Next:  Phase 18 Sprints 4–5 → Policy + live control-center surfaces
+Then:  Phase 11 / Sprint 6 → Memory in the loop
+Then:  Sprint 7 → Workflows as agent triggers
+Then:  Phase 9 capability pages that need real actions
+Later: Phase 12 Voice; optional external agent peer (Hermes/OpenClaw)
 ```
+
+**Note:** Phase 16 sidecar greenfield is largely done. The remaining MVP gap is **wiring**, not scaffolding.
 
 ---
 
@@ -174,16 +188,19 @@ Week 6: Security + Testing
 | Decision | Options | Impact | Status |
 |----------|---------|--------|--------|
 | Voice provider | ElevenLabs vs OpenAI Whisper/TTS | Cost, quality, latency | 🔴 Pending |
-| Local model priority | Ollama now vs post-MVP | Development time | 🔴 Pending |
+| Tools on cloud path | Local-only tools vs edge `tools` forward | Complexity, reliability | 🔴 Pending |
 | Sync strategy | Real-time vs periodic | Complexity, reliability | 🔴 Pending |
 | Storage provider | Supabase vs external S3 | Cost, performance | 🔴 Pending |
+| External agent runtime | Hermes / OpenClaw / none | Scope, ops burden | ⏸ After Phase 18 MVP |
 
 ### Made Decisions
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Runtime Architecture | Sidecar (Python) | Bypasses browser sandbox safely |
-| AI Gateway | Lovable AI | Pre-configured, no API key needed |
+| AI Gateway | Lovable AI + local Ollama | Hybrid privacy / zero-setup fallback |
+| Default local chat model | `qwen3:8b` (tunneled) | Fast default; 32B for coding/strong chat |
+| Agent layer approach | Wire existing `useAIChat` first | Control center needs act loop before new frameworks |
 | Database | Supabase (Lovable Cloud) | Native integration, RLS support |
 | UI Framework | React + Tailwind + shadcn | Modern, maintainable |
 | State Management | React Context + TanStack Query | Simple, effective |
@@ -192,27 +209,28 @@ Week 6: Security + Testing
 
 ## Milestone Timeline
 
-### MVP (v1.0.0) - Target: January 2025
+### MVP (v1.0.0) - Target: revised after Phase 18
 - [x] Core UI and navigation
 - [x] Database schema
 - [x] Authentication system
-- [x] Chat with real AI responses (Hybrid: Cloud + Local)
+- [x] Chat with real AI responses (Hybrid: Cloud + Local Ollama)
 - [x] Calendar Automation (v0.3.0)
-- [ ] Local Agent Runtime (Sidecar)
+- [x] Local Agent Runtime sidecar + bridge (built)
+- [ ] **Agent Layer wired** (Chat → tools → sidecar + HITL) — Phase 18
 - [ ] All capability page UIs
 - [ ] Basic CRUD for tasks, contacts, documents
 - [ ] File upload/download
 
-### v1.1.0 - Target: February 2025
-- [ ] Voice input with ElevenLabs STT
-- [ ] Voice output with ElevenLabs TTS
-- [ ] Agent memory persistence
+### v1.1.0
+- [ ] Agent memory in chat loop
+- [ ] Live Monitoring / Approvals / Agents status
+- [ ] Voice input/output (ElevenLabs)
 - [ ] Multi-provider storage
 
-### v1.2.0 - Target: March 2025
-- [ ] Advanced Local model management UI
-- [ ] Offline mode enhancements
-- [ ] Advanced workflow automation
+### v1.2.0
+- [ ] Workflows as agent job triggers
+- [ ] Advanced local model management UI
+- [ ] Optional external agent peer (Hermes/OpenClaw) if needed
 - [ ] API integrations (calendar, email)
 
 ---
@@ -220,10 +238,11 @@ Week 6: Security + Testing
 ## Technical Debt
 
 ### High Priority
-1.  **Local Runtime:** Missing entirely; required for terminal/file features.
-2.  **Voice Transcription:** Currently mock, needs ElevenLabs integration.
-3.  **File Upload:** UI exists, backend integration pending.
-4.  **Feature Hydration:** Connect Finance/Legal UIs to real database tables.
+1.  **Agent Layer wiring:** Sidecar exists but Chat uses text-only `AIService`; tools unused.
+2.  **CORS / runtime UX:** Sidecar must allow app origin `:8080`; unpaired runtime must fail clearly.
+3.  **Voice Transcription:** Currently mock, needs ElevenLabs integration.
+4.  **File Upload:** UI exists, backend integration pending.
+5.  **Feature Hydration:** Connect Finance/Legal UIs to real database tables / agent jobs.
 
 ### Medium Priority
 1. **Error Boundaries:** Add React error boundaries to all pages.
@@ -262,6 +281,11 @@ Week 6: Security + Testing
 
 ## Recent Accomplishments
 
+### July 17, 2026 (Local LLM + Agent Layer Plan)
+- ✅ Wired UI chat to tunneled Ollama (`qwen3:8b` default) with Gemini fallback.
+- ✅ Documented Phase 18 Agent Layer Integration (reuse `useAIChat` / sidecar; defer Hermes/OpenClaw).
+- ✅ Updated `Todo_list.md`, `Implementation_Plan_Runtime_Memory.md`, and this plan.
+
 ### December 25, 2025 (Calendar Automation)
 - ✅ Implemented `useEventMonitor` for background task execution.
 - ✅ Added `instructions`, `workflow_id`, and `auto_start` to Calendar Schema.
@@ -275,4 +299,4 @@ Week 6: Security + Testing
 
 ---
 
-*Plan last updated: December 25, 2025*
+*Plan last updated: July 17, 2026*

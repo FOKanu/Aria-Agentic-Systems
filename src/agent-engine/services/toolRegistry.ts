@@ -13,7 +13,21 @@ export interface ToolDefinition {
     }>;
     required?: string[];
   };
-  execute: (args: any) => Promise<any>;
+  execute: (args: any, ctx?: ToolExecuteContext) => Promise<any>;
+}
+
+export interface ApprovalRequest {
+  id: string;
+  toolName: string;
+  description: string;
+  command?: string;
+  riskLevel?: string;
+  args: unknown;
+}
+
+export interface ToolExecuteContext {
+  /** Return true to proceed with a risky command after UI approval */
+  requestApproval?: (req: ApprovalRequest) => Promise<boolean>;
 }
 
 export const tools: Record<string, ToolDefinition> = {
@@ -58,7 +72,20 @@ export const tools: Record<string, ToolDefinition> = {
       },
       required: ['path', 'content'],
     },
-    execute: async (args) => {
+    execute: async (args, ctx) => {
+      // Treat writes as approval-gated when a handler is provided
+      if (ctx?.requestApproval) {
+        const ok = await ctx.requestApproval({
+          id: `fs_write-${Date.now()}`,
+          toolName: 'fs_write',
+          description: `Write file: ${args.path}`,
+          args,
+          riskLevel: 'medium',
+        });
+        if (!ok) {
+          return { error: 'User rejected file write', rejected: true };
+        }
+      }
       const response = await runtimeClient.writeFile(args.path, args.content);
       return response;
     },
@@ -74,21 +101,56 @@ export const tools: Record<string, ToolDefinition> = {
       },
       required: ['command'],
     },
-    execute: async (args) => {
-      // Use streaming execution for better UX
-      const response = await runtimeClient.executeCommandStream(args.command, args.cwd);
-      return response;
+    execute: async (args, ctx) => {
+      const first = await runtimeClient.executeCommand(args.command, args.cwd);
+
+      if (first.requires_approval) {
+        if (!ctx?.requestApproval) {
+          return {
+            ...first,
+            error: 'Command requires approval but no approval UI is available',
+            rejected: true,
+          };
+        }
+
+        const ok = await ctx.requestApproval({
+          id: `cmd-${Date.now()}`,
+          toolName: 'execute_command',
+          description: `Run command (${first.risk_level || 'risk'}): ${args.command}`,
+          command: args.command,
+          riskLevel: first.risk_level,
+          args,
+        });
+
+        if (!ok) {
+          return {
+            rejected: true,
+            error: 'User rejected command execution',
+            command: args.command,
+            risk_level: first.risk_level,
+          };
+        }
+
+        // Re-run with approved=true; Terminal panel will show output
+        return runtimeClient.executeCommand(args.command, args.cwd, undefined, true);
+      }
+
+      return first;
     },
   },
 };
 
-export async function executeToolCall(name: string, args: any): Promise<any> {
+export async function executeToolCall(
+  name: string,
+  args: any,
+  ctx?: ToolExecuteContext
+): Promise<any> {
   const tool = tools[name];
   if (!tool) {
     throw new Error(`Tool ${name} not found`);
   }
   try {
-    return await tool.execute(args);
+    return await tool.execute(args, ctx);
   } catch (error) {
     return { error: error instanceof Error ? error.message : String(error) };
   }

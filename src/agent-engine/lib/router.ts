@@ -94,7 +94,7 @@ export function analyzeTaskComplexity(
     recommendedModel = 'google/gemini-2.5-flash';
   } else {
     recommendedProvider = 'local';
-    recommendedModel = 'llama3.1:8b';
+    recommendedModel = 'qwen3:8b';
   }
   
   return {
@@ -123,7 +123,12 @@ export function routeTask(
   // Override: prefer local if requested and available
   if (preferLocal && localModelAvailable && analysis.score < 0.7) {
     provider = 'local';
-    model = analysis.score > 0.4 ? 'llama3.1:70b' : 'llama3.1:8b';
+    // Prefer stronger Qwen when complex; coding-heavy paths can use coder model
+    if (analysis.factors.requiresCodeGeneration) {
+      model = 'qwen2.5-coder:32b';
+    } else {
+      model = analysis.score > 0.4 ? 'qwen3:32b' : 'qwen3:8b';
+    }
     reason = 'Using local model as preferred';
   }
   
@@ -155,7 +160,7 @@ export function routeTask(
   const fallbackProvider: AIProvider = provider === 'local' ? 'lovable-ai' : 'local';
   const fallbackModel: AIModel = fallbackProvider === 'lovable-ai' 
     ? 'google/gemini-2.5-flash' 
-    : 'llama3.1:8b';
+    : 'qwen3:8b';
   
   return {
     provider,
@@ -170,10 +175,16 @@ export function routeTask(
 // Get model display name
 export function getModelDisplayName(model: AIModel): string {
   const names: Record<AIModel, string> = {
+    'qwen3:8b': 'Qwen3 8B',
+    'qwen3:32b': 'Qwen3 32B',
+    'qwen2.5-coder:32b': 'Qwen2.5 Coder 32B',
+    'deepseek-r1:32b': 'DeepSeek R1 32B',
+    'llama3.2:1b': 'Llama 3.2 1B',
     'llama3.1:8b': 'Llama 3.1 8B',
     'llama3.1:70b': 'Llama 3.1 70B',
     'mistral:7b': 'Mistral 7B',
     'moondream': 'Moondream Vision',
+    'nomic-embed-text:latest': 'Nomic Embed',
     'google/gemini-2.5-flash': 'Gemini 2.5 Flash',
     'google/gemini-2.5-pro': 'Gemini 2.5 Pro',
     'openai/gpt-5-mini': 'GPT-5 Mini',

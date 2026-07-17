@@ -23,6 +23,8 @@ export interface UseAIChatOptions {
   agentRole: AgentRoleId;
   agentId: string;
   preferLocal?: boolean;
+  /** Default false until Sprint 2 tool passthrough + HITL land */
+  enableTools?: boolean;
   onMessageComplete?: (message: ChatMessage) => void;
   onError?: (error: AIError) => void;
 }
@@ -41,7 +43,14 @@ export interface UseAIChatReturn {
 }
 
 export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
-  const { agentRole, agentId, preferLocal = false, onMessageComplete, onError } = options;
+  const {
+    agentRole,
+    agentId,
+    preferLocal = true,
+    enableTools = false,
+    onMessageComplete,
+    onError,
+  } = options;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [streaming, setStreaming] = useState<StreamingState>({
@@ -81,6 +90,9 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
       setError(null);
     }
 
+    // Always refresh local availability before routing (avoids stale false → forced cloud)
+    const localOk = await checkLocalAvailability();
+
     // Determine context for routing
     const currentMessages = isInternal ? messages : [...messages, {
       id: `msg-${Date.now()}-user`,
@@ -97,7 +109,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
       !!fileContext,
       currentMessages.length,
       preferLocal,
-      isLocalAvailable
+      localOk
     );
     setLastRouting(routing);
 
@@ -139,16 +151,19 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
     try {
       let response: Response;
 
-      // Import tool definitions dynamically to avoid circular dependencies if any
-      const { getToolDefinitions, executeToolCall } = await import('../services/toolRegistry');
-      const tools = getToolDefinitions();
+      const tools = enableTools
+        ? (await import('../services/toolRegistry')).getToolDefinitions()
+        : undefined;
+      const { executeToolCall } = enableTools
+        ? await import('../services/toolRegistry')
+        : { executeToolCall: async () => ({ error: 'Tools disabled' }) };
 
       if (routing.provider === 'local') {
         response = await callLocalModelStreaming({
           messages: apiMessages,
           model: routing.model,
           stream: true,
-          tools,
+          ...(tools ? { tools } : {}),
         }, {
           // Pass timeout/endpoint if needed, otherwise use default
         });
@@ -165,7 +180,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
             model: routing.model,
             agentRole,
             stream: true,
-            tools,
+            ...(tools ? { tools } : {}),
           }),
           signal: abortControllerRef.current?.signal,
         });
@@ -322,7 +337,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
       });
       onError?.(aiError);
     }
-  }, [agentRole, agentId, messages, preferLocal, isLocalAvailable, onMessageComplete, onError]);
+  }, [agentRole, agentId, messages, preferLocal, enableTools, checkLocalAvailability, onMessageComplete, onError]);
 
   // Cancel streaming
   const cancelStream = useCallback(() => {

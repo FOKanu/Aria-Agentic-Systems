@@ -9,6 +9,9 @@ interface ChatHeaderProps {
   audioEnabled: boolean;
   onToggleAudio: () => void;
   onOpenAgentSelector: () => void;
+  /** e.g. "Local AI · Qwen3 8B" */
+  routingLabel?: string;
+  primaryAgentName?: string;
 }
 
 const statusConfig: Record<ChatStatus, { label: string; className: string }> = {
@@ -24,20 +27,29 @@ export function ChatHeader({
   audioEnabled,
   onToggleAudio,
   onOpenAgentSelector,
+  routingLabel,
+  primaryAgentName,
 }: ChatHeaderProps) {
   const statusInfo = statusConfig[status];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border lg:left-20">
-      <div className="flex items-center justify-between h-14 px-4 max-w-4xl mx-auto">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold font-display">Agent Chat</h1>
-          <span className={cn('px-2 py-1 rounded-full text-xs font-medium', statusInfo.className)}>
+      <div className="flex items-center justify-between h-14 px-4 max-w-4xl mx-auto gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <h1 className="text-lg font-semibold font-display shrink-0">Agent Chat</h1>
+          <span className={cn('px-2 py-1 rounded-full text-xs font-medium shrink-0', statusInfo.className)}>
             {statusInfo.label}
           </span>
+          {(primaryAgentName || routingLabel) && (
+            <span className="hidden sm:inline text-xs text-muted-foreground truncate">
+              {primaryAgentName}
+              {primaryAgentName && routingLabel ? ' · ' : ''}
+              {routingLabel}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="ghost"
             size="sm"

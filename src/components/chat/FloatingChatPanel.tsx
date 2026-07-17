@@ -9,6 +9,7 @@ import { ChatMessage } from './ChatMessage';
 import { ChatInputBar } from './ChatInputBar';
 import { TypingIndicator, ProcessingIndicator } from './TypingIndicator';
 import { AgentSelectorModal } from './AgentSelectorModal';
+import { ApprovalInline } from './ApprovalInline';
 import { useChatContext } from '@/hooks/useChatContext';
 import { CHAT_AGENTS, AgentPreset } from '@/types/chat';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
@@ -21,11 +22,14 @@ export const FloatingChatPanel = forwardRef<HTMLDivElement>(function FloatingCha
     selectedAgentIds,
     isOpen,
     pageContext,
+    pendingApproval,
     sendMessage,
     setSelectedAgentIds,
     toggleChat,
     closeChat,
     clearMessages,
+    approvePendingAction,
+    rejectPendingAction,
   } = useChatContext();
 
   const [isMaximized, setIsMaximized] = useState(false);
@@ -182,6 +186,17 @@ export const FloatingChatPanel = forwardRef<HTMLDivElement>(function FloatingCha
             </div>
           )}
         </ScrollArea>
+
+        {pendingApproval && (
+          <div className="px-3 pb-2">
+            <ApprovalInline
+              taskId={pendingApproval.id}
+              taskDescription={pendingApproval.description}
+              onApprove={() => approvePendingAction()}
+              onReject={() => rejectPendingAction()}
+            />
+          </div>
+        )}
 
         {/* Input */}
         <div className="p-3 border-t border-border/50">

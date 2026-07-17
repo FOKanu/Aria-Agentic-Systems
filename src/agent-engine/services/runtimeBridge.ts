@@ -8,13 +8,18 @@
 
 import { terminalSignals } from '@/lib/signals';
 
-const DEFAULT_BASE_URL = 'http://localhost:8000';
+const DEFAULT_BASE_URL =
+  (typeof import.meta !== 'undefined' &&
+    (import.meta.env.VITE_RUNTIME_URL as string | undefined)) ||
+  'http://localhost:8001';
 const TOKEN_STORAGE_KEY = 'aria_runtime_token';
 
 export interface ExecuteCommandRequest {
   command: string;
   cwd?: string;
   timeout?: number;
+  /** True after the user approves a medium/high-risk command in the UI */
+  approved?: boolean;
 }
 
 export interface ExecuteCommandResponse {
@@ -147,6 +152,19 @@ export class RuntimeClient {
   }
 
   /**
+   * True when a token is stored and /health responds ok.
+   */
+  async isReady(): Promise<boolean> {
+    if (!this.getToken()) return false;
+    try {
+      const health = await this.checkHealth();
+      return health?.status === 'ok';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Check if the Sidecar is running and healthy
    */
   async checkHealth(): Promise<HealthResponse> {
@@ -162,21 +180,56 @@ export class RuntimeClient {
   }
 
   /**
-   * Execute a shell command
+   * Execute a shell command (non-stream). Emits terminalSignals for the UI panel.
+   * Pass approved=true after HITL approval when the first response had requires_approval.
    */
   async executeCommand(
     command: string,
     cwd?: string,
-    timeout?: number
+    timeout?: number,
+    approved: boolean = false
   ): Promise<ExecuteCommandResponse> {
-    return this.request<ExecuteCommandResponse>('/execute', {
-      method: 'POST',
-      body: JSON.stringify({
-        command,
-        cwd,
-        timeout,
-      } as ExecuteCommandRequest),
-    });
+    terminalSignals.start.emit(command);
+
+    try {
+      const result = await this.request<ExecuteCommandResponse>('/execute', {
+        method: 'POST',
+        body: JSON.stringify({
+          command,
+          cwd,
+          timeout,
+          approved,
+        } as ExecuteCommandRequest),
+      });
+
+      if (result.requires_approval) {
+        terminalSignals.output.emit(
+          `[approval required] risk=${result.risk_level || 'unknown'}\n`
+        );
+        terminalSignals.end.emit(-1);
+        return result;
+      }
+
+      if (result.stdout) {
+        terminalSignals.output.emit(result.stdout);
+      }
+      if (result.stderr) {
+        terminalSignals.output.emit(
+          result.stdout ? `\n[stderr]\n${result.stderr}` : result.stderr
+        );
+      }
+      if (!result.stdout && !result.stderr) {
+        terminalSignals.output.emit('(no output)\n');
+      }
+
+      terminalSignals.end.emit(result.exit_code);
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      terminalSignals.output.emit(`\nExecution failed: ${message}\n`);
+      terminalSignals.end.emit(-1);
+      throw error;
+    }
   }
 
   /**

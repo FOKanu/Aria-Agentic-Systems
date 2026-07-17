@@ -5,10 +5,16 @@
 export type AIProvider = 'local' | 'lovable-ai';
 
 export type AIModel =
+  | 'qwen3:8b'
+  | 'qwen3:32b'
+  | 'qwen2.5-coder:32b'
+  | 'deepseek-r1:32b'
+  | 'llama3.2:1b'
   | 'llama3.1:8b'
   | 'llama3.1:70b'
   | 'mistral:7b'
   | 'moondream'
+  | 'nomic-embed-text:latest'
   | 'google/gemini-2.5-flash'
   | 'google/gemini-2.5-pro'
   | 'openai/gpt-5-mini'

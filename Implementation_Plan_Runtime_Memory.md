@@ -1,21 +1,41 @@
-# Implementation Plan: Local Agent Runtime & Agent Memory System
+# Implementation Plan: Local Agent Runtime, Agent Memory & Agent Layer Integration
 
-**Project:** ARIA - Agent Command Center
-**Date:** December 25, 2025
-**Focus:** Phase 16 (Local Runtime) + Phase 11 (Agent Memory)
+**Project:** ARIA - Agent Command Center  
+**Created:** December 25, 2025  
+**Last Updated:** July 17, 2026  
+**Focus:** Phase 16 (Local Runtime) + Phase 11 (Agent Memory) + **Phase 18 (Agent Layer / Control Center wiring)**
 
 ---
 
 ## Executive Summary
 
-This document outlines a comprehensive plan to implement two critical features:
-1. **Local Agent Runtime (Sidecar)** - Enables agents to execute terminal commands and access the file system
-2. **Agent Memory System** - Provides persistent context and knowledge retention across conversations
+ARIA is an **Agent Control Center**. Chat alone is insufficient; agents must **act** via tools and the local sidecar.
 
-**Estimated Total Time:** 2-3 days
-**Priority:** Critical (both features are blockers for MVP)
+| Workstream | Status (July 2026) |
+|------------|-------------------|
+| 1. Local Agent Runtime (Sidecar) | ✅ **Built** (`server/`, `runtimeBridge`, Settings pairing). CORS for `:8080` and Chat wiring still open. |
+| 2. Agent Memory System | 🟡 Schema + provider exist; **not** in the live chat loop; Memory page still mock. |
+| 3. Agent Layer Integration (Phase 18) | 🔴 **Critical path** — connect Chat UI → `useAIChat` → `toolRegistry` → sidecar + HITL + monitoring. |
+
+**LLM wiring (done):** Tunneled Ollama (`http://localhost:11434/v1`, default `qwen3:8b`) with Gemini cloud fallback via `AIService`. That is the brain for Q&A; Phase 18 makes it the brain for **acting**.
+
+**Decision:** Reuse the homegrown agent-engine first. Evaluate Hermes / OpenClaw only after Phase 18 MVP as an optional peer runtime — not as a replacement for wiring Chat to tools.
+
+**Priority:** Phase 18 Sprints 1–3 are the blocker for “agents can act.”
 
 ---
+
+## Status vs original plan (doc drift corrected)
+
+| Original Step | Plan said | Reality (July 2026) |
+|---------------|-----------|---------------------|
+| 1.1–1.5 Sidecar + bridge | To build | Implemented under `server/` and `src/agent-engine/services/runtimeBridge.ts` |
+| 1.6 Agent engine integration | Wire tools into chat | `useAIChat` + `toolRegistry` exist but **ChatPage still uses `AIService` (no tools)** |
+| Part 2 Memory | To build | Provider/CRUD largely present; inject/save/UI not wired |
+| External frameworks | Not in scope | Still out of scope until Phase 18 MVP |
+
+---
+
 
 ## Part 1: Local Agent Runtime (Phase 16)
 
@@ -297,47 +317,22 @@ export const runtimeClient = new RuntimeClient();
 
 #### Step 1.6: Agent Engine Integration (1 hour)
 
-**Files to Modify:**
-```
-src/
-├── lib/
-│   └── ai.ts (or agent-engine/lib/router.ts)
-```
+**Status (July 2026):** Partially done offline from Chat.
 
-**Tasks:**
+**Already exists:**
+- `src/agent-engine/hooks/useAIChat.ts` — tool loop + recursive follow-up
+- `src/agent-engine/services/toolRegistry.ts` — `fs_list`, `fs_read`, `fs_write`, `execute_command`
+- `src/agent-engine/lib/prompts.ts` — role system prompts
+- Approval UI components (`ApprovalInline`) — not driven by real sidecar events
 
-**1.6.1: Tool Call Routing**
-- Update `AIService` or router to detect tool calls:
-  - `run_terminal` → Call `runtimeClient.executeCommand()`
-  - `read_file` → Call `runtimeClient.readFile()`
-  - `write_file` → Call `runtimeClient.writeFile()`
-- Add tool definitions to system prompts:
-  ```typescript
-  const tools = [
-    {
-      name: "run_terminal",
-      description: "Execute a shell command",
-      parameters: {
-        command: "string",
-        cwd: "string (optional)",
-        timeout: "number (optional)"
-      }
-    },
-    // ... more tools
-  ];
-  ```
+**Still open (moved to Part 3 / Phase 18):**
+- ChatPage / FloatingChat still call `AIService` (text-only hybrid chat)
+- `callLocalModelStreaming` does not send `tools` in the request body
+- Sidecar CORS likely limited to `:5173`; app runs on `:8080`
+- Settings autonomy toggles not enforced on tool execution
+- Monitoring / Agents pages not bound to live tool events
 
-**1.6.2: Approval Gate UI**
-- If command requires approval, show modal:
-  - Command preview
-  - Risk level badge
-  - "Approve" / "Reject" buttons
-- Only execute after user approval
-
-**Acceptance Criteria:**
-- LLM tool calls route to Sidecar
-- Approval modal appears for high-risk commands
-- Command results feed back to LLM for next step
+See **Part 3** below for the full control-center wiring plan.
 
 ---
 
@@ -701,34 +696,203 @@ src/
 
 ---
 
-## Implementation Order & Timeline
+## Part 3: Agent Layer Integration — Control Center Wiring (Phase 18)
 
-### Day 1: Local Runtime Foundation
-**Morning (4 hours):**
-- Step 1.1: Initialize Python Server
-- Step 1.2: Security Layer
+**Priority:** Critical  
+**Depends on:** Part 1 sidecar (✅), Ollama hybrid chat (✅)  
+**Outcome:** ARIA behaves as an Agent Control Center — agents act with HITL and observability.
 
-**Afternoon (4 hours):**
-- Step 1.3: Terminal Execution API
-- Step 1.4: Filesystem API
+### Target architecture
 
-### Day 2: Runtime Integration + Memory Foundation
-**Morning (4 hours):**
-- Step 1.5: Frontend Bridge
-- Step 1.6: Agent Engine Integration
+```
+User (Chat / Floating / Workflow)
+        │
+        ▼
+   useAIChat (+ router, role prompts, memory)
+        │
+        ├─► Ollama (tunneled) ── tool_calls ──┐
+        │                                     │
+        └─► Gemini fallback (chat-only if tools local-only)
+                                              ▼
+                                       toolRegistry
+                                              │
+                                    policy gate (Settings)
+                                              │
+                              ┌───────────────┴───────────────┐
+                              ▼                               ▼
+                     allowlisted execute              requires_approval
+                              │                               │
+                              ▼                               ▼
+                       runtimeBridge                  ApprovalInline
+                              │                         (Approve/Reject)
+                              ▼                               │
+                    Sidecar :8000 ◄───────────────────────────┘
+                              │
+                              ▼
+                    Terminal / Monitoring events
+```
 
-**Afternoon (4 hours):**
-- Step 2.1: Memory Service Layer
-- Step 2.2: React Hook
+### Design principles
+1. **One execution path** — Chat, floating chat, workflows share `useAIChat` + tools  
+2. **Brain vs hands** — Ollama decides; sidecar executes  
+3. **Policy before power** — autonomy + permission toggles gate tools  
+4. **HITL for risk** — medium/high commands pause for Approve/Reject  
+5. **Observable by default** — every tool call emits structured events  
+6. **Reuse first** — no Hermes/OpenClaw until this MVP ships  
 
-### Day 3: Memory Integration & Polish
-**Morning (4 hours):**
-- Step 2.3: Memory Retrieval Integration
-- Step 2.4: Memory Management UI
+### Sprint 3.1 — Unify chat on the agent loop
+**Files:** `ChatPage.tsx`, `useChatContext.tsx`, `FloatingChatPanel.tsx`, `server/` CORS, `prompts.ts`
 
-**Afternoon (4 hours):**
-- Testing & Bug Fixes
-- Documentation Updates
+**Tasks:**
+1. Allow CORS origins `http://localhost:8080` and `http://127.0.0.1:8080` on sidecar  
+2. Replace `AIService.chat` / stream paths in Chat + floating chat with `useAIChat`  
+3. Map agent selector IDs to engine role prompts  
+4. Surface model + routing reason in chat chrome  
+5. Keep `AIService` for vision / non-agent helpers only  
+
+**Acceptance:**
+- Chat still works with Ollama / Gemini  
+- Single code path for conversational brain  
+- Tools may still be disabled until Sprint 3.2  
+
+---
+
+### Sprint 3.2 — Real tool-calling to the model
+**Files:** `localModel.ts`, `useAIChat.ts`, `toolRegistry.ts`, optionally `supabase/functions/chat`
+
+**Tasks:**
+1. Include OpenAI-style `tools` (and `tool_choice`) in local streaming/non-streaming requests  
+2. Validate against tunneled Ollama + `qwen3:8b` / prefer `qwen2.5-coder:32b` for tool demos  
+3. Add prompt/JSON fallback if the model omits structured `tool_calls`  
+4. Decide: tools **local-only** for MVP vs forward tools through edge function  
+
+**Acceptance:**
+- Model can emit at least one tool call for “list files in this project”  
+- `fs_list` executes via sidecar and result returns to the model  
+
+---
+
+### Sprint 3.3 — Hands loop + HITL
+**Files:** `runtimeBridge.ts`, `ApprovalInline.tsx`, `ChatPage.tsx`, `TerminalOutput.tsx`
+
+**Tasks:**
+1. Ensure live chat executes tools only when runtime is paired + healthy  
+2. Map `requires_approval` → pending approval UI (replace mock random approvals)  
+3. Prefer `POST /execute` for gated commands; stream allowlisted cmds to Terminal  
+4. Feed tool results back into `useAIChat` continuation  
+
+**Acceptance:**
+- Allowlisted command runs end-to-end from chat  
+- High-risk command waits for Approve/Reject and does not run until decided  
+- Terminal shows real stdout/stderr  
+
+---
+
+### Sprint 3.4 — Policy layer
+**Files:** `SettingsPage.tsx`, tool execution gate, persistence (localStorage or DB)
+
+**Tasks:**
+1. Enforce `manual` / `assisted` / `autonomous` in `executeToolCall`  
+2. Enforce terminal/files (and other) permission toggles  
+3. Persist policy across reloads  
+
+**Acceptance:**
+- Disabled terminal toggle blocks `execute_command` with a clear error  
+- Manual mode always requires approval for side-effecting tools  
+
+---
+
+### Sprint 3.5 — Control-center surfaces
+**Files:** Monitoring pages, Home approvals, Agents pages, event bus/store
+
+**Tasks:**
+1. Define a small event schema: `{ id, agentId, tool, args, risk, status, exitCode, ts }`  
+2. Publish from tool loop; subscribe in Monitoring / Tool Monitor / Execution Trace  
+3. Home “pending approvals” reads live queue  
+4. Agents page shows active run status (single session first; multi-agent later)  
+
+**Acceptance:**
+- Running a tool updates Monitoring without mocks  
+- Approvals appear on Home when pending  
+
+---
+
+### Sprint 3.6 — Memory in the loop (aligns with Part 2 Steps 2.3–2.4)
+**Files:** `useAIChat.ts`, memory provider, `MemoryPage.tsx`
+
+**Tasks:**
+1. Inject relevant memories into system context before each agent turn  
+2. Persist notable facts after turns  
+3. Replace Memory page mocks with provider data  
+
+**Acceptance:**
+- Second session can recall a stored preference  
+- Memory page lists real rows for the signed-in user  
+
+---
+
+### Sprint 3.7 — Workflows as triggers
+**Files:** `WorkflowsPage.tsx`, `useEventMonitor.ts`
+
+**Tasks:**
+1. Workflow Run enqueues the same agent job loop  
+2. Calendar auto-start can request approved agent tasks  
+
+**Acceptance:**
+- “Run workflow” produces a real tool/chat agent run, not a toast-only simulation  
+
+---
+
+### Sprint 3.8 — Optional external agent runtime (later)
+**Only if** persistent skills, multi-channel gateways, or long-running cron outgrow the custom loop.
+
+- Evaluate Hermes / OpenClaw as a **peer** process ARIA supervises  
+- Do **not** rip out Phase 18; keep ARIA as the control UI  
+
+---
+
+### Phase 18 MVP checklist (“agents can act”)
+
+- [ ] User chats in UI  
+- [ ] Agent lists/reads a file or runs an allowlisted command via sidecar  
+- [ ] Risky command shows Approve/Reject and does not run until approved  
+- [ ] Terminal / monitoring shows the real result  
+- [ ] Sidecar or Ollama down → clear degrade (tools off; chat may use Gemini)  
+
+---
+
+### Risks (Phase 18)
+
+| Risk | Mitigation |
+|------|------------|
+| Qwen/Ollama weak tool calling | Prefer coder model for demos; JSON tool-prompt fallback |
+| Dual chat paths (`AIService` vs `useAIChat`) | Migrate Chat in Sprint 3.1 immediately |
+| Stream execute skips approval | Gated cmds via `/execute` + UI pause |
+| CORS `:8080` vs `:5173` | Fix in Sprint 3.1 before tool testing |
+| Sidecar = real OS access | Keep localhost-only, token pairing, allowlist, HITL |
+| Premature framework adoption | Defer Hermes/OpenClaw until MVP checklist passes |
+
+---
+
+## Implementation Order & Timeline (updated July 2026)
+
+### Done
+- Day 1–2 equivalent: Sidecar + security + FS/terminal APIs + frontend bridge + Settings pairing  
+- Hybrid LLM: Ollama tunnel + Gemini fallback for chat  
+
+### Now (Week 1) — Phase 18 MVP
+- Sprint 3.1 Unify chat on `useAIChat` + CORS  
+- Sprint 3.2 Tools in Ollama requests + smoke test  
+- Sprint 3.3 HITL + Terminal  
+
+### Next (Week 2)
+- Sprint 3.4 Policy  
+- Sprint 3.5 Monitoring / Approvals / Agents status  
+
+### Then (Week 3)
+- Sprint 3.6 Memory inject/save + Memory UI  
+- Sprint 3.7 Workflows as triggers  
+- Resume capability pages that need real agent actions  
 
 ---
 
@@ -766,37 +930,34 @@ src/
 ## Success Metrics
 
 ### Local Runtime
-- ✅ Agent can execute `npm test` via chat
-- ✅ Agent can read/write files via chat
-- ✅ Approval modal appears for high-risk commands
-- ✅ Zero security incidents
+- ✅ Sidecar runs on `127.0.0.1:8000` with token pairing
+- ⬜ Agent can execute allowlisted command **via chat** (Phase 18)
+- ⬜ Agent can read/write files **via chat** (Phase 18)
+- ⬜ Approval UI appears for high-risk commands (Phase 18)
+- ⬜ Zero security incidents
+
+### Agent Layer / Control Center
+- ⬜ Single execution path (`useAIChat`) for Chat + floating chat
+- ⬜ Tools reach Ollama request body
+- ⬜ Monitoring shows live tool events (no mocks for active run)
+- ⬜ Settings policy actually blocks disallowed tools
 
 ### Agent Memory
-- ✅ Context improves LLM response relevance by 30%+
-- ✅ Memories persist across sessions
-- ✅ Search finds relevant memories in <100ms
-- ✅ Auto-save captures 80%+ of key facts
+- ⬜ Context improves continuity across sessions
+- ⬜ Memories persist and appear on Memory page
+- ⬜ Search finds relevant memories in <100ms
 
 ---
 
-## Next Steps After Completion
+## Next Steps After Phase 18 MVP
 
-1. **Enhance Memory System:**
-   - Add vector embeddings for semantic search
-   - Implement memory summarization
-   - Cross-agent memory sharing
-
-2. **Enhance Runtime:**
-   - WebSocket streaming for terminal
-   - Git operations API
-   - Docker container management
-
-3. **Integration:**
-   - Connect memory to calendar events
-   - Use memory in workflow automation
-   - Memory-driven agent selection
+1. **Memory depth:** embeddings, summarization, cross-agent shared memory  
+2. **Runtime depth:** richer streaming HITL, git helpers, optional analyze endpoints  
+3. **Capability pages:** Finance/Legal/DevOps actions that call the same agent job API  
+4. **Optional peer agents:** Hermes / OpenClaw supervised by ARIA UI if needed  
 
 ---
 
-*Plan created: December 25, 2025*
-*Status: Ready for Implementation*
+*Plan created: December 25, 2025*  
+*Updated: July 17, 2026 — Part 3 Agent Layer Integration; Part 1 marked built; critical path = Phase 18 wiring*  
+*Status: Phase 16 built; Phase 18 ready for implementation*

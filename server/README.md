@@ -48,10 +48,12 @@ python main.py
 
 Or using uvicorn directly:
 ```bash
-uvicorn main:app --host 127.0.0.1 --port 8000 --reload
+uvicorn main:app --host 127.0.0.1 --port 8001 --reload
 ```
 
 **Important:** The server will bind to `127.0.0.1` (localhost only) for security. It will NEVER bind to `0.0.0.0`.
+
+Default port is **8001** (to avoid conflicts with other local APIs on 8000). The frontend expects `VITE_RUNTIME_URL=http://localhost:8001`.
 
 ## Authentication
 
@@ -102,7 +104,7 @@ Make sure you have read/write permissions in the workspace directory.
 ### Connection Refused
 - Ensure the server is running
 - Check that you're using the correct token
-- Verify CORS is configured for `localhost:5173`
+- Verify CORS is configured for `localhost:8080` (and `:5173` if using default Vite)
 
 ## Development
 

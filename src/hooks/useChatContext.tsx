@@ -3,8 +3,11 @@ import React, { createContext, useContext, useState, useCallback, ReactNode, use
 import { ChatMessage, ChatStatus, ChatAttachment, CHAT_AGENTS } from '@/types/chat';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/hooks/use-toast';
-import { AIService } from '@/lib/ai';
-import { ChatMessage as StreamChatMessage } from '@/lib/chatStream';
+import {
+  runAgentChatTurn,
+  resolveAgentRoleId,
+  type AgentChatTurnMessage,
+} from '@/agent-engine/services/agentChatRunner';
 
 export interface PageContext {
   pageId: string;
@@ -19,6 +22,7 @@ interface ChatContextType {
   selectedAgentIds: string[];
   isOpen: boolean;
   pageContext: PageContext | null;
+  pendingApproval: { id: string; description: string } | null;
 
   // Actions
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => void;
@@ -29,6 +33,8 @@ interface ChatContextType {
   closeChat: () => void;
   setPageContext: (context: PageContext | null) => void;
   clearMessages: () => void;
+  approvePendingAction: () => void;
+  rejectPendingAction: () => void;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -39,7 +45,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [pageContext, setPageContext] = useState<PageContext | null>(null);
+  const [pendingApproval, setPendingApproval] = useState<{ id: string; description: string } | null>(null);
   const streamingContentRef = useRef<string>('');
+  const abortRef = useRef<AbortController | null>(null);
+  const approvalResolverRef = useRef<((approved: boolean) => void) | null>(null);
 
   const { toast } = useToast();
   const tts = useTextToSpeech();
@@ -55,16 +64,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     ]);
   }, []);
 
-  const updateLastAssistantMessage = useCallback((content: string) => {
+  const updateLastAssistantMessage = useCallback((content: string, agentId?: string) => {
+    const respondingAgent =
+      CHAT_AGENTS.find((a) => a.id === agentId) ||
+      CHAT_AGENTS.find((a) => a.id === 'atlas') ||
+      CHAT_AGENTS[0];
+
     setMessages((prev) => {
       const last = prev[prev.length - 1];
       if (last?.sender === 'agent') {
         return prev.map((m, i) =>
-          i === prev.length - 1 ? { ...m, content } : m
+          i === prev.length - 1 ? { ...m, content, isStreaming: true } : m
         );
       }
-      // First token - create new assistant message
-      const respondingAgent = CHAT_AGENTS.find((a) => a.role === 'planner')!;
       return [
         ...prev,
         {
@@ -77,6 +89,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           agentName: respondingAgent.name,
           agentRole: respondingAgent.role,
           agentAvatar: respondingAgent.avatar,
+          isStreaming: true,
         },
       ];
     });
@@ -87,14 +100,20 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     attachments?: ChatAttachment[],
     mentionedAgentIds?: string[]
   ) => {
+    let nextSelected = selectedAgentIds;
     if (mentionedAgentIds && mentionedAgentIds.length > 0) {
-      setSelectedAgentIds(prev => {
-        const newIds = mentionedAgentIds.filter(id => !prev.includes(id));
-        return [...prev, ...newIds];
-      });
+      nextSelected = [
+        ...selectedAgentIds,
+        ...mentionedAgentIds.filter((id) => !selectedAgentIds.includes(id)),
+      ];
+      setSelectedAgentIds(nextSelected);
     }
 
-    // Add user message
+    const respondingAgent =
+      CHAT_AGENTS.find((a) => nextSelected.includes(a.id)) ||
+      CHAT_AGENTS.find((a) => a.id === 'atlas') ||
+      CHAT_AGENTS[0];
+
     addMessage({
       content,
       sender: 'user',
@@ -105,62 +124,147 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setStatus('thinking');
     streamingContentRef.current = '';
 
-    // Convert messages to API format
-    const apiMessages: StreamChatMessage[] = messages
-      .filter(m => m.type === 'text' && (m.sender === 'user' || m.sender === 'agent'))
-      .map(m => ({
-        role: m.sender === 'user' ? 'user' as const : 'assistant' as const,
+    const history: AgentChatTurnMessage[] = messages
+      .filter((m) => m.type === 'text' && (m.sender === 'user' || m.sender === 'agent'))
+      .map((m) => ({
+        role: m.sender === 'user' ? ('user' as const) : ('assistant' as const),
         content: m.content,
       }));
 
-    // Add current message
-    apiMessages.push({ role: 'user', content });
+    const fileContext = pageContext
+      ? [
+          `Current page: ${pageContext.pageName}`,
+          pageContext.pageCategory ? `Category: ${pageContext.pageCategory}` : '',
+          pageContext.contextData
+            ? `Context: ${JSON.stringify(pageContext.contextData)}`
+            : '',
+        ]
+          .filter(Boolean)
+          .join('\n')
+      : undefined;
+
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
 
     try {
-      await AIService.streamChat(
+      await runAgentChatTurn({
         content,
-        undefined, // System prompt (managed by edge function or context)
-        pageContext ? {
-          pageName: pageContext.pageName,
-          pageCategory: pageContext.pageCategory,
-          contextData: pageContext.contextData,
-        } : undefined,
-        (delta) => {
-          if (status !== 'executing') {
-            setStatus('executing');
+        history,
+        agentRole: resolveAgentRoleId(respondingAgent.id),
+        agentId: respondingAgent.id,
+        fileContext,
+        preferLocal: true,
+        enableTools: true,
+        signal: abortRef.current.signal,
+        onStatus: (message) => {
+          if (!message.toLowerCase().includes('runtime unpaired') &&
+              !message.toLowerCase().includes('running tool')) {
+            return;
           }
-          streamingContentRef.current += delta;
-          updateLastAssistantMessage(streamingContentRef.current);
-        },
-        () => {
-          setStatus('idle');
-          if (tts.enabled && streamingContentRef.current) {
-            tts.speak(streamingContentRef.current);
-          }
-        },
-        (error) => {
-          console.error('Chat error:', error);
-          toast({
-            title: "Chat Error",
-            description: error instanceof Error ? error.message : "Unknown error",
-            variant: "destructive",
+          setStatus('executing');
+          addMessage({
+            content: message,
+            sender: 'system',
+            type: 'status',
+            structuredData: { status: 'started' },
           });
-          setStatus('idle');
+        },
+        onToolEvent: (event) => {
+          if (event.result !== undefined || event.error) {
+            addMessage({
+              content: event.error
+                ? `Tool ${event.name} failed: ${event.error}`
+                : `Tool ${event.name} completed`,
+              sender: 'system',
+              type: 'status',
+              structuredData: { status: event.error ? 'error' : 'completed' },
+            });
+          }
+        },
+        onDelta: (_delta, full) => {
+          setStatus('executing');
+          streamingContentRef.current = full;
+          updateLastAssistantMessage(full, respondingAgent.id);
+        },
+        onApprovalRequired: (req) =>
+          new Promise<boolean>((resolve) => {
+            approvalResolverRef.current?.(false);
+            approvalResolverRef.current = resolve;
+            setIsOpen(true);
+            setStatus('executing');
+            setPendingApproval({ id: req.id, description: req.description });
+            addMessage({
+              content: `Waiting for approval: ${req.description}`,
+              sender: 'system',
+              type: 'status',
+              structuredData: { status: 'waiting' },
+            });
+          }),
+      });
+
+      setMessages((prev) => {
+        const last = prev[prev.length - 1];
+        if (last?.sender === 'agent' && last.isStreaming) {
+          return prev.map((m, i) =>
+            i === prev.length - 1 ? { ...m, isStreaming: false } : m
+          );
         }
-      );
+        return prev;
+      });
+
+      setStatus('idle');
+      if (tts.enabled && streamingContentRef.current) {
+        tts.speak(streamingContentRef.current);
+      }
     } catch (error) {
+      if ((error as Error).name === 'AbortError') return;
+
       console.error('Chat error:', error);
       toast({
-        title: "Connection Error",
-        description: "Failed to connect to AI service. Please try again.",
-        variant: "destructive",
+        title: 'Chat Error',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
       });
       setStatus('idle');
     }
-  }, [messages, addMessage, updateLastAssistantMessage, pageContext, tts, toast, status]);
+  }, [
+    messages,
+    addMessage,
+    updateLastAssistantMessage,
+    pageContext,
+    tts,
+    toast,
+    selectedAgentIds,
+  ]);
+
+  const approvePendingAction = useCallback(() => {
+    approvalResolverRef.current?.(true);
+    approvalResolverRef.current = null;
+    setPendingApproval(null);
+    addMessage({
+      content: 'Action approved. Executing…',
+      sender: 'system',
+      type: 'status',
+      structuredData: { status: 'completed' },
+    });
+    toast({ title: 'Approved', description: 'The action will proceed.' });
+  }, [addMessage, toast]);
+
+  const rejectPendingAction = useCallback(() => {
+    approvalResolverRef.current?.(false);
+    approvalResolverRef.current = null;
+    setPendingApproval(null);
+    addMessage({
+      content: 'Action rejected by user.',
+      sender: 'system',
+      type: 'status',
+      structuredData: { status: 'error' },
+    });
+    toast({ title: 'Rejected', description: 'The action was cancelled.', variant: 'destructive' });
+  }, [addMessage, toast]);
 
   const toggleChat = useCallback(() => {
-    setIsOpen(prev => !prev);
+    setIsOpen((prev) => !prev);
   }, []);
 
   const openChat = useCallback(() => {
@@ -184,6 +288,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         selectedAgentIds,
         isOpen,
         pageContext,
+        pendingApproval,
         addMessage,
         sendMessage,
         setSelectedAgentIds,
@@ -192,6 +297,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         closeChat,
         setPageContext,
         clearMessages,
+        approvePendingAction,
+        rejectPendingAction,
       }}
     >
       {children}

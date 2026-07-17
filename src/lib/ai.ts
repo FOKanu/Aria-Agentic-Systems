@@ -6,15 +6,16 @@ import { streamChat as cloudStreamChat } from '@/lib/chatStream';
 // Re-export types
 export type { AIModel };
 
-// Configuration
+// Configuration — Ollama via SSH tunnel to remote GPU (localhost:11434)
 const VISION_MODEL: AIModel = 'moondream';
-const CHAT_MODEL: AIModel = 'llama3.1:8b';
+const CHAT_MODEL: AIModel =
+  (import.meta.env.VITE_LOCAL_MODEL_NAME as AIModel | undefined) || 'qwen3:8b';
 
 /**
  * Service to handle AI interactions
- * Implements a Hybrid Strategy:
- * 1. Checks for Local LLM (Ollama) first (Privacy/Free)
- * 2. Falls back to Cloud (Supabase Edge Function) if Local is offline
+ * Hybrid strategy:
+ * 1. Prefer tunneled Ollama when reachable
+ * 2. Fall back to Cloud (Supabase → Gemini) if Ollama is offline or errors
  */
 export const AIService = {
   /**
@@ -35,11 +36,10 @@ export const AIService = {
     onDone: () => void,
     onError: (error: any) => void
   ) => {
-    // 1. Try Local First
     const isLocalAlive = await checkLocalModelHealth();
 
     if (isLocalAlive) {
-      console.log('🤖 Using Local LLM (Ollama)');
+      console.log(`🤖 Using Local LLM (Ollama) — ${CHAT_MODEL}`);
       const messages: AIRequestPayload['messages'] = [];
 
       if (systemPrompt) {
@@ -65,24 +65,14 @@ export const AIService = {
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          // Local model streaming parsing is tricky if it's raw JSON chunks.
-          // Assuming the localModel service returns standard OpenAI-compatible chunks.
-          // We might need to parse them.
-          // Looking at callLocalModelStreaming implementation, it returns raw response.
-          // We need to parse SSE here if it's SSE, or raw text if raw.
-          // Ollama usually returns JSON objects one per line.
-
           const lines = chunk.split('\n');
           for (const line of lines) {
             if (!line.trim()) continue;
             try {
-              // Handle "data: " prefix if present (OpenAI style)
               const cleanLine = line.startsWith('data: ') ? line.slice(6) : line;
               if (cleanLine === '[DONE]') continue;
 
               const parsed = JSON.parse(cleanLine);
-              // OpenAI style: choices[0].delta.content
-              // Ollama style: message.content or response
               const content =
                 parsed.choices?.[0]?.delta?.content ||
                 parsed.message?.content ||
@@ -90,29 +80,27 @@ export const AIService = {
                 '';
 
               if (content) onDelta(content);
-            } catch (e) {
+            } catch {
               // Ignore parse errors for partial chunks
             }
           }
         }
         onDone();
+        return;
       } catch (error) {
-        console.error('Local Stream Error:', error);
-        onError(error);
+        console.error('Local Stream Error — falling back to cloud:', error);
+        // Prefer Ollama when up; if the request fails, still try Gemini
       }
-      return;
     }
 
-    // 2. Fallback to Cloud
-    console.log('☁️ Local LLM offline. Switching to Cloud (Gemini 1.5 Flash via Supabase)');
+    console.log('☁️ Local LLM offline/errored. Switching to Cloud (Gemini via Supabase)');
 
-    // Use existing cloud stream helper
     await cloudStreamChat({
-      messages: [{ role: 'user', content: message }], // System prompt handled by Edge Function or Context
+      messages: [{ role: 'user', content: message }],
       context,
       onDelta,
       onDone,
-      onError
+      onError,
     });
   },
 
@@ -132,7 +120,7 @@ export const AIService = {
           resolve({
             id: `msg-${Date.now()}`,
             content: fullContent,
-            model: 'hybrid',
+            model: CHAT_MODEL,
             provider: 'hybrid'
           });
         },
@@ -183,11 +171,10 @@ export const AIService = {
             ]
           }
         ],
-        temperature: 0.1, // Low temp for more deterministic JSON
+        temperature: 0.1,
         maxTokens: 500,
       });
 
-      // Parse JSON from the response
       const jsonMatch = response.content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const data = JSON.parse(jsonMatch[0]);
@@ -199,7 +186,7 @@ export const AIService = {
             id: `el-${idx}`,
             type: 'element',
             label,
-            bounds: { x: 0, y: 0, width: 0, height: 0 }, // Placeholder
+            bounds: { x: 0, y: 0, width: 0, height: 0 },
             confidence: 0.8
           }))
         };

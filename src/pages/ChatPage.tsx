@@ -1,30 +1,44 @@
 // Developed by Francis Okorie Iyeke-Kanu
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { ConversationStream } from '@/components/chat/ConversationStream';
 import { ChatInputBar } from '@/components/chat/ChatInputBar';
 import { AgentSelectorModal } from '@/components/chat/AgentSelectorModal';
 import { QuickActions } from '@/components/chat/QuickActions';
 import { ApprovalInline } from '@/components/chat/ApprovalInline';
-import { ChatMessage, ChatStatus, ChatAgent, ChatAttachment, AgentPreset, CHAT_AGENTS } from '@/types/chat';
+import { ChatMessage, ChatStatus, ChatAttachment, AgentPreset, CHAT_AGENTS } from '@/types/chat';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useTextToSpeech } from '@/hooks/useTextToSpeech';
 import { useToast } from '@/hooks/use-toast';
-import { AIService } from '@/lib/ai';
+import {
+  runAgentChatTurn,
+  resolveAgentRoleId,
+  type AgentChatTurnMessage,
+} from '@/agent-engine/services/agentChatRunner';
+import { getRoutingDisplayInfo } from '@/agent-engine/hooks/useAIChat';
+import type { RoutingDecision } from '@/agent-engine/types';
 
-// Author: Francis Okorie Iyeke-Kanu
 export function ChatPage() {
   const [status, setStatus] = useState<ChatStatus>('idle');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
   const [agentSelectorOpen, setAgentSelectorOpen] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<{ id: string; description: string } | null>(null);
+  const [lastRouting, setLastRouting] = useState<RoutingDecision | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const approvalResolverRef = useRef<((approved: boolean) => void) | null>(null);
 
   const { toast } = useToast();
   const voiceInput = useVoiceInput();
   const tts = useTextToSpeech();
 
   const selectedAgents = CHAT_AGENTS.filter((a) => selectedAgentIds.includes(a.id));
+  const primaryAgent =
+    selectedAgents[0] ||
+    CHAT_AGENTS.find((a) => a.id === 'atlas') ||
+    CHAT_AGENTS[0];
+
+  const routingInfo = useMemo(() => getRoutingDisplayInfo(lastRouting), [lastRouting]);
 
   const addMessage = useCallback((message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
     setMessages((prev) => [
@@ -37,90 +51,51 @@ export function ChatPage() {
     ]);
   }, []);
 
-  // Francis Okorie Iyeke-Kanu - Agent response simulation
-  const simulateAgentResponse = useCallback(async (userMessage: string, attachments?: ChatAttachment[]) => {
-    setStatus('thinking');
-
-    // System message showing task delegation
-    const attachmentText = attachments && attachments.length > 0
-      ? ` with ${attachments.length} file(s)`
-      : '';
-
-    if (selectedAgentIds.length > 1) {
-      addMessage({
-        content: `Task delegated to ${selectedAgentIds.length} agents${attachmentText}`,
-        sender: 'system',
-        type: 'status',
-        structuredData: { status: 'started' },
-      });
-    } else if (attachments && attachments.length > 0) {
-      addMessage({
-        content: `Processing ${attachments.length} attached file(s)...`,
-        sender: 'system',
-        type: 'status',
-        structuredData: { status: 'started' },
-      });
-    }
-
-    // Simulate thinking delay
-    await new Promise((r) => setTimeout(r, 1500));
-
-    setStatus('executing');
-
-    // Pick a random agent to respond (or the planner if auto)
-    const respondingAgent =
-      selectedAgentIds.length === 0
-        ? CHAT_AGENTS.find((a) => a.role === 'planner')!
-        : CHAT_AGENTS.find((a) => selectedAgentIds.includes(a.id)) || CHAT_AGENTS[0];
-
-    // Simulate agent response
-    const responses = [
-      `I've analyzed your request. Here's what I found:`,
-      `Based on my analysis, I can help you with that.`,
-      `I'm processing your request now.`,
-      `Let me break this down for you.`,
-    ];
-
-    const response = responses[Math.floor(Math.random() * responses.length)];
-
-    addMessage({
-      content: response,
-      sender: 'agent',
-      type: 'text',
-      agentId: respondingAgent.id,
-      agentName: respondingAgent.name,
-      agentRole: respondingAgent.role,
-      agentAvatar: respondingAgent.avatar,
-      confidence: Math.floor(Math.random() * 15) + 85,
+  const updateStreamingAgentMessage = useCallback((content: string, agent = primaryAgent) => {
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last?.sender === 'agent' && last.isStreaming) {
+        return prev.map((m, i) =>
+          i === prev.length - 1 ? { ...m, content } : m
+        );
+      }
+      return [
+        ...prev,
+        {
+          id: `msg-${Date.now()}-stream`,
+          content,
+          sender: 'agent' as const,
+          type: 'text' as const,
+          timestamp: new Date(),
+          agentId: agent.id,
+          agentName: agent.name,
+          agentRole: agent.role,
+          agentAvatar: agent.avatar,
+          isStreaming: true,
+          confidence: 0.95,
+        },
+      ];
     });
+  }, [primaryAgent]);
 
-    // Speak the response if TTS is enabled
-    if (tts.enabled) {
-      tts.speak(response);
-    }
-
-    // Randomly trigger approval request
-    if (Math.random() > 0.7) {
-      setPendingApproval({
-        id: `approval-${Date.now()}`,
-        description: 'Agent wants to execute a system command. Do you approve?',
-      });
-    }
-
-    setStatus('idle');
-  }, [selectedAgentIds, addMessage, tts]);
-
-  // Modified to use real AI
-  const handleSendMessage = useCallback(async (content: string, attachments?: ChatAttachment[], mentionedAgentIds?: string[]) => {
-    // If agents were @mentioned, add them to selected agents
+  const handleSendMessage = useCallback(async (
+    content: string,
+    attachments?: ChatAttachment[],
+    mentionedAgentIds?: string[]
+  ) => {
     if (mentionedAgentIds && mentionedAgentIds.length > 0) {
-      setSelectedAgentIds(prev => {
-        const newIds = mentionedAgentIds.filter(id => !prev.includes(id));
+      setSelectedAgentIds((prev) => {
+        const newIds = mentionedAgentIds.filter((id) => !prev.includes(id));
         return [...prev, ...newIds];
       });
     }
 
-    // Add user message
+    const respondingAgent =
+      (mentionedAgentIds?.[0] && CHAT_AGENTS.find((a) => a.id === mentionedAgentIds[0])) ||
+      selectedAgents[0] ||
+      CHAT_AGENTS.find((a) => a.id === 'atlas') ||
+      CHAT_AGENTS[0];
+
     addMessage({
       content,
       sender: 'user',
@@ -130,49 +105,129 @@ export function ChatPage() {
 
     setStatus('thinking');
 
+    const history: AgentChatTurnMessage[] = messages
+      .filter((m) => m.type === 'text' && (m.sender === 'user' || m.sender === 'agent'))
+      .map((m) => ({
+        role: m.sender === 'user' ? ('user' as const) : ('assistant' as const),
+        content: m.content,
+      }));
+
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+
     try {
-      // Determine persona
-      const respondingAgent = selectedAgents.length > 0 ? selectedAgents[0] : CHAT_AGENTS.find(a => a.role === 'planner') || CHAT_AGENTS[0];
-
-      const systemPrompt = `You are ${respondingAgent.name}, a ${respondingAgent.title}.
-      Role: ${respondingAgent.role}.
-      Capabilities: ${respondingAgent.capabilities.join(', ')}.
-
-      Respond to the user's request. Be concise and helpful.`;
-
-      // Call AI
-      const response = await AIService.chat(content, systemPrompt);
-
-      setStatus('executing');
-
-      // Add AI response
-      addMessage({
-        content: response.content,
-        sender: 'agent',
-        type: 'text',
+      const result = await runAgentChatTurn({
+        content,
+        history,
+        agentRole: resolveAgentRoleId(respondingAgent.id),
         agentId: respondingAgent.id,
-        agentName: respondingAgent.name,
-        agentRole: respondingAgent.role,
-        agentAvatar: respondingAgent.avatar,
-        confidence: 0.95,
+        preferLocal: true,
+        enableTools: true,
+        signal: abortRef.current.signal,
+        onRouting: (routing) => setLastRouting(routing),
+        onStatus: (message) => {
+          // Only surface actionable / pairing notices in the transcript
+          if (!message.toLowerCase().includes('runtime unpaired') &&
+              !message.toLowerCase().includes('running tool')) {
+            return;
+          }
+          setStatus('executing');
+          addMessage({
+            content: message,
+            sender: 'system',
+            type: 'status',
+            structuredData: { status: 'started' },
+          });
+        },
+        onToolEvent: (event) => {
+          if (event.result !== undefined || event.error) {
+            const summary = event.error
+              ? `Tool ${event.name} failed: ${event.error}`
+              : `Tool ${event.name} completed`;
+            addMessage({
+              content: summary,
+              sender: 'system',
+              type: 'status',
+              structuredData: { status: event.error ? 'error' : 'completed' },
+            });
+          }
+        },
+        onDelta: (_delta, full) => {
+          setStatus('executing');
+          updateStreamingAgentMessage(full, respondingAgent);
+        },
+        onApprovalRequired: (req) =>
+          new Promise<boolean>((resolve) => {
+            // Reject any prior pending approval to avoid deadlocks
+            approvalResolverRef.current?.(false);
+            approvalResolverRef.current = resolve;
+            setStatus('executing');
+            setPendingApproval({
+              id: req.id,
+              description: req.description,
+            });
+            addMessage({
+              content: `Waiting for approval: ${req.description}`,
+              sender: 'system',
+              type: 'status',
+              structuredData: { status: 'waiting' },
+            });
+          }),
       });
 
-      // TTS
-      if (tts.enabled) {
-        tts.speak(response.content);
+      if (result.content) {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.sender === 'agent' && last.isStreaming) {
+            return prev.map((m, i) =>
+              i === prev.length - 1
+                ? { ...m, content: result.content, isStreaming: false }
+                : m
+            );
+          }
+          return [
+            ...prev,
+            {
+              id: `msg-${Date.now()}-assistant`,
+              content: result.content,
+              sender: 'agent' as const,
+              type: 'text' as const,
+              timestamp: new Date(),
+              agentId: respondingAgent.id,
+              agentName: respondingAgent.name,
+              agentRole: respondingAgent.role,
+              agentAvatar: respondingAgent.avatar,
+              confidence: 0.95,
+            },
+          ];
+        });
+      } else {
+        addMessage({
+          content: '(Empty response)',
+          sender: 'agent',
+          type: 'text',
+          agentId: respondingAgent.id,
+          agentName: respondingAgent.name,
+          agentRole: respondingAgent.role,
+          agentAvatar: respondingAgent.avatar,
+        });
       }
 
+      if (tts.enabled && result.content) {
+        tts.speak(result.content);
+      }
     } catch (error) {
+      if ((error as Error).name === 'AbortError') return;
+
       console.error('AI Error:', error);
       toast({
-        title: "AI Error",
-        description: "Failed to get response from local model. Ensure Ollama is running.",
-        variant: "destructive"
+        title: 'AI Error',
+        description: error instanceof Error ? error.message : 'Failed to get agent response.',
+        variant: 'destructive',
       });
 
-      // Fallback response
       addMessage({
-        content: "I'm having trouble connecting to my brain (Ollama). Please check if the local AI service is running.",
+        content: 'I could not complete that turn. Check the Ollama tunnel or cloud connection.',
         sender: 'system',
         type: 'status',
         structuredData: { status: 'error' },
@@ -180,10 +235,17 @@ export function ChatPage() {
     } finally {
       setStatus('idle');
     }
-  }, [addMessage, selectedAgents, tts, toast]);
+  }, [
+    addMessage,
+    messages,
+    selectedAgents,
+    tts,
+    toast,
+    updateStreamingAgentMessage,
+  ]);
 
   const handleAddAgentFromMention = useCallback((agentId: string) => {
-    setSelectedAgentIds(prev => {
+    setSelectedAgentIds((prev) => {
       if (prev.includes(agentId)) return prev;
       return [...prev, agentId];
     });
@@ -197,7 +259,6 @@ export function ChatPage() {
   const handleVoiceStop = useCallback(async () => {
     const transcription = await voiceInput.stopRecording();
     setStatus('idle');
-
     if (transcription) {
       handleSendMessage(transcription);
     }
@@ -222,17 +283,21 @@ export function ChatPage() {
   }, [toast, handleSendMessage, voiceInput]);
 
   const handleApprove = useCallback((taskId: string) => {
+    approvalResolverRef.current?.(true);
+    approvalResolverRef.current = null;
     setPendingApproval(null);
     addMessage({
-      content: 'Action approved. Executing...',
+      content: 'Action approved. Executing…',
       sender: 'system',
       type: 'status',
       structuredData: { status: 'completed' },
     });
-    toast({ title: 'Approved', description: 'The action has been approved.' });
+    toast({ title: 'Approved', description: 'The action will proceed.' });
   }, [addMessage, toast]);
 
   const handleReject = useCallback((taskId: string) => {
+    approvalResolverRef.current?.(false);
+    approvalResolverRef.current = null;
     setPendingApproval(null);
     addMessage({
       content: 'Action rejected by user.',
@@ -240,7 +305,7 @@ export function ChatPage() {
       type: 'status',
       structuredData: { status: 'error' },
     });
-    toast({ title: 'Rejected', description: 'The action has been rejected.', variant: 'destructive' });
+    toast({ title: 'Rejected', description: 'The action was cancelled.', variant: 'destructive' });
   }, [addMessage, toast]);
 
   const handleSelectPreset = useCallback((preset: AgentPreset) => {
@@ -265,12 +330,17 @@ export function ChatPage() {
         audioEnabled={tts.enabled}
         onToggleAudio={() => tts.setEnabled(!tts.enabled)}
         onOpenAgentSelector={() => setAgentSelectorOpen(true)}
+        routingLabel={
+          routingInfo.model
+            ? `${routingInfo.provider} · ${routingInfo.model}`
+            : undefined
+        }
+        primaryAgentName={primaryAgent.name}
       />
 
       <div className="flex-1 pt-14 pb-48 lg:pb-36 overflow-hidden">
         <ConversationStream messages={messages} />
 
-        {/* Inline Approval */}
         {pendingApproval && (
           <ApprovalInline
             taskId={pendingApproval.id}
@@ -281,7 +351,6 @@ export function ChatPage() {
         )}
       </div>
 
-      {/* Quick Actions */}
       <div className="fixed bottom-[180px] lg:bottom-[140px] left-0 right-0 lg:left-20 px-4">
         <div className="max-w-4xl mx-auto">
           <QuickActions onAction={handleQuickAction} hasActiveTask={messages.length > 0} />

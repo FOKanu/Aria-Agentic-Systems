@@ -24,6 +24,10 @@ class ExecuteRequest(BaseModel):
     command: str = Field(..., description="Shell command to execute")
     cwd: Optional[str] = Field(None, description="Working directory (default: workspace root)")
     timeout: Optional[int] = Field(30, description="Timeout in seconds (default: 30)")
+    approved: bool = Field(
+        False,
+        description="Set true after the UI user approves a medium/high-risk command",
+    )
 
 
 class ExecuteResponse(BaseModel):
@@ -47,23 +51,21 @@ async def execute_command(
     The command is validated against allowlist/blocklist patterns,
     and the working directory is validated to be within the workspace.
 
-    Args:
-        request: ExecuteRequest with command, cwd, and timeout
-        token: Authentication token (from verify_token dependency)
-
-    Returns:
-        ExecuteResponse with stdout, stderr, exit_code, and timing info
-
-    Raises:
-        HTTPException(400): If command is invalid or path is outside workspace
-        HTTPException(401): If token is invalid
+    Medium-risk commands return requires_approval=True until the client
+    retries with approved=True. Hard-blocked patterns are never executed.
     """
     # Validate command
     is_safe, risk_level, reason = validate_command(request.command)
 
     if not is_safe:
-        # Check if it requires approval (medium/high risk)
-        if requires_approval(request.command):
+        # Never allow hard-blocked patterns, even with approval
+        if reason.startswith("Blocked") or "Blocked command" in reason:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Command rejected: {reason}"
+            )
+
+        if requires_approval(request.command) and not request.approved:
             return ExecuteResponse(
                 stdout="",
                 stderr="",
@@ -72,11 +74,24 @@ async def execute_command(
                 requires_approval=True,
                 risk_level=risk_level
             )
-        else:
-            # High-risk blocked command
+
+        if not request.approved:
             raise HTTPException(
                 status_code=400,
                 detail=f"Command rejected: {reason}"
+            )
+        # approved=True for medium/unknown — fall through to execute
+
+    # Allowed commands that are also medium-risk still ask once unless approved
+    if is_safe and risk_level == "medium" and not request.approved:
+        if requires_approval(request.command):
+            return ExecuteResponse(
+                stdout="",
+                stderr="",
+                exit_code=-1,
+                execution_time_ms=0,
+                requires_approval=True,
+                risk_level=risk_level
             )
 
     # Validate and sanitize working directory
