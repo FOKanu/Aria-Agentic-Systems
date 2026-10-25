@@ -6,7 +6,7 @@ There are several ways of editing your application.
 
 **Use your preferred IDE**
 
-For local Option C development, clone this repo and work in your IDE (Postgres + Ollama/vLLM local-first; no Lovable Cloud).
+For local Option C development, clone this repo and work in your IDE (Postgres + Ollama/vLLM local-first).
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -84,11 +84,3 @@ ARIA implements a robust **Hybrid AI Strategy** to balance privacy, cost, and ac
 ## How can I deploy this project?
 
 Run `npm run build`, then deploy the `dist/` directory (and edge/API functions as needed).
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
