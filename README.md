@@ -1,22 +1,12 @@
-# Welcome to your Lovable project
-
-## Project info
-
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+# Aria Agentics
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+For local Option C development, clone this repo and work in your IDE (Postgres + Ollama/vLLM local-first).
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -62,7 +52,7 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
-- Supabase (via Lovable Cloud)
+- Supabase
 
 ## Project Structure
 
@@ -88,17 +78,9 @@ ARIA implements a robust **Hybrid AI Strategy** to balance privacy, cost, and ac
 
 2.  **Cloud Fallback (Zero Setup):**
     *   If Local AI is offline (default for new users), the app seamlessly switches to the **Supabase Edge Function**.
-    *   This function routes requests to **Gemini 1.5 Flash** (via Lovable Gateway).
+    *   This function routes requests to **Gemini 1.5 Flash**.
     *   **Benefit:** Works instantly without Docker/Ollama setup.
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Run `npm run build`, then deploy the `dist/` directory (and edge/API functions as needed).
